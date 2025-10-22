@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
@@ -19,6 +22,8 @@ interface Product {
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'shop'>('news');
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   const newsItems: NewsItem[] = [
     {
@@ -85,8 +90,9 @@ const Index = () => {
               </div>
               <h1 className="text-2xl font-bold tracking-tight">GAME PORTAL</h1>
             </div>
-            
-            <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
+
+            <div className="flex items-center gap-6">
+              <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
               <button
                 onClick={() => setActiveTab('news')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
@@ -114,6 +120,74 @@ const Index = () => {
                   <span className="font-medium">Магазин</span>
                 </div>
               </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-secondary">
+                    Вход
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Вход в аккаунт</DialogTitle>
+                    <DialogDescription>
+                      Введите свои данные для входа в систему
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input id="login-email" type="email" placeholder="game@example.com" className="h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Пароль</Label>
+                      <Input id="login-password" type="password" placeholder="••••••••" className="h-11" />
+                    </div>
+                    <Button className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20">
+                      <Icon name="LogIn" size={18} className="mr-2" />
+                      Войти
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+                <DialogTrigger asChild>
+                  <Button className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
+                    <Icon name="UserPlus" size={18} className="mr-2" />
+                    Регистрация
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Создать аккаунт</DialogTitle>
+                    <DialogDescription>
+                      Зарегистрируйтесь для доступа ко всем функциям
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-name">Имя игрока</Label>
+                      <Input id="register-name" type="text" placeholder="Ваше имя" className="h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">Email</Label>
+                      <Input id="register-email" type="email" placeholder="game@example.com" className="h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">Пароль</Label>
+                      <Input id="register-password" type="password" placeholder="••••••••" className="h-11" />
+                    </div>
+                    <Button className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20">
+                      <Icon name="UserPlus" size={18} className="mr-2" />
+                      Зарегистрироваться
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             </div>
           </div>
         </div>
