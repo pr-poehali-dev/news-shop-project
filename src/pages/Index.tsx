@@ -88,7 +88,7 @@ const Index = () => {
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">GAME PORTAL</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
             </div>
 
             <div className="flex items-center gap-6">
