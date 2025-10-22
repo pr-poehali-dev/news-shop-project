@@ -285,9 +285,9 @@ const Index = () => {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Icon name="Gamepad2" size={20} className="text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">GAME PORTAL</span>
+              <span className="font-bold text-lg">Okyes</span>
             </div>
-            <p className="text-center text-muted-foreground">© 2025 Game Portal. Все права защищены.</p>
+            <p className="text-center text-muted-foreground">© 2025 Okyes. Все права защищены.</p>
           </div>
         </div>
       </footer>
