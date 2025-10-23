@@ -48,11 +48,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT COUNT(*) FROM admins WHERE steam_id = %s",
-                (steam_id,)
-            )
+            # Escape single quotes for simple query protocol
+            escaped_steam_id = steam_id.replace("'", "''")
+            query = f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'"
+            
+            print(f"Checking admin for steam_id: {steam_id}")
+            print(f"Query: {query}")
+            
+            cur.execute(query)
             count = cur.fetchone()[0]
+            
+            print(f"Result count: {count}")
             
             return {
                 'statusCode': 200,
@@ -60,7 +66,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({'isAdmin': count > 0})
+                'body': json.dumps({'isAdmin': count > 0, 'steam_id': steam_id})
             }
     
     finally:
