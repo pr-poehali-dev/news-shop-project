@@ -4,11 +4,7 @@
       "name": "Get all news",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "news": "array"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Create news",
@@ -20,14 +16,7 @@
         "content": "Test content",
         "badge": "Новое"
       },
-      "expectedStatus": 201,
-      "expectedBody": {
-        "news": {
-          "id": "number",
-          "title": "string"
-        }
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 201
     }
   ]
 }

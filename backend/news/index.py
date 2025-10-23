@@ -40,28 +40,37 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         (int(news_id),)
                     )
                     news_item = cur.fetchone()
+                    result = None
                     if news_item:
-                        news_item['date'] = news_item['date'].strftime('%d.%m.%Y')
+                        result = dict(news_item)
+                        result['date'] = result['date'].strftime('%d.%m.%Y')
+                        result['created_at'] = result['created_at'].isoformat()
+                        result['updated_at'] = result['updated_at'].isoformat()
                     return {
                         'statusCode': 200,
                         'headers': {
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
                         },
-                        'body': json.dumps({'news': dict(news_item) if news_item else None})
+                        'body': json.dumps({'news': result})
                     }
                 else:
                     cur.execute("SELECT * FROM news ORDER BY date DESC")
                     news_list = cur.fetchall()
+                    results = []
                     for item in news_list:
-                        item['date'] = item['date'].strftime('%d.%m.%Y')
+                        result = dict(item)
+                        result['date'] = result['date'].strftime('%d.%m.%Y')
+                        result['created_at'] = result['created_at'].isoformat()
+                        result['updated_at'] = result['updated_at'].isoformat()
+                        results.append(result)
                     return {
                         'statusCode': 200,
                         'headers': {
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
                         },
-                        'body': json.dumps({'news': [dict(item) for item in news_list]})
+                        'body': json.dumps({'news': results})
                     }
         
         elif method == 'POST':
@@ -85,7 +94,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 new_news = cur.fetchone()
                 conn.commit()
                 
-                new_news['date'] = new_news['date'].strftime('%d.%m.%Y')
+                result = dict(new_news)
+                result['date'] = result['date'].strftime('%d.%m.%Y')
+                result['created_at'] = result['created_at'].isoformat()
+                result['updated_at'] = result['updated_at'].isoformat()
                 
                 return {
                     'statusCode': 201,
@@ -93,7 +105,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps({'news': dict(new_news)})
+                    'body': json.dumps({'news': result})
                 }
         
         elif method == 'PUT':
@@ -121,8 +133,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 updated_news = cur.fetchone()
                 conn.commit()
                 
+                result = None
                 if updated_news:
-                    updated_news['date'] = updated_news['date'].strftime('%d.%m.%Y')
+                    result = dict(updated_news)
+                    result['date'] = result['date'].strftime('%d.%m.%Y')
+                    result['created_at'] = result['created_at'].isoformat()
+                    result['updated_at'] = result['updated_at'].isoformat()
                 
                 return {
                     'statusCode': 200,
@@ -130,7 +146,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps({'news': dict(updated_news) if updated_news else None})
+                    'body': json.dumps({'news': result})
                 }
         
         elif method == 'DELETE':

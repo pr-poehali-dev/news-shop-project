@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import Comments from '@/components/Comments';
+import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
   id: number;
@@ -37,7 +38,27 @@ const NewsDetail = () => {
     loadNews();
   }, [id]);
 
-  const loadNews = () => {
+  const loadNews = async () => {
+    try {
+      const response = await fetch(`${func2url.news}?id=${id}`);
+      const data = await response.json();
+      if (data.news) {
+        setNews({
+          id: data.news.id,
+          title: data.news.title,
+          description: data.news.content.substring(0, 150) + '...',
+          date: data.news.date,
+          content: data.news.content,
+          image: data.news.image_url,
+          category: data.news.category
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load news:', error);
+    }
+  };
+
+  const loadNewsOld = () => {
     const newsData: NewsItem[] = [
       {
         id: 1,

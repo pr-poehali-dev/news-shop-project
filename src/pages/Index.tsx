@@ -4,6 +4,7 @@ import NewsTab from '@/components/NewsTab';
 import ShopTab from '@/components/ShopTab';
 import ServersTab from '@/components/ServersTab';
 import TournamentsTab from '@/components/TournamentsTab';
+import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
   id: number;
@@ -46,12 +47,15 @@ const Index = () => {
   const [user, setUser] = useState<SteamUser | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [isRegistering, setIsRegistering] = useState<number | null>(null);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+
+    loadNews();
 
     const params = new URLSearchParams(window.location.search);
     const claimedId = params.get('openid.claimed_id');
@@ -79,6 +83,22 @@ const Index = () => {
   useEffect(() => {
     loadTournaments();
   }, [user]);
+
+  const loadNews = async () => {
+    try {
+      const response = await fetch(func2url.news);
+      const data = await response.json();
+      const formattedNews = (data.news || []).map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.content.substring(0, 150) + '...',
+        date: item.date
+      }));
+      setNewsItems(formattedNews);
+    } catch (error) {
+      console.error('Failed to load news:', error);
+    }
+  };
 
   const loadTournaments = async () => {
     try {
@@ -146,33 +166,6 @@ const Index = () => {
     setUser(null);
     localStorage.removeItem('steamUser');
   };
-
-  const newsItems: NewsItem[] = [
-    {
-      id: 1,
-      title: 'Обновление 2.5: Новая локация',
-      description: 'Исследуйте загадочные руины древней цивилизации. Открывайте секреты прошлого и получайте уникальные награды.',
-      date: '22 октября 2025'
-    },
-    {
-      id: 2,
-      title: 'Турнир сезона начинается',
-      description: 'Зарегистрируйтесь на главный турнир сезона. Призовой фонд 100,000 игровой валюты ждёт лучших игроков.',
-      date: '20 октября 2025'
-    },
-    {
-      id: 3,
-      title: 'Новые персонажи доступны',
-      description: 'Встречайте трёх новых легендарных героев. Каждый обладает уникальными способностями и стилем игры.',
-      date: '18 октября 2025'
-    },
-    {
-      id: 4,
-      title: 'Исправление багов',
-      description: 'Улучшена стабильность игры, исправлены проблемы с подключением и оптимизирована производительность.',
-      date: '15 октября 2025'
-    }
-  ];
 
   const products: Product[] = [
     {
