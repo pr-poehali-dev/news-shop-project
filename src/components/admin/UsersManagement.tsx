@@ -303,7 +303,7 @@ export default function UsersManagement({
                             <div className="flex items-center gap-1">
                               <Icon name="Clock" size={14} />
                               <span className="text-xs">
-                                {new Date(user.lastLogin).toLocaleString()}
+                                {new Date(user.lastLogin).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}
                               </span>
                             </div>
                           )}

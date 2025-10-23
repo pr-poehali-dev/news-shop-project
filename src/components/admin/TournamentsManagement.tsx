@@ -431,7 +431,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
                           day: 'numeric',
                           month: 'short',
                           hour: '2-digit',
-                          minute: '2-digit'
+                          minute: '2-digit',
+                          timeZone: 'Europe/Moscow'
                         })}
                       </span>
                     </div>

@@ -116,7 +116,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
               <div className="flex items-center gap-8 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Icon name="DollarSign" size={16} />
-                  <span>Призовой фонд: <strong className="text-foreground">{tournament.prize_pool.toLocaleString()} ₽</strong></span>
+                  <span>Призовой фонд: <strong className="text-foreground">{tournament.prize_pool.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })} ₽</strong></span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Icon name="Users" size={16} />

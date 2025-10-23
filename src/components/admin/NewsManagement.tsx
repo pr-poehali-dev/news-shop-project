@@ -258,7 +258,7 @@ export default function NewsManagement({ news, isLoading, user, onReload }: News
                         {item.badge && (
                           <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 rounded">{item.badge}</span>
                         )}
-                        <span>{new Date(item.date).toLocaleDateString()}</span>
+                        <span>{new Date(item.date).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' })}</span>
                       </div>
                     </div>
                   </div>

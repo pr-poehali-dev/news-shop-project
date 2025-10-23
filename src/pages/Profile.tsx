@@ -275,7 +275,8 @@ const Profile = () => {
                                 day: 'numeric',
                                 month: 'short',
                                 hour: '2-digit',
-                                minute: '2-digit'
+                                minute: '2-digit',
+                                timeZone: 'Europe/Moscow'
                               })}
                             </span>
                           </div>
@@ -290,7 +291,8 @@ const Profile = () => {
                                 month: 'long',
                                 year: 'numeric',
                                 hour: '2-digit',
-                                minute: '2-digit'
+                                minute: '2-digit',
+                                timeZone: 'Europe/Moscow'
                               })}
                             </span>
                           </div>
