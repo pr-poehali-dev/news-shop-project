@@ -137,7 +137,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
   };
 
   return (
-    <div className="space-y-10 px-6">
+    <div className="space-y-10">
       <div className="space-y-3">
         <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
           <span className="text-sm font-medium text-primary">Пополнение</span>
@@ -195,11 +195,11 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         </Card>
       )}
 
-      <div id="topup-products" className="space-y-6 -mx-6">
+      <div id="topup-products" className="space-y-6">
         {products.map((product, index) => (
           <Card 
             key={product.id} 
-            className="group p-8 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/50 backdrop-blur rounded-none border-x-0"
+            className="group p-8 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/50 backdrop-blur"
           >
             <div className="flex items-center justify-between gap-8">
               <div className="flex items-center gap-6 flex-1">

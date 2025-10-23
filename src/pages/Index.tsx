@@ -206,7 +206,7 @@ const Index = () => {
         handleLogout={handleLogout}
       />
 
-      <main className={activeTab === 'shop' ? 'w-full py-16' : 'container mx-auto px-6 py-16 max-w-6xl'}>
+      <main className="container mx-auto px-6 py-16 max-w-6xl">
         {activeTab === 'news' && <NewsTab newsItems={newsItems} />}
         {activeTab === 'shop' && <ShopTab products={products} user={user} />}
         {activeTab === 'servers' && <ServersTab />}
