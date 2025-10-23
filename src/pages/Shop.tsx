@@ -22,16 +22,20 @@ const Shop = () => {
 
   const loadProducts = async () => {
     try {
+      console.log('🛒 Loading shop items from:', func2url['shop-items']);
       const response = await fetch(func2url['shop-items'], {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
         }
       });
+      console.log('📦 Response status:', response.status);
       const data = await response.json();
+      console.log('📋 Received data:', data);
+      console.log('🎯 Items count:', data.items?.length || 0);
       setProducts(data.items || []);
     } catch (error) {
-      console.error('Failed to load shop items:', error);
+      console.error('❌ Failed to load shop items:', error);
     } finally {
       setIsLoading(false);
     }
