@@ -175,8 +175,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             # Админ создает турнир
             if admin_steam_id and 'name' in body_data:
                 escaped_steam_id = admin_steam_id.replace("'", "''")
-                cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
-                is_admin = cursor.fetchone()[0] > 0
+                cursor.execute(f"SELECT COUNT(*) as count FROM admins WHERE steam_id = '{escaped_steam_id}'")
+                result = cursor.fetchone()
+                is_admin = result['count'] > 0 if result else False
                 
                 if not is_admin:
                     return {
@@ -331,8 +332,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             escaped_steam_id = admin_steam_id.replace("'", "''")
-            cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
-            is_admin = cursor.fetchone()[0] > 0
+            cursor.execute(f"SELECT COUNT(*) as count FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            result = cursor.fetchone()
+            is_admin = result['count'] > 0 if result else False
             
             if not is_admin:
                 return {
@@ -446,8 +448,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             escaped_steam_id = admin_steam_id.replace("'", "''")
-            cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
-            is_admin = cursor.fetchone()[0] > 0
+            cursor.execute(f"SELECT COUNT(*) as count FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            result = cursor.fetchone()
+            is_admin = result['count'] > 0 if result else False
             
             if not is_admin:
                 return {
