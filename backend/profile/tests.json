@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Get user profile",
+      "method": "GET",
+      "path": "/?steam_id=test_user_123",
+      "expectedStatus": 200
+    }
+  ]
+}

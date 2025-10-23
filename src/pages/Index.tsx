@@ -278,12 +278,17 @@ const Index = () => {
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <img 
-                    src={user.avatarUrl} 
-                    alt={user.personaName} 
-                    className="w-10 h-10 rounded-full border-2 border-primary"
-                  />
-                  <span className="font-medium text-foreground">{user.personaName}</span>
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                  >
+                    <img 
+                      src={user.avatarUrl} 
+                      alt={user.personaName} 
+                      className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
+                    />
+                    <span className="font-medium text-foreground">{user.personaName}</span>
+                  </button>
                   <Button 
                     variant="ghost" 
                     size="sm"
