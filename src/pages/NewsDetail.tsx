@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import Comments from '@/components/Comments';
 import func2url from '../../backend/func2url.json';
@@ -28,6 +29,8 @@ const NewsDetail = () => {
   const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem | null>(null);
   const [user, setUser] = useState<SteamUser | null>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -37,6 +40,16 @@ const NewsDetail = () => {
 
     loadNews();
   }, [id]);
+
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}${window.location.pathname}`;
+    const response = await fetch(`${func2url['steam-auth']}?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
 
   const loadNews = async () => {
     try {
@@ -318,18 +331,68 @@ const NewsDetail = () => {
               </div>
             </div>
 
-            {user && (
+            {user ? (
               <button
                 onClick={() => navigate('/profile')}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
               >
-                <span className="font-medium text-foreground hidden sm:block">{user.personaName}</span>
-                <img 
-                  src={user.avatarUrl} 
-                  alt={user.personaName} 
-                  className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
-                />
+                <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
+                <span className="font-medium hidden sm:block">{user.personaName}</span>
               </button>
+            ) : (
+              <div className="flex gap-3">
+                <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Icon name="LogIn" size={18} />
+                      Войти
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Вход через Steam</DialogTitle>
+                      <DialogDescription>
+                        Войдите используя свой Steam аккаунт
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Button 
+                        onClick={handleSteamLogin}
+                        className="w-full gap-2 bg-[#171a21] hover:bg-[#1b2838]"
+                      >
+                        <Icon name="Gamepad2" size={18} />
+                        Войти через Steam
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Icon name="UserPlus" size={18} />
+                      Регистрация
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Регистрация</DialogTitle>
+                      <DialogDescription>
+                        Создайте аккаунт используя Steam
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Button 
+                        onClick={handleSteamLogin}
+                        className="w-full gap-2 bg-[#171a21] hover:bg-[#1b2838]"
+                      >
+                        <Icon name="Gamepad2" size={18} />
+                        Регистрация через Steam
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             )}
           </div>
         </div>
