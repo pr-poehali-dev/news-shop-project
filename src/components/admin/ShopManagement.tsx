@@ -157,9 +157,12 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
     const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     const swapItem = sortedItems[swapIndex];
 
+    const originalItemPos = item.order_position;
+    const originalSwapPos = swapItem.order_position;
+
     console.log('🔀 Swapping:', {
-      item1: { id: item.id, pos: item.order_position, newPos: swapItem.order_position },
-      item2: { id: swapItem.id, pos: swapItem.order_position, newPos: item.order_position }
+      item1: { id: item.id, pos: originalItemPos, newPos: originalSwapPos },
+      item2: { id: swapItem.id, pos: originalSwapPos, newPos: originalItemPos }
     });
 
     try {
@@ -171,7 +174,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
         },
         body: JSON.stringify({
           id: item.id,
-          order_position: swapItem.order_position
+          order_position: originalSwapPos
         })
       });
 
@@ -185,7 +188,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
         },
         body: JSON.stringify({
           id: swapItem.id,
-          order_position: item.order_position
+          order_position: originalItemPos
         })
       });
 
