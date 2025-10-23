@@ -463,8 +463,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Admin rights required'})
                 }
             
-            params = event.get('queryStringParameters', {}) or {}
-            tournament_id = params.get('id')
+            body_data = json.loads(event.get('body', '{}'))
+            tournament_id = body_data.get('id')
             
             if not tournament_id:
                 return {
