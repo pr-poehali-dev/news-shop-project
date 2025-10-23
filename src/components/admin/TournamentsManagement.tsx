@@ -129,11 +129,13 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
     }
 
     try {
-      const response = await fetch(`${func2url.tournaments}?id=${id}`, {
+      const response = await fetch(func2url.tournaments, {
         method: 'DELETE',
         headers: {
+          'Content-Type': 'application/json',
           'X-Admin-Steam-Id': user.steamId
-        }
+        },
+        body: JSON.stringify({ id })
       });
 
       if (response.ok) {
