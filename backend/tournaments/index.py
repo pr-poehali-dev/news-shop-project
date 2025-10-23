@@ -477,6 +477,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'id is required'})
                 }
             
+            cursor.execute(f"DELETE FROM tournament_registrations WHERE tournament_id = {int(tournament_id)}")
             cursor.execute(f"DELETE FROM tournaments WHERE id = {int(tournament_id)}")
             conn.commit()
             
