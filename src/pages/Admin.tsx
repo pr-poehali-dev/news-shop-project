@@ -34,6 +34,7 @@ interface ShopItem {
   amount: string;
   price: number;
   is_active: boolean;
+  order_position: number;
 }
 
 interface SteamUser {
@@ -295,6 +296,27 @@ export default function Admin() {
       }
     } catch (error) {
       console.error('Failed to delete shop item:', error);
+    }
+  };
+
+  const handleMoveShopItem = async (id: number, direction: 'up' | 'down') => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(func2url['shop-items'], {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify({ id, direction })
+      });
+
+      if (response.ok) {
+        await loadShopItems();
+      }
+    } catch (error) {
+      console.error('Failed to reorder shop item:', error);
     }
   };
 
@@ -710,6 +732,26 @@ export default function Admin() {
                           </div>
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMoveShopItem(item.id, 'up')}
+                              className="h-7 w-7 p-0"
+                              disabled={shopItems[0]?.id === item.id}
+                            >
+                              <Icon name="ChevronUp" size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMoveShopItem(item.id, 'down')}
+                              className="h-7 w-7 p-0"
+                              disabled={shopItems[shopItems.length - 1]?.id === item.id}
+                            >
+                              <Icon name="ChevronDown" size={14} />
+                            </Button>
+                          </div>
                           <Button
                             size="sm"
                             variant="outline"
