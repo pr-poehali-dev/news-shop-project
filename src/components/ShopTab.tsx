@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import func2url from '../../backend/func2url.json';
 
@@ -28,6 +31,8 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [purchasingItemId, setPurchasingItemId] = useState<number | null>(null);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [isTopUpDialogOpen, setIsTopUpDialogOpen] = useState(false);
+  const [customAmount, setCustomAmount] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -50,13 +55,28 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     }
   };
 
-  const handleTopUp = async () => {
+  const handleTopUp = async (productId?: number) => {
     if (!user) {
       alert('Войдите через Steam для пополнения баланса');
       return;
     }
 
-    if (products.length === 0) {
+    let selectedProduct: Product | undefined;
+
+    if (productId) {
+      selectedProduct = products.find(p => p.id === productId);
+    } else if (customAmount) {
+      const amount = parseFloat(customAmount);
+      if (isNaN(amount) || amount < 10) {
+        alert('Минимальная сумма пополнения: 10 ₽');
+        return;
+      }
+      selectedProduct = products.find(p => p.price === amount) || products[0];
+    } else {
+      selectedProduct = products[0];
+    }
+
+    if (!selectedProduct) {
       alert('Нет доступных товаров для пополнения');
       return;
     }
@@ -64,9 +84,6 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     setIsCreatingPayment(true);
 
     try {
-      // Use first product as default top-up option
-      const product = products[0];
-      
       const response = await fetch(func2url.payment, {
         method: 'POST',
         headers: {
@@ -75,7 +92,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         body: JSON.stringify({
           steam_id: user.steamId,
           persona_name: user.personaName,
-          shop_item_id: product.id
+          shop_item_id: selectedProduct.id
         })
       });
 
@@ -83,6 +100,8 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
 
       if (response.ok && data.payment_url) {
         window.open(data.payment_url, '_blank');
+        setIsTopUpDialogOpen(false);
+        setCustomAmount('');
       } else {
         alert(data.error || 'Ошибка при создании платежа');
       }
@@ -164,24 +183,82 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                size="lg"
-                className="gap-2"
-                onClick={handleTopUp}
-                disabled={isCreatingPayment}
-              >
-                {isCreatingPayment ? (
-                  <>
-                    <Icon name="Loader2" size={18} className="animate-spin" />
-                    Создание...
-                  </>
-                ) : (
-                  <>
+              <Dialog open={isTopUpDialogOpen} onOpenChange={setIsTopUpDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    size="lg"
+                    className="gap-2"
+                    disabled={isCreatingPayment}
+                  >
                     <Icon name="Plus" size={18} />
                     Пополнить
-                  </>
-                )}
-              </Button>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Пополнение баланса</DialogTitle>
+                    <DialogDescription>
+                      Выберите готовую сумму или укажите свою
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-amount">Своя сумма (₽)</Label>
+                      <Input
+                        id="custom-amount"
+                        type="number"
+                        placeholder="Минимум 10 ₽"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        min="10"
+                      />
+                    </div>
+                    
+                    <Button
+                      onClick={() => handleTopUp()}
+                      disabled={isCreatingPayment || !customAmount}
+                      className="w-full"
+                    >
+                      {isCreatingPayment ? (
+                        <>
+                          <Icon name="Loader2" size={18} className="animate-spin mr-2" />
+                          Создание...
+                        </>
+                      ) : (
+                        <>
+                          Пополнить {customAmount ? `${customAmount} ₽` : ''}
+                        </>
+                      )}
+                    </Button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Или выберите готовую сумму
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {products.slice(0, 4).map((product) => (
+                        <Button
+                          key={product.id}
+                          variant="outline"
+                          onClick={() => handleTopUp(product.id)}
+                          disabled={isCreatingPayment}
+                          className="h-auto py-3 flex-col gap-1"
+                        >
+                          <span className="text-lg font-bold">{product.price} ₽</span>
+                          <span className="text-xs text-muted-foreground">{product.amount}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button 
                 variant="outline" 
                 size="sm" 
