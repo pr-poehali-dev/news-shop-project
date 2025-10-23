@@ -49,11 +49,71 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # GET: Получить список турниров с количеством участников
+        # GET: Получить список турниров с количеством участников или детали одного турнира
         if method == 'GET':
             params = event.get('queryStringParameters', {}) or {}
             steam_id = params.get('steam_id')
+            tournament_id = params.get('tournament_id')
             
+            # Получить детали турнира с участниками
+            if tournament_id:
+                cursor.execute('''
+                    SELECT 
+                        t.id,
+                        t.name,
+                        t.description,
+                        t.prize_pool,
+                        t.max_participants,
+                        t.status,
+                        t.tournament_type,
+                        t.start_date,
+                        COUNT(tr.id) as participants_count
+                    FROM tournaments t
+                    LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
+                    WHERE t.id = %s
+                    GROUP BY t.id
+                ''', (tournament_id,))
+                
+                tournament = cursor.fetchone()
+                if not tournament:
+                    return {
+                        'statusCode': 404,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'isBase64Encoded': False,
+                        'body': json.dumps({'error': 'Турнир не найден'})
+                    }
+                
+                # Получить участников турнира
+                cursor.execute('''
+                    SELECT 
+                        steam_id,
+                        persona_name,
+                        avatar_url,
+                        registered_at
+                    FROM tournament_registrations
+                    WHERE tournament_id = %s
+                    ORDER BY registered_at ASC
+                ''', (tournament_id,))
+                
+                participants = cursor.fetchall()
+                
+                result = dict(tournament)
+                result['participants'] = [dict(p) for p in participants]
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps(result, default=str)
+                }
+            
+            # Получить список турниров
             if steam_id:
                 # Получить турниры с информацией о регистрации пользователя
                 cursor.execute('''

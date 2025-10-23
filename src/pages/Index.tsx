@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,7 @@ interface Tournament {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -652,9 +654,13 @@ const Index = () => {
                         Вы зарегистрированы
                       </Button>
                     )}
-                    {tournament.status === 'active' && (
-                      <Button variant="outline" size="lg">Подробнее</Button>
-                    )}
+                    <Button 
+                      variant="outline" 
+                      size={tournament.status === 'active' ? 'lg' : 'default'}
+                      onClick={() => navigate(`/tournament/${tournament.id}`)}
+                    >
+                      Подробнее
+                    </Button>
                   </div>
                 </Card>
               ))}
