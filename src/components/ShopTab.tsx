@@ -137,7 +137,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 px-6">
       <div className="space-y-3">
         <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
           <span className="text-sm font-medium text-primary">Пополнение</span>
@@ -195,46 +195,46 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         </Card>
       )}
 
-      <div id="topup-products" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div id="topup-products" className="space-y-6 -mx-6">
         {products.map((product, index) => (
           <Card 
             key={product.id} 
-            className="group p-8 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 bg-card/50 backdrop-blur"
-            style={{ animationDelay: `${index * 100}ms` }}
+            className="group p-8 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/50 backdrop-blur rounded-none border-x-0"
           >
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold tracking-tight">{product.name}</h3>
-                  <div className="flex items-center gap-2 text-primary">
-                    <Icon name="Coins" size={20} />
-                    <span className="text-xl font-bold">{product.amount}</span>
-                  </div>
+            <div className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-6 flex-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Icon name="Coins" size={40} className="text-primary" />
                 </div>
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                  <Icon name="ShoppingCart" size={28} />
+                
+                <div className="space-y-2 flex-1">
+                  <h3 className="text-3xl font-bold">{product.name}</h3>
+                  <p className="text-xl text-primary font-semibold">{product.amount}</p>
                 </div>
               </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="space-y-1">
-                  <div className="text-3xl font-bold">{product.price} ₽</div>
-                  <div className="text-sm text-muted-foreground">Единоразово</div>
+              
+              <div className="flex items-center gap-8">
+                <div className="text-right">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold">{product.price}</span>
+                    <span className="text-2xl text-muted-foreground">₽</span>
+                  </div>
                 </div>
+                
                 <Button 
                   size="lg" 
-                  className="gap-2 shadow-lg shadow-primary/20"
+                  className="h-14 px-8 text-lg font-semibold shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30"
                   onClick={() => handleBuy(product)}
                   disabled={!user || purchasingItemId === product.id}
                 >
                   {purchasingItemId === product.id ? (
                     <>
-                      <Icon name="Loader2" size={18} className="animate-spin" />
+                      <Icon name="Loader2" size={24} className="animate-spin mr-2" />
                       Покупка...
                     </>
                   ) : (
                     <>
-                      <Icon name="CreditCard" size={18} />
+                      <Icon name="ShoppingCart" size={24} className="mr-2" />
                       Купить
                     </>
                   )}
