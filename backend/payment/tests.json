@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Create payment for shop item",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "steam_id": "76561198000000000",
+        "persona_name": "TestPlayer",
+        "shop_item_id": 1
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "order_id": "number",
+        "payment_url": "string",
+        "amount": "number",
+        "description": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

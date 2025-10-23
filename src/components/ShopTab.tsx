@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface Product {
   id: number;
@@ -9,11 +11,57 @@ interface Product {
   price: number;
 }
 
-interface ShopTabProps {
-  products: Product[];
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
 }
 
-const ShopTab = ({ products }: ShopTabProps) => {
+interface ShopTabProps {
+  products: Product[];
+  user: SteamUser | null;
+}
+
+const ShopTab = ({ products, user }: ShopTabProps) => {
+  const [loadingItemId, setLoadingItemId] = useState<number | null>(null);
+
+  const handleBuy = async (product: Product) => {
+    if (!user) {
+      alert('Войдите через Steam для покупки');
+      return;
+    }
+
+    setLoadingItemId(product.id);
+
+    try {
+      const response = await fetch(func2url.payment, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          steam_id: user.steamId,
+          persona_name: user.personaName,
+          shop_item_id: product.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.payment_url) {
+        window.open(data.payment_url, '_blank');
+      } else {
+        alert(data.error || 'Ошибка создания платежа');
+      }
+    } catch (error) {
+      console.error('Payment creation failed:', error);
+      alert('Ошибка при создании платежа');
+    } finally {
+      setLoadingItemId(null);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <div className="space-y-3">
@@ -52,9 +100,23 @@ const ShopTab = ({ products }: ShopTabProps) => {
                   <div className="text-3xl font-bold">{product.price} ₽</div>
                   <div className="text-sm text-muted-foreground">Единоразово</div>
                 </div>
-                <Button size="lg" className="gap-2 shadow-lg shadow-primary/20">
-                  <Icon name="CreditCard" size={18} />
-                  Купить
+                <Button 
+                  size="lg" 
+                  className="gap-2 shadow-lg shadow-primary/20"
+                  onClick={() => handleBuy(product)}
+                  disabled={loadingItemId === product.id}
+                >
+                  {loadingItemId === product.id ? (
+                    <>
+                      <Icon name="Loader2" size={18} className="animate-spin" />
+                      Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="CreditCard" size={18} />
+                      Купить
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
