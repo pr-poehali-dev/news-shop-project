@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import Comments from '@/components/Comments';
 
 interface NewsItem {
   id: number;
@@ -384,6 +385,10 @@ const NewsDetail = () => {
               })}
             </div>
           </Card>
+
+          <div className="mt-16 pt-12 border-t border-border">
+            <Comments newsId={id || '1'} />
+          </div>
 
           <div className="flex justify-center pt-8">
             <Button size="lg" onClick={() => navigate('/')}>
