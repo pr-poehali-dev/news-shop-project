@@ -27,11 +27,26 @@ interface SteamUser {
   profileUrl: string;
 }
 
+interface Tournament {
+  id: number;
+  name: string;
+  description: string;
+  prize_pool: number;
+  max_participants: number;
+  status: string;
+  tournament_type: string;
+  start_date: string;
+  participants_count: number;
+  is_registered?: boolean;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [isRegistering, setIsRegistering] = useState<number | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -61,6 +76,62 @@ const Index = () => {
         .catch(err => console.error('Steam auth error:', err));
     }
   }, []);
+
+  useEffect(() => {
+    loadTournaments();
+  }, [user]);
+
+  const loadTournaments = async () => {
+    try {
+      const url = user 
+        ? `https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675?steam_id=${user.steamId}`
+        : 'https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675';
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      setTournaments(data);
+    } catch (error) {
+      console.error('Failed to load tournaments:', error);
+    }
+  };
+
+  const handleTournamentRegister = async (tournamentId: number) => {
+    if (!user) {
+      alert('Войдите через Steam для регистрации на турнир');
+      return;
+    }
+
+    setIsRegistering(tournamentId);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournament_id: tournamentId,
+          steam_id: user.steamId,
+          persona_name: user.personaName,
+          avatar_url: user.avatarUrl
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Регистрация успешна! Увидимся на турнире!');
+        await loadTournaments();
+      } else {
+        alert(data.error || 'Ошибка регистрации');
+      }
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('Ошибка при регистрации');
+    } finally {
+      setIsRegistering(null);
+    }
+  };
 
   const handleSteamLogin = async () => {
     const returnUrl = `${window.location.origin}${window.location.pathname}`;
@@ -474,107 +545,119 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              <Card className="p-8 border border-border bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border-primary/20">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="px-3 py-1 bg-primary rounded-full">
-                        <span className="text-xs font-bold text-primary-foreground">АКТИВНЫЙ</span>
+              {tournaments.map((tournament) => (
+                <Card 
+                  key={tournament.id}
+                  className={`p-8 border border-border backdrop-blur hover:shadow-xl transition-all duration-300 ${
+                    tournament.status === 'active' 
+                      ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-primary/10' 
+                      : 'bg-card/50 hover:shadow-primary/5'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        {tournament.status === 'active' && (
+                          <div className="px-3 py-1 bg-primary rounded-full">
+                            <span className="text-xs font-bold text-primary-foreground">АКТИВНЫЙ</span>
+                          </div>
+                        )}
+                        {tournament.status === 'open' && (
+                          <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                            <span className="text-xs font-bold text-green-500">ОТКРЫТА РЕГИСТРАЦИЯ</span>
+                          </div>
+                        )}
+                        {tournament.status === 'upcoming' && (
+                          <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full">
+                            <span className="text-xs font-bold text-blue-500">СКОРО</span>
+                          </div>
+                        )}
+                        {tournament.tournament_type === 'vip' && (
+                          <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
+                            <span className="text-xs font-bold text-yellow-500">VIP</span>
+                          </div>
+                        )}
+                        {tournament.is_registered && (
+                          <div className="px-3 py-1 bg-green-500 rounded-full">
+                            <span className="text-xs font-bold text-white">ВЫ ЗАРЕГИСТРИРОВАНЫ</span>
+                          </div>
+                        )}
                       </div>
-                      <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
-                        <span className="text-xs font-bold text-yellow-500">VIP</span>
-                      </div>
+                      <h3 className={`font-bold ${tournament.status === 'active' ? 'text-3xl' : 'text-2xl'}`}>
+                        {tournament.name}
+                      </h3>
+                      <p className={`text-muted-foreground ${tournament.status === 'active' ? 'text-lg' : ''}`}>
+                        {tournament.description}
+                      </p>
                     </div>
-                    <h3 className="text-3xl font-bold">Чемпионат Осени 2025</h3>
-                    <p className="text-muted-foreground text-lg">Главный турнир сезона с максимальным призовым фондом</p>
-                  </div>
-                  <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
-                    <Icon name="Trophy" size={32} className="text-primary" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-6 mb-6">
-                  <div className="text-center">
-                    <p className="text-muted-foreground mb-2">Призовой фонд</p>
-                    <p className="text-3xl font-bold text-primary">100,000₽</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-muted-foreground mb-2">Участников</p>
-                    <p className="text-3xl font-bold">247 / 500</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-muted-foreground mb-2">До начала</p>
-                    <p className="text-3xl font-bold text-orange-500">2 дня</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button className="flex-1" size="lg">Зарегистрироваться</Button>
-                  <Button variant="outline" size="lg">Подробнее</Button>
-                </div>
-              </Card>
-
-              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                        <span className="text-xs font-bold text-green-500">ОТКРЫТА РЕГИСТРАЦИЯ</span>
-                      </div>
+                    <div className={`rounded-xl bg-primary/10 flex items-center justify-center ${
+                      tournament.status === 'active' ? 'w-16 h-16' : 'w-12 h-12'
+                    }`}>
+                      <Icon 
+                        name={tournament.tournament_type === 'team' ? 'Users' : tournament.tournament_type === 'weekly' ? 'Zap' : 'Trophy'} 
+                        size={tournament.status === 'active' ? 32 : 24} 
+                        className="text-primary" 
+                      />
                     </div>
-                    <h3 className="text-2xl font-bold">Еженедельный турнир</h3>
-                    <p className="text-muted-foreground">Быстрый формат для всех желающих</p>
                   </div>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon name="Zap" size={24} className="text-primary" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Призовой фонд</p>
-                    <p className="text-xl font-bold">15,000₽</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Участников</p>
-                    <p className="text-xl font-bold">89 / 128</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">До начала</p>
-                    <p className="text-xl font-bold text-green-500">5 дней</p>
-                  </div>
-                </div>
-                <Button className="w-full">Зарегистрироваться</Button>
-              </Card>
-
-              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full">
-                        <span className="text-xs font-bold text-blue-500">СКОРО</span>
-                      </div>
+                  <div className={`grid grid-cols-3 ${tournament.status === 'active' ? 'gap-6' : 'gap-4'} mb-6`}>
+                    <div className={tournament.status === 'active' ? 'text-center' : ''}>
+                      <p className={`text-muted-foreground ${tournament.status === 'active' ? 'mb-2' : 'text-sm mb-1'}`}>
+                        Призовой фонд
+                      </p>
+                      <p className={`font-bold ${tournament.status === 'active' ? 'text-3xl text-primary' : 'text-xl'}`}>
+                        {tournament.prize_pool.toLocaleString('ru-RU')}₽
+                      </p>
                     </div>
-                    <h3 className="text-2xl font-bold">Зимний Кубок 2025</h3>
-                    <p className="text-muted-foreground">Командный турнир 5 на 5</p>
+                    <div className={tournament.status === 'active' ? 'text-center' : ''}>
+                      <p className={`text-muted-foreground ${tournament.status === 'active' ? 'mb-2' : 'text-sm mb-1'}`}>
+                        {tournament.tournament_type === 'team' ? 'Команд' : 'Участников'}
+                      </p>
+                      <p className={`font-bold ${tournament.status === 'active' ? 'text-3xl' : 'text-xl'}`}>
+                        {tournament.participants_count} / {tournament.max_participants}
+                      </p>
+                    </div>
+                    <div className={tournament.status === 'active' ? 'text-center' : ''}>
+                      <p className={`text-muted-foreground ${tournament.status === 'active' ? 'mb-2' : 'text-sm mb-1'}`}>
+                        {tournament.status === 'upcoming' ? 'Старт' : 'До начала'}
+                      </p>
+                      <p className={`font-bold ${tournament.status === 'active' ? 'text-3xl text-orange-500' : 'text-xl text-green-500'}`}>
+                        {tournament.status === 'upcoming' 
+                          ? new Date(tournament.start_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+                          : new Date(tournament.start_date) > new Date() 
+                            ? `${Math.ceil((new Date(tournament.start_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} дн.`
+                            : 'Идёт'
+                        }
+                      </p>
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon name="Users" size={24} className="text-primary" />
+                  <div className={tournament.status === 'active' ? 'flex gap-3' : ''}>
+                    {tournament.status !== 'upcoming' && !tournament.is_registered && (
+                      <Button 
+                        className={tournament.status === 'active' ? 'flex-1' : 'w-full'}
+                        size={tournament.status === 'active' ? 'lg' : 'default'}
+                        onClick={() => handleTournamentRegister(tournament.id)}
+                        disabled={isRegistering === tournament.id || tournament.participants_count >= tournament.max_participants}
+                      >
+                        {isRegistering === tournament.id ? 'Регистрация...' : 'Зарегистрироваться'}
+                      </Button>
+                    )}
+                    {tournament.status === 'upcoming' && (
+                      <Button className="w-full" variant="outline">
+                        Уведомить о старте
+                      </Button>
+                    )}
+                    {tournament.is_registered && (
+                      <Button className={tournament.status === 'active' ? 'flex-1' : 'w-full'} disabled>
+                        Вы зарегистрированы
+                      </Button>
+                    )}
+                    {tournament.status === 'active' && (
+                      <Button variant="outline" size="lg">Подробнее</Button>
+                    )}
                   </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Призовой фонд</p>
-                    <p className="text-xl font-bold">50,000₽</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Команд</p>
-                    <p className="text-xl font-bold">0 / 32</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Старт</p>
-                    <p className="text-xl font-bold">15 дек</p>
-                  </div>
-                </div>
-                <Button className="w-full" variant="outline">Уведомить о старте</Button>
-              </Card>
+                </Card>
+              ))}
             </div>
           </div>
         )}

@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Get all tournaments",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Register for tournament",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "tournament_id": 1,
+        "steam_id": "test_user_789",
+        "persona_name": "Test Player",
+        "avatar_url": "https://example.com/avatar.jpg"
+      },
+      "expectedStatus": 201
+    }
+  ]
+}
