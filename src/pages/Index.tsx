@@ -27,22 +27,11 @@ interface SteamUser {
   profileUrl: string;
 }
 
-interface Purchase {
-  id: number;
-  productId: number;
-  productName: string;
-  amount: string;
-  price: number;
-  purchasedAt: string;
-}
-
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'profile'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -67,13 +56,9 @@ const Index = () => {
             setUser(data);
             localStorage.setItem('steamUser', JSON.stringify(data));
             window.history.replaceState({}, '', window.location.pathname);
-            loadPurchases(data.steamId);
           }
         })
         .catch(err => console.error('Steam auth error:', err));
-    } else if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      loadPurchases(userData.steamId);
     }
   }, []);
 
@@ -90,51 +75,6 @@ const Index = () => {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('steamUser');
-    setPurchases([]);
-    setActiveTab('news');
-  };
-
-  const loadPurchases = async (steamId: string) => {
-    const response = await fetch(`https://functions.poehali.dev/501adf5e-5877-4b42-9606-8ccdf2bc9f2d?steamId=${steamId}`);
-    const data = await response.json();
-    if (data.purchases) {
-      setPurchases(data.purchases);
-    }
-  };
-
-  const handlePurchase = async (product: Product) => {
-    if (!user) {
-      alert('Войдите через Steam для покупки');
-      return;
-    }
-
-    setIsPurchasing(true);
-    
-    const response = await fetch('https://functions.poehali.dev/501adf5e-5877-4b42-9606-8ccdf2bc9f2d', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        steamId: user.steamId,
-        personaName: user.personaName,
-        productId: product.id,
-        productName: product.name,
-        amount: product.amount,
-        price: product.price
-      })
-    });
-
-    const data = await response.json();
-    setIsPurchasing(false);
-
-    if (data.success) {
-      alert('Покупка успешна!');
-      await loadPurchases(user.steamId);
-      setActiveTab('profile');
-    } else {
-      alert('Ошибка при покупке');
-    }
   };
 
   const newsItems: NewsItem[] = [
@@ -232,39 +172,16 @@ const Index = () => {
                   <span className="font-medium">Магазин</span>
                 </div>
               </button>
-              
-              {user && (
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                    activeTab === 'profile'
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="User" size={18} />
-                    <span className="font-medium">Профиль</span>
-                  </div>
-                </button>
-              )}
             </div>
 
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <a 
-                    href={user.profileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="transition-transform hover:scale-105"
-                  >
-                    <img 
-                      src={user.avatarUrl} 
-                      alt={user.personaName} 
-                      className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
-                    />
-                  </a>
+                  <img 
+                    src={user.avatarUrl} 
+                    alt={user.personaName} 
+                    className="w-10 h-10 rounded-full border-2 border-primary"
+                  />
                   <span className="font-medium text-foreground">{user.personaName}</span>
                   <Button 
                     variant="ghost" 
@@ -365,95 +282,14 @@ const Index = () => {
                     
                     <div className="space-y-4 pt-4 border-t border-border">
                       <p className="text-4xl font-bold">${product.price}</p>
-                      <Button 
-                        onClick={() => handlePurchase(product)}
-                        disabled={isPurchasing || !user}
-                        className="w-full py-6 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-                      >
-                        {!user ? 'ВОЙДИТЕ ДЛЯ ПОКУПКИ' : isPurchasing ? 'ПОКУПКА...' : 'КУПИТЬ'}
+                      <Button className="w-full py-6 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
+                        КУПИТЬ
                       </Button>
                     </div>
                   </div>
                 </Card>
               ))}
             </div>
-          </div>
-        )}
-
-        {activeTab === 'profile' && user && (
-          <div className="space-y-10">
-            <div className="space-y-3">
-              <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
-                <span className="text-sm font-medium text-primary">Мой профиль</span>
-              </div>
-              <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-                История покупок
-              </h2>
-              <p className="text-muted-foreground text-xl">Все ваши покупки в одном месте</p>
-            </div>
-
-            <Card className="p-8 border border-border bg-card/50 backdrop-blur">
-              <div className="flex items-center gap-4 mb-8">
-                <img 
-                  src={user.avatarUrl} 
-                  alt={user.personaName} 
-                  className="w-20 h-20 rounded-full border-4 border-primary"
-                />
-                <div>
-                  <h3 className="text-2xl font-bold">{user.personaName}</h3>
-                  <p className="text-muted-foreground">Steam ID: {user.steamId}</p>
-                </div>
-              </div>
-
-              <div className="border-t border-border pt-8">
-                <h4 className="text-xl font-bold mb-6">Ваши покупки ({purchases.length})</h4>
-                
-                {purchases.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
-                      <Icon name="ShoppingBag" size={32} className="text-muted-foreground" />
-                    </div>
-                    <p className="text-muted-foreground text-lg">У вас пока нет покупок</p>
-                    <Button 
-                      onClick={() => setActiveTab('shop')}
-                      className="mt-6"
-                    >
-                      Перейти в магазин
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {purchases.map((purchase) => (
-                      <Card key={purchase.id} className="p-6 border border-border bg-background/50">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Icon name="Coins" size={24} className="text-primary" />
-                            </div>
-                            <div>
-                              <h5 className="font-bold text-lg">{purchase.productName}</h5>
-                              <p className="text-muted-foreground">{purchase.amount}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">${purchase.price}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(purchase.purchasedAt).toLocaleDateString('ru-RU', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Card>
           </div>
         )}
       </main>
