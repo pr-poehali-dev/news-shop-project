@@ -36,8 +36,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token, X-Admin-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -164,12 +164,74 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'isBase64Encoded': False,
-                'body': json.dumps([dict(row) for row in tournaments], default=str)
+                'body': json.dumps({'tournaments': [dict(row) for row in tournaments]}, default=str)
             }
         
-        # POST: Зарегистрироваться на турнир
+        # POST: Создать турнир (админ) или зарегистрироваться на турнир (пользователь)
         if method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
+            admin_steam_id = event.get('headers', {}).get('X-Admin-Steam-Id')
+            
+            # Админ создает турнир
+            if admin_steam_id and 'name' in body_data:
+                escaped_steam_id = admin_steam_id.replace("'", "''")
+                cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
+                is_admin = cursor.fetchone()[0] > 0
+                
+                if not is_admin:
+                    return {
+                        'statusCode': 403,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'isBase64Encoded': False,
+                        'body': json.dumps({'error': 'Admin rights required'})
+                    }
+                
+                name = body_data.get('name', '').strip()
+                description = body_data.get('description', '').strip()
+                prize_pool = body_data.get('prize_pool')
+                max_participants = body_data.get('max_participants')
+                tournament_type = body_data.get('tournament_type', 'solo')
+                start_date = body_data.get('start_date')
+                status = body_data.get('status', 'upcoming')
+                
+                if not name or prize_pool is None or max_participants is None or not start_date:
+                    return {
+                        'statusCode': 400,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'isBase64Encoded': False,
+                        'body': json.dumps({'error': 'name, prize_pool, max_participants, start_date are required'})
+                    }
+                
+                escaped_name = name.replace("'", "''")
+                escaped_description = description.replace("'", "''")
+                escaped_start_date = start_date.replace("'", "''")
+                
+                cursor.execute(f"""
+                    INSERT INTO tournaments (name, description, prize_pool, max_participants, tournament_type, start_date, status)
+                    VALUES ('{escaped_name}', '{escaped_description}', {int(prize_pool)}, {int(max_participants)}, '{tournament_type}', '{escaped_start_date}', '{status}')
+                    RETURNING id, name, description, prize_pool, max_participants, tournament_type, start_date, status
+                """)
+                
+                tournament = cursor.fetchone()
+                conn.commit()
+                
+                return {
+                    'statusCode': 201,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps(dict(tournament), default=str)
+                }
+            
+            # Пользователь регистрируется на турнир
             registration = TournamentRegistration(**body_data)
             
             # Проверить, не зарегистрирован ли уже пользователь
@@ -251,6 +313,178 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'registered_at': str(result['registered_at']),
                     'message': 'Регистрация успешна'
                 })
+            }
+        
+        # PUT: Обновить турнир (только админ)
+        if method == 'PUT':
+            admin_steam_id = event.get('headers', {}).get('X-Admin-Steam-Id')
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Admin authentication required'})
+                }
+            
+            escaped_steam_id = admin_steam_id.replace("'", "''")
+            cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            is_admin = cursor.fetchone()[0] > 0
+            
+            if not is_admin:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Admin rights required'})
+                }
+            
+            body_data = json.loads(event.get('body', '{}'))
+            tournament_id = body_data.get('id')
+            
+            if not tournament_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'id is required'})
+                }
+            
+            update_fields = []
+            
+            if 'name' in body_data:
+                name = body_data['name'].strip()
+                escaped_name = name.replace("'", "''")
+                update_fields.append(f"name = '{escaped_name}'")
+            
+            if 'description' in body_data:
+                description = body_data['description'].strip()
+                escaped_description = description.replace("'", "''")
+                update_fields.append(f"description = '{escaped_description}'")
+            
+            if 'prize_pool' in body_data:
+                update_fields.append(f"prize_pool = {int(body_data['prize_pool'])}")
+            
+            if 'max_participants' in body_data:
+                update_fields.append(f"max_participants = {int(body_data['max_participants'])}")
+            
+            if 'tournament_type' in body_data:
+                update_fields.append(f"tournament_type = '{body_data['tournament_type']}'")
+            
+            if 'start_date' in body_data:
+                escaped_date = body_data['start_date'].replace("'", "''")
+                update_fields.append(f"start_date = '{escaped_date}'")
+            
+            if 'status' in body_data:
+                update_fields.append(f"status = '{body_data['status']}'")
+            
+            if not update_fields:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'No fields to update'})
+                }
+            
+            cursor.execute(f"""
+                UPDATE tournaments 
+                SET {', '.join(update_fields)}
+                WHERE id = {int(tournament_id)}
+                RETURNING id, name, description, prize_pool, max_participants, tournament_type, start_date, status
+            """)
+            
+            tournament = cursor.fetchone()
+            
+            if not tournament:
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Tournament not found'})
+                }
+            
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps(dict(tournament), default=str)
+            }
+        
+        # DELETE: Удалить турнир (только админ)
+        if method == 'DELETE':
+            admin_steam_id = event.get('headers', {}).get('X-Admin-Steam-Id')
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Admin authentication required'})
+                }
+            
+            escaped_steam_id = admin_steam_id.replace("'", "''")
+            cursor.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            is_admin = cursor.fetchone()[0] > 0
+            
+            if not is_admin:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Admin rights required'})
+                }
+            
+            params = event.get('queryStringParameters', {}) or {}
+            tournament_id = params.get('id')
+            
+            if not tournament_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'id is required'})
+                }
+            
+            cursor.execute(f"DELETE FROM tournaments WHERE id = {int(tournament_id)}")
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'message': 'Tournament deleted successfully'})
             }
         
         return {
