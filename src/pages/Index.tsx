@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,10 +20,62 @@ interface Product {
   price: number;
 }
 
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'shop'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [user, setUser] = useState<SteamUser | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const claimedId = params.get('openid.claimed_id');
+    
+    if (claimedId) {
+      const verifyParams = new URLSearchParams();
+      params.forEach((value, key) => {
+        verifyParams.append(key, value);
+      });
+      verifyParams.append('mode', 'verify');
+      
+      fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?${verifyParams.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.steamId) {
+            setUser(data);
+            localStorage.setItem('steamUser', JSON.stringify(data));
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        })
+        .catch(err => console.error('Steam auth error:', err));
+    }
+  }, []);
+
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}${window.location.pathname}`;
+    const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('steamUser');
+  };
 
   const newsItems: NewsItem[] = [
     {
@@ -123,70 +175,34 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-secondary">
-                    Вход
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={user.avatarUrl} 
+                    alt={user.personaName} 
+                    className="w-10 h-10 rounded-full border-2 border-primary"
+                  />
+                  <span className="font-medium text-foreground">{user.personaName}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={handleLogout}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Icon name="LogOut" size={18} />
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">Вход в аккаунт</DialogTitle>
-                    <DialogDescription>
-                      Введите свои данные для входа в систему
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input id="login-email" type="email" placeholder="game@example.com" className="h-11" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Пароль</Label>
-                      <Input id="login-password" type="password" placeholder="••••••••" className="h-11" />
-                    </div>
-                    <Button className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20">
-                      <Icon name="LogIn" size={18} className="mr-2" />
-                      Войти
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
-                <DialogTrigger asChild>
-                  <Button className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                    <Icon name="UserPlus" size={18} className="mr-2" />
-                    Регистрация
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">Создать аккаунт</DialogTitle>
-                    <DialogDescription>
-                      Зарегистрируйтесь для доступа ко всем функциям
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-name">Имя игрока</Label>
-                      <Input id="register-name" type="text" placeholder="Ваше имя" className="h-11" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input id="register-email" type="email" placeholder="game@example.com" className="h-11" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Пароль</Label>
-                      <Input id="register-password" type="password" placeholder="••••••••" className="h-11" />
-                    </div>
-                    <Button className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20">
-                      <Icon name="UserPlus" size={18} className="mr-2" />
-                      Зарегистрироваться
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleSteamLogin}
+                  className="bg-[#171a21] hover:bg-[#1b2838] text-white shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30"
+                >
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 256 256" fill="currentColor">
+                    <path d="M127.778 0C57.384 0 0 57.384 0 127.778c0 61.119 43.144 112.205 100.583 124.486l34.034-49.784c-4.148.925-8.465 1.417-12.901 1.417-33.526 0-60.764-27.238-60.764-60.764 0-33.526 27.238-60.764 60.764-60.764 33.526 0 60.764 27.238 60.764 60.764 0 4.435-.492 8.753-1.417 12.901l49.784 34.034C243.616 171.189 256 151.148 256 127.778 256 57.384 198.616 0 127.778 0zm0 40.96c-47.897 0-86.818 38.921-86.818 86.818 0 47.897 38.921 86.818 86.818 86.818 47.897 0 86.818-38.921 86.818-86.818 0-47.897-38.921-86.818-86.818-86.818z"/>
+                  </svg>
+                  Войти через Steam
+                </Button>
+              )}
             </div>
             </div>
           </div>
