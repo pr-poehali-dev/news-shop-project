@@ -100,10 +100,15 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
       return;
     }
 
+    if (balance < product.price) {
+      alert(`Недостаточно монет! Требуется ${product.price}, у вас ${balance}`);
+      return;
+    }
+
     setPurchasingItemId(product.id);
 
     try {
-      const response = await fetch(func2url.payment, {
+      const response = await fetch(func2url.purchases, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,14 +122,15 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
 
       const data = await response.json();
 
-      if (response.ok && data.payment_url) {
-        window.open(data.payment_url, '_blank');
+      if (response.ok && data.success) {
+        setBalance(data.new_balance);
+        alert(`Успешно куплено: ${data.item_name} (${data.item_amount})`);
       } else {
-        alert(data.error || 'Ошибка при создании платежа');
+        alert(data.error || 'Ошибка при покупке');
       }
     } catch (error) {
-      console.error('Payment creation failed:', error);
-      alert('Ошибка при создании платежа');
+      console.error('Purchase failed:', error);
+      alert('Ошибка при покупке');
     } finally {
       setPurchasingItemId(null);
     }

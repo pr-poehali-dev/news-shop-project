@@ -1,12 +1,15 @@
 {
   "tests": [
     {
-      "name": "Get purchases for user",
-      "method": "GET",
-      "path": "/?steamId=76561198000000000",
-      "expectedStatus": 200,
+      "name": "Purchase with missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "steam_id": "76561198000000000"
+      },
+      "expectedStatus": 400,
       "expectedBody": {
-        "purchases": []
+        "error": "steam_id and shop_item_id required"
       },
       "bodyMatcher": "partial"
     },
