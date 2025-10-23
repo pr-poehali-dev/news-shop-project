@@ -16,7 +16,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
@@ -139,6 +139,60 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'date': 'Только что'
                     }
                 })
+            }
+        
+        elif method == 'DELETE':
+            params = event.get('queryStringParameters', {})
+            comment_id = params.get('id')
+            admin_steam_id = params.get('admin_steam_id')
+            
+            if not comment_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'comment id required'})
+                }
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'admin_steam_id required'})
+                }
+            
+            # Check if user is admin
+            escaped_steam_id = admin_steam_id.replace("'", "''")
+            cur.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            is_admin = cur.fetchone()[0] > 0
+            
+            if not is_admin:
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'Access denied. Admin rights required'})
+                }
+            
+            # Delete comment
+            escaped_comment_id = comment_id.replace("'", "''")
+            cur.execute(f"DELETE FROM t_p15345778_news_shop_project.comments WHERE id = '{escaped_comment_id}'")
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'success': True, 'message': 'Comment deleted'})
             }
         
         return {

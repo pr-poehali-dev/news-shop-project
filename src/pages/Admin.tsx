@@ -17,6 +17,17 @@ interface NewsItem {
   badge?: string;
 }
 
+interface Comment {
+  id: number;
+  news_id: number;
+  author: string;
+  text: string;
+  avatar: string;
+  steam_id: string | null;
+  avatar_url: string | null;
+  date: string;
+}
+
 interface SteamUser {
   steamId: string;
   personaName: string;
@@ -27,7 +38,10 @@ interface SteamUser {
 export default function Admin() {
   const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -159,6 +173,40 @@ export default function Admin() {
     });
   };
 
+  const loadComments = async (newsId: number) => {
+    setIsLoadingComments(true);
+    setSelectedNewsId(newsId);
+    
+    try {
+      const response = await fetch(`${func2url.comments}?news_id=${newsId}`);
+      const data = await response.json();
+      setComments(data.comments || []);
+    } catch (error) {
+      console.error('Failed to load comments:', error);
+      setComments([]);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!confirm('Удалить этот комментарий?')) return;
+    if (!user) return;
+
+    try {
+      const response = await fetch(
+        `${func2url.comments}?id=${commentId}&admin_steam_id=${user.steamId}`,
+        { method: 'DELETE' }
+      );
+
+      if (response.ok && selectedNewsId) {
+        await loadComments(selectedNewsId);
+      }
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+    }
+  };
+
   if (isCheckingAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -226,7 +274,7 @@ export default function Admin() {
           <p className="text-muted-foreground">Управление новостями сайта</p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-3">
           <div>
             <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -339,6 +387,14 @@ export default function Admin() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => loadComments(item.id)}
+                            title="Комментарии"
+                          >
+                            <Icon name="MessageSquare" size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleEdit(item)}
                           >
                             <Icon name="Edit" size={16} />
@@ -350,6 +406,68 @@ export default function Admin() {
                             className="text-destructive hover:text-destructive"
                           >
                             <Icon name="Trash2" size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+
+          <div>
+            <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="MessageSquare" size={24} />
+                Комментарии
+              </h2>
+
+              {!selectedNewsId ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Icon name="MessageSquare" size={48} className="mx-auto mb-4 opacity-30" />
+                  <p>Выберите новость для просмотра комментариев</p>
+                </div>
+              ) : isLoadingComments ? (
+                <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+              ) : comments.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Комментариев пока нет
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="p-4 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        {comment.avatar_url ? (
+                          <img 
+                            src={comment.avatar_url} 
+                            alt={comment.author}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                            {comment.avatar}
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-semibold text-sm">{comment.author}</span>
+                            <span className="text-xs text-muted-foreground">{comment.date}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{comment.text}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-destructive hover:text-destructive h-7 px-2"
+                          >
+                            <Icon name="Trash2" size={14} className="mr-1" />
+                            Удалить
                           </Button>
                         </div>
                       </div>
