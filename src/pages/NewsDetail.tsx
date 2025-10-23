@@ -286,63 +286,66 @@ const NewsDetail = () => {
       <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
-                </div>
-                <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center cursor-pointer" onClick={() => navigate('/')}>
+                <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
               </div>
-              
-              <div className="hidden md:flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/')}
-                  className="gap-2"
-                >
-                  <Icon name="Newspaper" size={18} />
-                  Новости
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'shop' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="ShoppingBag" size={18} />
-                  Магазин
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'servers' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="Server" size={18} />
-                  Сервера
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'tournaments' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="Trophy" size={18} />
-                  Турниры
-                </Button>
-              </div>
+              <h1 className="text-2xl font-bold tracking-tight cursor-pointer" onClick={() => navigate('/')}>Okyes</h1>
             </div>
 
-            {user && (
-              <button
-                onClick={() => navigate('/profile')}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-              >
-                <span className="font-medium text-foreground hidden sm:block">{user.personaName}</span>
-                <img 
-                  src={user.avatarUrl} 
-                  alt={user.personaName} 
-                  className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
-                />
-              </button>
-            )}
+            <div className="flex items-center gap-6">
+              <div className="hidden md:flex gap-2 bg-card p-1.5 rounded-xl border border-border">
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Newspaper" size={18} />
+                    <span className="font-medium">Новости</span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="ShoppingBag" size={18} />
+                    <span className="font-medium">Магазин</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Server" size={18} />
+                    <span className="font-medium">Наши сервера</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Trophy" size={18} />
+                    <span className="font-medium">Турниры</span>
+                  </div>
+                </button>
+              </div>
+
+              {user && (
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
+                >
+                  <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
+                  <span className="font-medium hidden sm:block">{user.personaName}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>
