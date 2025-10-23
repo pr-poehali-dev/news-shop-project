@@ -11,8 +11,45 @@ import re
 from typing import Dict, Any
 from urllib.parse import urlencode
 import urllib.request
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 STEAM_OPENID_URL = 'https://steamcommunity.com/openid/login'
+
+def register_or_update_user(user_data: Dict[str, str]) -> None:
+    db_url = os.environ.get('DATABASE_URL')
+    if not db_url:
+        return
+    
+    conn = psycopg2.connect(db_url)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        escaped_steam_id = user_data['steamId'].replace("'", "''")
+        escaped_persona_name = user_data['personaName'].replace("'", "''")
+        escaped_avatar_url = user_data['avatarUrl'].replace("'", "''")
+        escaped_profile_url = user_data['profileUrl'].replace("'", "''")
+        
+        cursor.execute(f"""
+            INSERT INTO t_p15345778_news_shop_project.users 
+            (steam_id, persona_name, avatar_url, profile_url, last_login)
+            VALUES ('{escaped_steam_id}', '{escaped_persona_name}', '{escaped_avatar_url}', '{escaped_profile_url}', NOW())
+            ON CONFLICT (steam_id) 
+            DO UPDATE SET 
+                persona_name = EXCLUDED.persona_name,
+                avatar_url = EXCLUDED.avatar_url,
+                profile_url = EXCLUDED.profile_url,
+                last_login = NOW(),
+                updated_at = NOW()
+        """)
+        
+        conn.commit()
+    except Exception as e:
+        print(f"Failed to register/update user: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -106,6 +143,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             player = players[0]
+            user_data = {
+                'steamId': player['steamid'],
+                'personaName': player['personaname'],
+                'avatarUrl': player['avatarfull'],
+                'profileUrl': player['profileurl']
+            }
+            
+            register_or_update_user(user_data)
             
             return {
                 'statusCode': 200,
@@ -113,12 +158,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({
-                    'steamId': player['steamid'],
-                    'personaName': player['personaname'],
-                    'avatarUrl': player['avatarfull'],
-                    'profileUrl': player['profileurl']
-                }),
+                'body': json.dumps(user_data),
                 'isBase64Encoded': False
             }
     

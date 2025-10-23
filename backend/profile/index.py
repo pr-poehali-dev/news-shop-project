@@ -66,6 +66,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
+        escaped_steam_id = steam_id.replace("'", "''")
+        
+        cursor.execute(f"""
+            SELECT id, steam_id, persona_name, avatar_url, profile_url, 
+                   balance, is_blocked, block_reason, last_login, created_at
+            FROM t_p15345778_news_shop_project.users
+            WHERE steam_id = '{escaped_steam_id}'
+        """)
+        
+        user_profile = cursor.fetchone()
+        
+        if not user_profile:
+            user_data = {
+                'balance': 0,
+                'isBlocked': False
+            }
+        else:
+            user_data = {
+                'id': user_profile['id'],
+                'steamId': user_profile['steam_id'],
+                'personaName': user_profile['persona_name'],
+                'avatarUrl': user_profile['avatar_url'],
+                'profileUrl': user_profile['profile_url'],
+                'balance': user_profile['balance'],
+                'isBlocked': user_profile['is_blocked'],
+                'blockReason': user_profile['block_reason'],
+                'lastLogin': user_profile['last_login'].isoformat() if user_profile['last_login'] else None,
+                'createdAt': user_profile['created_at'].isoformat() if user_profile['created_at'] else None
+            }
+        
         # Получить турниры пользователя
         cursor.execute('''
             SELECT 
@@ -120,6 +150,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 total_spent = float(purchases_stats['total_spent'])
         
         result = {
+            'user': user_data,
             'tournaments': [dict(row) for row in tournaments],
             'statistics': {
                 'tournaments_count': len(tournaments),
