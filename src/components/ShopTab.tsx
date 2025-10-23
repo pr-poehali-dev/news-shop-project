@@ -117,19 +117,32 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
                 <span className="text-2xl text-muted-foreground">монет</span>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={loadBalance}
-              disabled={isLoadingBalance}
-            >
-              <Icon name="RefreshCw" size={16} className={isLoadingBalance ? 'animate-spin' : ''} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="lg"
+                className="gap-2"
+                onClick={() => {
+                  const topUpSection = document.getElementById('topup-products');
+                  topUpSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                <Icon name="Plus" size={18} />
+                Пополнить
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={loadBalance}
+                disabled={isLoadingBalance}
+              >
+                <Icon name="RefreshCw" size={16} className={isLoadingBalance ? 'animate-spin' : ''} />
+              </Button>
+            </div>
           </div>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div id="topup-products" className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {products.map((product, index) => (
           <Card 
             key={product.id} 
