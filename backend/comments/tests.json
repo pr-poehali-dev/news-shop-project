@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get comments for news",
+      "method": "GET",
+      "path": "/?news_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "comments": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new comment",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "news_id": 1,
+        "author": "TestUser",
+        "text": "Test comment",
+        "avatar": "🎮"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "comment": {
+          "author": "TestUser",
+          "text": "Test comment"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
