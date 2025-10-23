@@ -27,6 +27,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
   const [balance, setBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [purchasingItemId, setPurchasingItemId] = useState<number | null>(null);
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -49,6 +50,50 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     }
   };
 
+  const handleTopUp = async () => {
+    if (!user) {
+      alert('Войдите через Steam для пополнения баланса');
+      return;
+    }
+
+    if (products.length === 0) {
+      alert('Нет доступных товаров для пополнения');
+      return;
+    }
+
+    setIsCreatingPayment(true);
+
+    try {
+      // Use first product as default top-up option
+      const product = products[0];
+      
+      const response = await fetch(func2url.payment, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          steam_id: user.steamId,
+          persona_name: user.personaName,
+          shop_item_id: product.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.payment_url) {
+        window.open(data.payment_url, '_blank');
+      } else {
+        alert(data.error || 'Ошибка при создании платежа');
+      }
+    } catch (error) {
+      console.error('Payment creation failed:', error);
+      alert('Ошибка при создании платежа');
+    } finally {
+      setIsCreatingPayment(false);
+    }
+  };
+
   const handleBuy = async (product: Product) => {
     if (!user) {
       alert('Войдите через Steam для покупки');
@@ -58,9 +103,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     setPurchasingItemId(product.id);
 
     try {
-      const coinsAmount = parseInt(product.amount.replace(/[^0-9]/g, ''));
-      
-      const response = await fetch(func2url.balance, {
+      const response = await fetch(func2url.payment, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,23 +111,20 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         body: JSON.stringify({
           steam_id: user.steamId,
           persona_name: user.personaName,
-          amount: coinsAmount,
-          transaction_type: 'purchase',
-          description: `${product.name} - ${product.amount}`
+          shop_item_id: product.id
         })
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setBalance(data.balance);
-        alert(`Успешно! На ваш счет зачислено ${coinsAmount} монет!`);
+      if (response.ok && data.payment_url) {
+        window.open(data.payment_url, '_blank');
       } else {
-        alert(data.error || 'Ошибка при пополнении баланса');
+        alert(data.error || 'Ошибка при создании платежа');
       }
     } catch (error) {
-      console.error('Purchase failed:', error);
-      alert('Ошибка при покупке');
+      console.error('Payment creation failed:', error);
+      alert('Ошибка при создании платежа');
     } finally {
       setPurchasingItemId(null);
     }
@@ -121,13 +161,20 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
               <Button 
                 size="lg"
                 className="gap-2"
-                onClick={() => {
-                  const topUpSection = document.getElementById('topup-products');
-                  topUpSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
+                onClick={handleTopUp}
+                disabled={isCreatingPayment}
               >
-                <Icon name="Plus" size={18} />
-                Пополнить
+                {isCreatingPayment ? (
+                  <>
+                    <Icon name="Loader2" size={18} className="animate-spin" />
+                    Создание...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Plus" size={18} />
+                    Пополнить
+                  </>
+                )}
               </Button>
               <Button 
                 variant="outline" 

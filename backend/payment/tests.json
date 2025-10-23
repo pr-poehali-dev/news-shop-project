@@ -7,14 +7,14 @@
       "body": {
         "steam_id": "76561198000000000",
         "persona_name": "TestPlayer",
-        "shop_item_id": 1
+        "shop_item_id": 7
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "order_id": "number",
+        "payment_id": "string",
         "payment_url": "string",
         "amount": "number",
-        "description": "string"
+        "coins": "number"
       },
       "bodyMatcher": "partial"
     },
