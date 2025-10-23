@@ -15,6 +15,7 @@ interface User {
   balance: number;
   isBlocked: boolean;
   blockReason: string | null;
+  isAdmin: boolean;
   lastLogin: string | null;
   createdAt: string | null;
 }
@@ -122,6 +123,35 @@ export default function UsersManagement({
       }
     } catch (error) {
       console.error('Failed to unblock user:', error);
+    }
+  };
+
+  const handleToggleAdmin = async (user: User) => {
+    if (!adminUser) return;
+
+    const action = user.isAdmin ? 'удалить права администратора' : 'назначить администратором';
+    if (!confirm(`Вы уверены, что хотите ${action} для ${user.personaName}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(func2url.users, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': adminUser.steamId
+        },
+        body: JSON.stringify({
+          steamId: user.steamId,
+          isAdmin: !user.isAdmin
+        })
+      });
+
+      if (response.ok) {
+        await onReload();
+      }
+    } catch (error) {
+      console.error('Failed to toggle admin:', error);
     }
   };
 
@@ -247,6 +277,11 @@ export default function UsersManagement({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold truncate">{user.personaName}</h3>
+                        {user.isAdmin && (
+                          <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded font-medium">
+                            Администратор
+                          </span>
+                        )}
                         {user.isBlocked && (
                           <span className="text-xs px-2 py-0.5 bg-red-500/20 text-red-500 rounded">
                             Заблокирован
@@ -355,6 +390,15 @@ export default function UsersManagement({
                         >
                           <Icon name="Wallet" size={14} />
                           Баланс
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={user.isAdmin ? "secondary" : "default"}
+                          onClick={() => handleToggleAdmin(user)}
+                          className="gap-2"
+                        >
+                          <Icon name={user.isAdmin ? "UserMinus" : "UserPlus"} size={14} />
+                          {user.isAdmin ? "Снять права" : "Сделать админом"}
                         </Button>
                         {user.isBlocked ? (
                           <Button

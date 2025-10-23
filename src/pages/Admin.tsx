@@ -60,6 +60,7 @@ interface User {
   balance: number;
   isBlocked: boolean;
   blockReason: string | null;
+  isAdmin: boolean;
   lastLogin: string | null;
   createdAt: string | null;
 }

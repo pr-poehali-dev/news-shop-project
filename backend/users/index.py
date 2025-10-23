@@ -65,10 +65,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 def get_users(cursor) -> Dict[str, Any]:
     cursor.execute("""
-        SELECT id, steam_id, persona_name, avatar_url, profile_url, 
-               balance, is_blocked, block_reason, last_login, created_at, updated_at
-        FROM t_p15345778_news_shop_project.users
-        ORDER BY last_login DESC NULLS LAST, created_at DESC
+        SELECT u.id, u.steam_id, u.persona_name, u.avatar_url, u.profile_url, 
+               u.balance, u.is_blocked, u.block_reason, u.last_login, u.created_at, u.updated_at,
+               CASE WHEN a.steam_id IS NOT NULL THEN true ELSE false END as is_admin
+        FROM t_p15345778_news_shop_project.users u
+        LEFT JOIN admins a ON u.steam_id = a.steam_id
+        ORDER BY u.last_login DESC NULLS LAST, u.created_at DESC
     """)
     
     users = cursor.fetchall()
@@ -84,6 +86,7 @@ def get_users(cursor) -> Dict[str, Any]:
             'balance': user['balance'],
             'isBlocked': user['is_blocked'],
             'blockReason': user['block_reason'],
+            'isAdmin': user['is_admin'],
             'lastLogin': user['last_login'].isoformat() if user['last_login'] else None,
             'createdAt': user['created_at'].isoformat() if user['created_at'] else None,
             'updatedAt': user['updated_at'].isoformat() if user['updated_at'] else None
@@ -113,6 +116,34 @@ def update_user(body_data: Dict[str, Any], cursor, conn) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
+    escaped_steam_id = steam_id.replace("'", "''")
+    
+    # Handle admin status separately
+    if 'isAdmin' in body_data:
+        if body_data['isAdmin']:
+            # Add to admins table
+            cursor.execute(f"""
+                INSERT INTO admins (steam_id)
+                VALUES ('{escaped_steam_id}')
+                ON CONFLICT (steam_id) DO NOTHING
+            """)
+        else:
+            # Remove from admins table
+            cursor.execute(f"""
+                DELETE FROM admins WHERE steam_id = '{escaped_steam_id}'
+            """)
+        conn.commit()
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'success': True}),
+            'isBase64Encoded': False
+        }
+    
+    # Handle user table updates
     updates = []
     
     if 'balance' in body_data:
@@ -143,8 +174,6 @@ def update_user(body_data: Dict[str, Any], cursor, conn) -> Dict[str, Any]:
         }
     
     updates.append("updated_at = NOW()")
-    
-    escaped_steam_id = steam_id.replace("'", "''")
     
     cursor.execute(f"""
         UPDATE t_p15345778_news_shop_project.users
