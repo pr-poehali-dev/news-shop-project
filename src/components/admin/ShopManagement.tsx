@@ -12,6 +12,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -160,6 +162,7 @@ function SortableShopItem({ item, shopItems, onEdit, onToggle, onDelete, onMove 
 
 export default function ShopManagement({ shopItems, isLoadingShop, user, onReload }: ShopManagementProps) {
   const [editingShopId, setEditingShopId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
   const [shopFormData, setShopFormData] = useState({
     name: '',
     amount: '',
@@ -274,7 +277,12 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as number);
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
 
     if (!over || active.id === over.id || !user) return;
@@ -446,6 +454,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
@@ -468,6 +477,23 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
                       ))}
                   </div>
                 </SortableContext>
+                <DragOverlay>
+                  {activeId ? (
+                    <div className="p-4 rounded-lg border border-primary bg-card shadow-xl opacity-90">
+                      <div className="flex items-center gap-3">
+                        <Icon name="GripVertical" size={20} className="text-muted-foreground" />
+                        <div>
+                          <h3 className="font-semibold">
+                            {shopItems.find(item => item.id === activeId)?.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {shopItems.find(item => item.id === activeId)?.amount}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
               </DndContext>
             </div>
           )}

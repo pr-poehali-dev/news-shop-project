@@ -13,6 +13,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -186,6 +188,7 @@ export default function ServersManagement({
   onUpdateStatus 
 }: ServersManagementProps) {
   const [editingServerId, setEditingServerId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
   const [serverFormData, setServerFormData] = useState({
     name: '',
     ipAddress: '',
@@ -281,13 +284,22 @@ export default function ServersManagement({
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as number);
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
 
     if (!over || active.id === over.id || !user) return;
@@ -514,6 +526,7 @@ export default function ServersManagement({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
@@ -535,6 +548,23 @@ export default function ServersManagement({
                     ))}
                 </div>
               </SortableContext>
+              <DragOverlay>
+                {activeId ? (
+                  <div className="p-4 rounded-lg border border-primary bg-card shadow-xl opacity-90">
+                    <div className="flex items-center gap-3">
+                      <Icon name="GripVertical" size={20} className="text-muted-foreground" />
+                      <div>
+                        <h3 className="font-semibold">
+                          {servers.find(server => server.id === activeId)?.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {servers.find(server => server.id === activeId)?.ipAddress}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           )}
         </Card>
