@@ -1,4 +1,5 @@
 {
+  "servers": "https://functions.poehali.dev/c6a164b3-08aa-4123-89ae-b28b98bfd054",
   "balance": "https://functions.poehali.dev/cb8c4517-7bb1-41a6-b3e7-217b62353ebb",
   "payment": "https://functions.poehali.dev/0fd94a7a-2c16-479c-a091-7172f1488106",
   "shop-items": "https://functions.poehali.dev/3ea002bf-6a9a-4e0b-b320-170de254d3d5",
