@@ -141,35 +141,63 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'PUT':
             body_data = json.loads(event.get('body', '{}'))
             item_id = body_data.get('id')
-            name = body_data.get('name', '').strip()
-            amount = body_data.get('amount', '').strip()
-            price = body_data.get('price')
-            is_active = body_data.get('is_active', True)
             
-            if not item_id or not name or not amount or price is None:
+            if not item_id:
                 return {
                     'statusCode': 400,
                     'headers': {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps({'error': 'id, name, amount, and price are required'})
+                    'body': json.dumps({'error': 'id is required'})
                 }
             
-            escaped_name = name.replace("'", "''")
-            escaped_amount = amount.replace("'", "''")
+            # Build dynamic UPDATE query based on provided fields
+            update_fields = []
             
-            cur.execute(f"""
+            if 'name' in body_data:
+                name = body_data['name'].strip()
+                if name:
+                    escaped_name = name.replace("'", "''")
+                    update_fields.append(f"name = '{escaped_name}'")
+            
+            if 'amount' in body_data:
+                amount = body_data['amount'].strip()
+                if amount:
+                    escaped_amount = amount.replace("'", "''")
+                    update_fields.append(f"amount = '{escaped_amount}'")
+            
+            if 'price' in body_data:
+                price = body_data['price']
+                update_fields.append(f"price = {int(price)}")
+            
+            if 'is_active' in body_data:
+                is_active = body_data['is_active']
+                update_fields.append(f"is_active = {is_active}")
+            
+            if 'order_position' in body_data:
+                order_position = body_data['order_position']
+                update_fields.append(f"order_position = {int(order_position)}")
+            
+            if not update_fields:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'No fields to update'})
+                }
+            
+            update_fields.append("updated_at = CURRENT_TIMESTAMP")
+            update_query = f"""
                 UPDATE t_p15345778_news_shop_project.shop_items 
-                SET name = '{escaped_name}', 
-                    amount = '{escaped_amount}', 
-                    price = {int(price)},
-                    is_active = {is_active},
-                    updated_at = CURRENT_TIMESTAMP
+                SET {', '.join(update_fields)}
                 WHERE id = {int(item_id)}
                 RETURNING id, name, amount, price, is_active, order_position
-            """)
+            """
             
+            cur.execute(update_query)
             row = cur.fetchone()
             
             if not row:
