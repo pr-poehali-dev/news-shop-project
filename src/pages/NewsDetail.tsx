@@ -28,6 +28,7 @@ const NewsDetail = () => {
   const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem | null>(null);
   const [user, setUser] = useState<SteamUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -39,6 +40,7 @@ const NewsDetail = () => {
   }, [id]);
 
   const loadNews = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${func2url.news}?id=${id}`);
       const data = await response.json();
@@ -55,6 +57,8 @@ const NewsDetail = () => {
       }
     } catch (error) {
       console.error('Failed to load news:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -257,6 +261,14 @@ const NewsDetail = () => {
     const foundNews = newsData.find(n => n.id === Number(id));
     setNews(foundNews || null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-2xl text-muted-foreground">Загрузка...</div>
+      </div>
+    );
+  }
 
   if (!news) {
     return (
