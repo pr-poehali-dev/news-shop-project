@@ -131,7 +131,7 @@ const Index = () => {
       
       const response = await fetch(url);
       const data = await response.json();
-      setTournaments(data);
+      setTournaments(data.tournaments || []);
     } catch (error) {
       console.error('Failed to load tournaments:', error);
     }
