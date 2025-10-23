@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,10 +17,21 @@ interface NewsItem {
   badge?: string;
 }
 
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
+}
+
 export default function Admin() {
+  const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [user, setUser] = useState<SteamUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -29,8 +41,45 @@ export default function Admin() {
   });
 
   useEffect(() => {
-    loadNews();
+    const savedUser = localStorage.getItem('steamUser');
+    if (!savedUser) {
+      setIsCheckingAccess(false);
+      return;
+    }
+
+    const userData = JSON.parse(savedUser);
+    setUser(userData);
+    checkAdminAccess(userData.steamId);
   }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadNews();
+    }
+  }, [isAdmin]);
+
+  const checkAdminAccess = async (steamId: string) => {
+    try {
+      const response = await fetch(`${func2url['check-admin']}?steam_id=${steamId}`);
+      const data = await response.json();
+      setIsAdmin(data.isAdmin);
+    } catch (error) {
+      console.error('Failed to check admin access:', error);
+      setIsAdmin(false);
+    } finally {
+      setIsCheckingAccess(false);
+    }
+  };
+
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}/admin`;
+    const response = await fetch(`${func2url['steam-auth']}?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
 
   const loadNews = async () => {
     try {
@@ -108,6 +157,62 @@ export default function Admin() {
       badge: ''
     });
   };
+
+  if (isCheckingAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-2xl font-bold">Проверка доступа...</div>
+          <div className="text-muted-foreground">Пожалуйста, подождите</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <Card className="p-8 max-w-md w-full text-center space-y-6">
+          <div className="space-y-2">
+            <Icon name="Lock" size={48} className="mx-auto text-primary" />
+            <h1 className="text-3xl font-bold">Админ-панель</h1>
+            <p className="text-muted-foreground">
+              Для доступа необходимо войти через Steam
+            </p>
+          </div>
+          <Button onClick={handleSteamLogin} className="w-full gap-2">
+            <Icon name="Gamepad2" size={20} />
+            Войти через Steam
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+            Вернуться на главную
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <Card className="p-8 max-w-md w-full text-center space-y-6">
+          <div className="space-y-2">
+            <Icon name="ShieldAlert" size={48} className="mx-auto text-destructive" />
+            <h1 className="text-3xl font-bold">Доступ запрещён</h1>
+            <p className="text-muted-foreground">
+              У вас нет прав администратора для доступа к этой странице
+            </p>
+            <div className="pt-4 text-sm text-muted-foreground">
+              Текущий аккаунт: <strong>{user.personaName}</strong>
+            </div>
+          </div>
+          <Button onClick={() => navigate('/')} className="w-full">
+            Вернуться на главную
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-24 pb-12">

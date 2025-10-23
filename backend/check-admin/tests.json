@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Check admin status",
+      "method": "GET",
+      "path": "/?steam_id=test123",
+      "expectedStatus": 200
+    }
+  ]
+}
