@@ -1,42 +1,63 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { useState, useEffect } from 'react';
+import func2url from '../../backend/func2url.json';
+
+interface Server {
+  id: number;
+  name: string;
+  ip: string;
+  map: string;
+  current_players: number;
+  max_players: number;
+  status: 'online' | 'offline' | 'maintenance';
+}
 
 const ServersTab = () => {
-  const servers = [
-    {
-      id: 1,
-      name: 'РУ Европа #1',
-      map: 'de_dust2',
-      players: '24/32',
-      ping: 15,
-      status: 'online' as const
-    },
-    {
-      id: 2,
-      name: 'РУ Европа #2',
-      map: 'de_mirage',
-      players: '18/32',
-      ping: 18,
-      status: 'online' as const
-    },
-    {
-      id: 3,
-      name: 'РУ Москва #1',
-      map: 'de_inferno',
-      players: '30/32',
-      ping: 12,
-      status: 'online' as const
-    },
-    {
-      id: 4,
-      name: 'РУ Санкт-Петербург',
-      map: 'de_nuke',
-      players: '16/32',
-      ping: 20,
-      status: 'online' as const
+  const [servers, setServers] = useState<Server[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadServers = async () => {
+    try {
+      const response = await fetch(func2url.servers);
+      const data = await response.json();
+      setServers(data.servers || []);
+    } catch (error) {
+      console.error('Failed to load servers:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  const updateServersStatus = async () => {
+    try {
+      const response = await fetch(func2url['server-status'], {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (data.servers) {
+        setServers(prevServers => {
+          return prevServers.map(server => {
+            const updatedServer = data.servers.find((s: any) => s.id === server.id);
+            return updatedServer ? { ...server, ...updatedServer } : server;
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update server status:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadServers();
+  }, []);
+
+  useEffect(() => {
+    updateServersStatus();
+    const interval = setInterval(updateServersStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -54,8 +75,19 @@ const ServersTab = () => {
         <p className="text-muted-foreground text-xl">Выберите сервер и присоединяйтесь к игре</p>
       </div>
 
-      <div className="grid gap-6">
-        {servers.map((server, index) => (
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin" />
+          <p className="text-lg">Загрузка серверов...</p>
+        </div>
+      ) : servers.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Icon name="Server" size={48} className="mx-auto mb-3 opacity-20" />
+          <p className="text-lg">Серверы не найдены</p>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {servers.map((server, index) => (
           <Card 
             key={server.id}
             className="group p-8 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 bg-card/50 backdrop-blur"
@@ -70,24 +102,32 @@ const ServersTab = () => {
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="text-2xl font-bold tracking-tight">{server.name}</h3>
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-sm font-medium border border-green-500/20">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      Онлайн
+                    <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${
+                      server.status === 'online' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                      server.status === 'offline' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                      'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        server.status === 'online' ? 'bg-green-500 animate-pulse' :
+                        server.status === 'offline' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`} />
+                      {server.status === 'online' ? 'Онлайн' : server.status === 'offline' ? 'Оффлайн' : 'Тех. работы'}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-6 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Icon name="Map" size={16} />
-                      <span>{server.map}</span>
+                      <span>{server.map || 'Загрузка...'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Icon name="Users" size={16} />
-                      <span>{server.players}</span>
+                      <span>{server.current_players}/{server.max_players}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Icon name="Wifi" size={16} />
-                      <span>{server.ping}ms</span>
+                      <Icon name="Globe" size={16} />
+                      <span>{server.ip}</span>
                     </div>
                   </div>
                 </div>
@@ -97,21 +137,26 @@ const ServersTab = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  onClick={() => copyToClipboard(`connect ${server.name.toLowerCase().replace(/\s+/g, '')}.okyes.com`)}
+                  onClick={() => copyToClipboard(server.ip)}
                   className="gap-2"
                 >
                   <Icon name="Copy" size={18} />
                   IP
                 </Button>
-                <Button size="lg" className="gap-2 shadow-lg shadow-primary/20">
+                <Button 
+                  size="lg" 
+                  className="gap-2 shadow-lg shadow-primary/20"
+                  onClick={() => window.location.href = `steam://connect/${server.ip}`}
+                >
                   <Icon name="Play" size={18} />
                   Подключиться
                 </Button>
               </div>
             </div>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
