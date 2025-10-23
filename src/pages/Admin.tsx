@@ -114,6 +114,14 @@ export default function Admin() {
     }
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (isAdmin && activeTab === 'servers') {
+      updateServersStatus();
+      const interval = setInterval(updateServersStatus, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin, activeTab]);
+
   const checkAccess = async () => {
     const savedUser = localStorage.getItem('steamUser');
     if (!savedUser) {
@@ -370,6 +378,25 @@ export default function Admin() {
       console.error('Failed to load servers:', error);
     } finally {
       setIsLoadingServers(false);
+    }
+  };
+
+  const updateServersStatus = async () => {
+    try {
+      const response = await fetch(func2url['server-status'], {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (data.servers) {
+        setServers(prevServers => {
+          return prevServers.map(server => {
+            const updatedServer = data.servers.find((s: any) => s.id === server.id);
+            return updatedServer ? { ...server, ...updatedServer } : server;
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update server status:', error);
     }
   };
 
@@ -1031,10 +1058,21 @@ export default function Admin() {
 
           <div>
             <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <Icon name="Server" size={24} />
-                Список серверов ({servers.length})
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Icon name="Server" size={24} />
+                  Список серверов ({servers.length})
+                </h2>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={updateServersStatus}
+                  className="gap-2"
+                >
+                  <Icon name="RefreshCw" size={16} />
+                  Обновить статусы
+                </Button>
+              </div>
               
               {isLoadingServers ? (
                 <div className="text-center py-12 text-muted-foreground">
