@@ -334,6 +334,7 @@ const Index = () => {
                   key={item.id} 
                   className="group p-8 border border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 bg-card/50 backdrop-blur"
                   style={{ animationDelay: `${index * 100}ms` }}
+                  onClick={() => navigate(`/news/${item.id}`)}
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between gap-4">
