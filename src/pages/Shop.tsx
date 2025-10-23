@@ -64,27 +64,31 @@ const Shop = () => {
               <p className="text-xl">Товары временно недоступны</p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-6">
               {products.map((product) => (
-              <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:scale-[1.05]">
-                <div className="space-y-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                    <Icon name="Coins" size={32} className="text-primary" />
-                  </div>
-                  
-                  <div className="text-center space-y-2">
-                    <h3 className="text-2xl font-bold">{product.name}</h3>
-                    <p className="text-3xl font-bold text-primary">{product.amount}</p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <span className="text-4xl font-bold">{product.price}</span>
-                      <span className="text-muted-foreground text-lg ml-1">₽</span>
+              <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                <div className="flex items-center justify-between gap-8">
+                  <div className="flex items-center gap-6 flex-1">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Icon name="Coins" size={40} className="text-primary" />
                     </div>
                     
-                    <Button className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30">
-                      <Icon name="ShoppingCart" size={20} className="mr-2" />
+                    <div className="space-y-2 flex-1">
+                      <h3 className="text-3xl font-bold">{product.name}</h3>
+                      <p className="text-xl text-primary font-semibold">{product.amount}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-8">
+                    <div className="text-right">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl font-bold">{product.price}</span>
+                        <span className="text-2xl text-muted-foreground">₽</span>
+                      </div>
+                    </div>
+                    
+                    <Button size="lg" className="h-14 px-8 text-lg font-semibold shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30">
+                      <Icon name="ShoppingCart" size={24} className="mr-2" />
                       Купить
                     </Button>
                   </div>
