@@ -161,6 +161,40 @@ export default function Comments({ newsId }: CommentsProps) {
     }
   };
 
+  const handleDelete = async (commentId: number) => {
+    if (!confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+      return;
+    }
+
+    if (!user) {
+      alert('Войдите через Steam');
+      return;
+    }
+
+    try {
+      const response = await fetch(func2url.comments, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          comment_id: commentId,
+          steam_id: user.steamId
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setComments(comments.filter(c => c.id !== commentId && c.parent_comment_id !== commentId));
+      } else {
+        alert(data.error || 'Не удалось удалить комментарий');
+      }
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      alert('Ошибка при удалении комментария');
+    }
+  };
+
   const topLevelComments = comments.filter(c => !c.parent_comment_id);
   const getReplies = (parentId: number) => comments.filter(c => c.parent_comment_id === parentId);
 
@@ -215,6 +249,15 @@ export default function Comments({ newsId }: CommentsProps) {
                 >
                   <Icon name="Reply" size={16} />
                   Ответить
+                </button>
+              )}
+              {user && comment.steam_id === user.steamId && (
+                <button 
+                  onClick={() => handleDelete(comment.id)}
+                  className="text-sm text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
+                >
+                  <Icon name="Trash2" size={16} />
+                  Удалить
                 </button>
               )}
             </div>
