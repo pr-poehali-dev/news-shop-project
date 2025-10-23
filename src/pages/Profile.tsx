@@ -25,6 +25,11 @@ interface Tournament {
 }
 
 interface ProfileData {
+  user: {
+    balance: number;
+    isBlocked: boolean;
+    blockReason?: string;
+  };
   tournaments: Tournament[];
   statistics: {
     tournaments_count: number;
@@ -135,7 +140,15 @@ const Profile = () => {
                   </a>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6 pt-4">
+                <div className="grid grid-cols-4 gap-6 pt-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="Wallet" size={20} className="text-primary" />
+                      <p className="text-sm text-muted-foreground">Баланс</p>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">${profileData.user.balance}</p>
+                  </div>
+
                   <div className="p-4 rounded-xl bg-background/50 border border-border">
                     <div className="flex items-center gap-2 mb-2">
                       <Icon name="Trophy" size={20} className="text-primary" />
