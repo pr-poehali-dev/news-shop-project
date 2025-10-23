@@ -39,18 +39,51 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if event_type == 'payment.succeeded':
                     payment_obj = body_data.get('object', {})
-                    payment_id = payment_obj.get('id')
-                    order_id = payment_obj.get('metadata', {}).get('order_id')
+                    payment_id = payment_obj.get('id', '')
+                    payment_metadata = payment_obj.get('metadata', {})
+                    internal_payment_id = payment_metadata.get('payment_id')
                     
-                    if order_id and payment_id:
+                    if internal_payment_id:
+                        escaped_payment_id = payment_id.replace("'", "''")
+                        
                         cur.execute(f"""
-                            UPDATE t_p15345778_news_shop_project.orders
-                            SET status = 'paid', 
-                                payment_id = '{payment_id.replace("'", "''")}',
-                                paid_at = CURRENT_TIMESTAMP
-                            WHERE id = {int(order_id)}
+                            SELECT steam_id, amount_coins, persona_name
+                            FROM t_p15345778_news_shop_project.payments
+                            WHERE id = {int(internal_payment_id)}
                         """)
-                        conn.commit()
+                        
+                        payment_row = cur.fetchone()
+                        
+                        if payment_row:
+                            steam_id, amount_coins, persona_name = payment_row
+                            escaped_steam_id = steam_id.replace("'", "''")
+                            escaped_persona_name = persona_name.replace("'", "''")
+                            
+                            cur.execute(f"""
+                                UPDATE t_p15345778_news_shop_project.payments
+                                SET status = 'paid', 
+                                    payment_id = '{escaped_payment_id}',
+                                    paid_at = CURRENT_TIMESTAMP
+                                WHERE id = {int(internal_payment_id)}
+                            """)
+                            
+                            cur.execute(f"""
+                                INSERT INTO t_p15345778_news_shop_project.user_balances (steam_id, persona_name, balance)
+                                VALUES ('{escaped_steam_id}', '{escaped_persona_name}', {int(amount_coins)})
+                                ON CONFLICT (steam_id) 
+                                DO UPDATE SET 
+                                    balance = t_p15345778_news_shop_project.user_balances.balance + {int(amount_coins)},
+                                    updated_at = CURRENT_TIMESTAMP
+                            """)
+                            
+                            cur.execute(f"""
+                                INSERT INTO t_p15345778_news_shop_project.balance_transactions 
+                                (steam_id, amount, transaction_type, description)
+                                VALUES ('{escaped_steam_id}', {int(amount_coins)}, 'deposit', 
+                                       'Пополнение баланса на {int(amount_coins)} монет')
+                            """)
+                            
+                            conn.commit()
                     
                     return {
                         'statusCode': 200,
@@ -97,26 +130,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             item_name, item_amount, item_price = item
+            coins_amount = int(item_amount.replace(' монет', '').replace(',', ''))
             
             escaped_steam_id = steam_id.replace("'", "''")
             escaped_persona_name = persona_name.replace("'", "''")
             
             cur.execute(f"""
-                INSERT INTO t_p15345778_news_shop_project.orders 
-                (steam_id, persona_name, shop_item_id, amount, price, status)
-                VALUES ('{escaped_steam_id}', '{escaped_persona_name}', {int(shop_item_id)}, 1, {int(item_price)}, 'pending')
+                INSERT INTO t_p15345778_news_shop_project.payments 
+                (steam_id, persona_name, amount_rubles, amount_coins, status)
+                VALUES ('{escaped_steam_id}', '{escaped_persona_name}', {int(item_price)}, {coins_amount}, 'pending')
                 RETURNING id
             """)
             
-            order_id = cur.fetchone()[0]
+            payment_db_id = cur.fetchone()[0]
             conn.commit()
             
-            payment_url = f"https://example.com/pay?order={order_id}&amount={item_price}"
+            idempotence_key = str(uuid.uuid4())
+            payment_url = f"https://yookassa.ru/checkout?amount={item_price}&description={item_name}&metadata={{payment_id:{payment_db_id}}}&idempotence_key={idempotence_key}"
             
             cur.execute(f"""
-                UPDATE t_p15345778_news_shop_project.orders
+                UPDATE t_p15345778_news_shop_project.payments
                 SET payment_url = '{payment_url.replace("'", "''")}'
-                WHERE id = {int(order_id)}
+                WHERE id = {int(payment_db_id)}
             """)
             conn.commit()
             
@@ -127,9 +162,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'body': json.dumps({
-                    'order_id': order_id,
+                    'payment_id': payment_db_id,
                     'payment_url': payment_url,
                     'amount': item_price,
+                    'coins': coins_amount,
                     'description': f'{item_name} - {item_amount}'
                 })
             }
