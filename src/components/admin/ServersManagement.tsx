@@ -5,25 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import func2url from '../../../backend/func2url.json';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 interface Server {
   id: number;
@@ -55,131 +36,6 @@ interface ServersManagementProps {
   onUpdateStatus: () => Promise<void>;
 }
 
-interface SortableServerItemProps {
-  server: Server;
-  servers: Server[];
-  onEdit: (server: Server) => void;
-  onDelete: (id: number) => void;
-  onMove: (server: Server, direction: 'up' | 'down') => void;
-}
-
-function SortableServerItem({ server, servers, onEdit, onDelete, onMove }: SortableServerItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: server.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="p-4 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div 
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary/10 rounded"
-        >
-          <Icon name="GripVertical" size={20} className="text-muted-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold truncate">{server.name}</h3>
-            <span className={`text-xs px-2 py-0.5 rounded ${
-              server.status === 'online' ? 'bg-green-500/20 text-green-500' :
-              server.status === 'offline' ? 'bg-red-500/20 text-red-500' :
-              'bg-yellow-500/20 text-yellow-500'
-            }`}>
-              {server.status === 'online' ? 'Онлайн' : 
-               server.status === 'offline' ? 'Оффлайн' : 'Тех. работы'}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Icon name="Globe" size={14} />
-              <span className="font-mono text-xs">{server.ipAddress}:{server.port}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <Icon name="Users" size={14} />
-                <span>{server.currentPlayers}/{server.maxPlayers}</span>
-              </div>
-              {server.map && (
-                <div className="flex items-center gap-1">
-                  <Icon name="Map" size={14} />
-                  <span>{server.map}</span>
-                </div>
-              )}
-            </div>
-            <div className="text-xs text-muted-foreground/70">
-              {server.gameType}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {server.description && (
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-          {server.description}
-        </p>
-      )}
-
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onMove(server, 'up')}
-            disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === 0}
-            title="Переместить вверх"
-          >
-            <Icon name="ArrowUp" size={14} />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onMove(server, 'down')}
-            disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === servers.length - 1}
-            title="Переместить вниз"
-          >
-            <Icon name="ArrowDown" size={14} />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onEdit(server)}
-            className="flex-1"
-          >
-            <Icon name="Edit" size={14} className="mr-1" />
-            Редактировать
-          </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => onDelete(server.id)}
-            className="flex-1"
-          >
-            <Icon name="Trash2" size={14} />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function ServersManagement({ 
   servers, 
   isLoadingServers, 
@@ -188,7 +44,6 @@ export default function ServersManagement({
   onUpdateStatus 
 }: ServersManagementProps) {
   const [editingServerId, setEditingServerId] = useState<number | null>(null);
-  const [activeId, setActiveId] = useState<number | null>(null);
   const [serverFormData, setServerFormData] = useState({
     name: '',
     ipAddress: '',
@@ -281,56 +136,6 @@ export default function ServersManagement({
       status: 'online',
       description: ''
     });
-  };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as number);
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveId(null);
-    const { active, over } = event;
-
-    if (!over || active.id === over.id || !user) return;
-
-    const sortedServers = [...servers].sort((a, b) => a.orderPosition - b.orderPosition);
-    const oldIndex = sortedServers.findIndex(server => server.id === active.id);
-    const newIndex = sortedServers.findIndex(server => server.id === over.id);
-
-    const reorderedServers = arrayMove(sortedServers, oldIndex, newIndex);
-
-    try {
-      const updates = reorderedServers.map((server, index) => ({
-        id: server.id,
-        orderPosition: index
-      }));
-
-      for (const update of updates) {
-        await fetch(func2url.servers, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Admin-Steam-Id': user.steamId
-          },
-          body: JSON.stringify(update)
-        });
-      }
-
-      await onReload();
-    } catch (error) {
-      console.error('Failed to reorder servers:', error);
-    }
   };
 
   const handleMoveServer = async (server: Server, direction: 'up' | 'down') => {
@@ -523,49 +328,99 @@ export default function ServersManagement({
               <p>Серверы не добавлены</p>
             </div>
           ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={servers.sort((a, b) => a.orderPosition - b.orderPosition).map(server => server.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {servers
-                    .sort((a, b) => a.orderPosition - b.orderPosition)
-                    .map((server) => (
-                      <SortableServerItem
-                        key={server.id}
-                        server={server}
-                        servers={servers}
-                        onEdit={handleEditServer}
-                        onDelete={handleDeleteServer}
-                        onMove={handleMoveServer}
-                      />
-                    ))}
-                </div>
-              </SortableContext>
-              <DragOverlay>
-                {activeId ? (
-                  <div className="p-4 rounded-lg border border-primary bg-card shadow-xl opacity-90">
-                    <div className="flex items-center gap-3">
-                      <Icon name="GripVertical" size={20} className="text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold">
-                          {servers.find(server => server.id === activeId)?.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground font-mono">
-                          {servers.find(server => server.id === activeId)?.ipAddress}
-                        </p>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {servers.map((server) => (
+                <div
+                  key={server.id}
+                  className="p-4 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold truncate">{server.name}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          server.status === 'online' ? 'bg-green-500/20 text-green-500' :
+                          server.status === 'offline' ? 'bg-red-500/20 text-red-500' :
+                          'bg-yellow-500/20 text-yellow-500'
+                        }`}>
+                          {server.status === 'online' ? 'Онлайн' : 
+                           server.status === 'offline' ? 'Оффлайн' : 'Тех. работы'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Icon name="Globe" size={14} />
+                          <span className="font-mono text-xs">{server.ipAddress}:{server.port}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <Icon name="Users" size={14} />
+                            <span>{server.currentPlayers}/{server.maxPlayers}</span>
+                          </div>
+                          {server.map && (
+                            <div className="flex items-center gap-1">
+                              <Icon name="Map" size={14} />
+                              <span>{server.map}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground/70">
+                          {server.gameType}
+                        </div>
                       </div>
                     </div>
                   </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+
+                  {server.description && (
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {server.description}
+                    </p>
+                  )}
+
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMoveServer(server, 'up')}
+                        disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === 0}
+                        title="Переместить вверх"
+                      >
+                        <Icon name="ArrowUp" size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMoveServer(server, 'down')}
+                        disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === servers.length - 1}
+                        title="Переместить вниз"
+                      >
+                        <Icon name="ArrowDown" size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditServer(server)}
+                        className="flex-1"
+                      >
+                        <Icon name="Edit" size={14} className="mr-1" />
+                        Редактировать
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteServer(server.id)}
+                        className="flex-1"
+                      >
+                        <Icon name="Trash2" size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </Card>
       </div>
