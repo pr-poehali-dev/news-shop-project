@@ -177,11 +177,18 @@ const Index = () => {
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <img 
-                    src={user.avatarUrl} 
-                    alt={user.personaName} 
-                    className="w-10 h-10 rounded-full border-2 border-primary"
-                  />
+                  <a 
+                    href={user.profileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="transition-transform hover:scale-105"
+                  >
+                    <img 
+                      src={user.avatarUrl} 
+                      alt={user.personaName} 
+                      className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
+                    />
+                  </a>
                   <span className="font-medium text-foreground">{user.personaName}</span>
                   <Button 
                     variant="ghost" 
