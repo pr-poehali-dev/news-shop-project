@@ -138,6 +138,53 @@ export default function ServersManagement({
     });
   };
 
+  const handleMoveServer = async (server: Server, direction: 'up' | 'down') => {
+    if (!user) return;
+
+    const sortedServers = [...servers].sort((a, b) => a.orderPosition - b.orderPosition);
+    const currentIndex = sortedServers.findIndex(s => s.id === server.id);
+    
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === sortedServers.length - 1)
+    ) {
+      return;
+    }
+
+    const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const swapServer = sortedServers[swapIndex];
+
+    try {
+      await fetch(func2url.servers, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify({
+          id: server.id,
+          orderPosition: swapServer.orderPosition
+        })
+      });
+
+      await fetch(func2url.servers, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify({
+          id: swapServer.id,
+          orderPosition: server.orderPosition
+        })
+      });
+
+      await onReload();
+    } catch (error) {
+      console.error('Failed to reorder servers:', error);
+    }
+  };
+
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div>
@@ -330,23 +377,46 @@ export default function ServersManagement({
                     </p>
                   )}
 
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEditServer(server)}
-                      className="flex-1"
-                    >
-                      <Icon name="Edit" size={14} className="mr-1" />
-                      Редактировать
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDeleteServer(server.id)}
-                    >
-                      <Icon name="Trash2" size={14} />
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMoveServer(server, 'up')}
+                        disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === 0}
+                        title="Переместить вверх"
+                      >
+                        <Icon name="ArrowUp" size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMoveServer(server, 'down')}
+                        disabled={servers.sort((a, b) => a.orderPosition - b.orderPosition).findIndex(s => s.id === server.id) === servers.length - 1}
+                        title="Переместить вниз"
+                      >
+                        <Icon name="ArrowDown" size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditServer(server)}
+                        className="flex-1"
+                      >
+                        <Icon name="Edit" size={14} className="mr-1" />
+                        Редактировать
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteServer(server.id)}
+                        className="flex-1"
+                      >
+                        <Icon name="Trash2" size={14} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -133,6 +133,53 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
     });
   };
 
+  const handleMoveShopItem = async (item: ShopItem, direction: 'up' | 'down') => {
+    if (!user) return;
+
+    const sortedItems = [...shopItems].sort((a, b) => a.order_position - b.order_position);
+    const currentIndex = sortedItems.findIndex(i => i.id === item.id);
+    
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === sortedItems.length - 1)
+    ) {
+      return;
+    }
+
+    const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const swapItem = sortedItems[swapIndex];
+
+    try {
+      await fetch(func2url['shop-items'], {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify({
+          id: item.id,
+          order_position: swapItem.order_position
+        })
+      });
+
+      await fetch(func2url['shop-items'], {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify({
+          id: swapItem.id,
+          order_position: item.order_position
+        })
+      });
+
+      await onReload();
+    } catch (error) {
+      console.error('Failed to reorder shop items:', error);
+    }
+  };
+
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div>
@@ -249,32 +296,54 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditShopItem(item)}
-                        className="flex-1"
-                      >
-                        <Icon name="Edit" size={14} className="mr-1" />
-                        Редактировать
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={item.is_active ? "outline" : "default"}
-                        onClick={() => handleToggleActive(item)}
-                        className="flex-1"
-                      >
-                        <Icon name={item.is_active ? "EyeOff" : "Eye"} size={14} className="mr-1" />
-                        {item.is_active ? 'Скрыть' : 'Показать'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteShopItem(item.id)}
-                      >
-                        <Icon name="Trash2" size={14} />
-                      </Button>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMoveShopItem(item, 'up')}
+                          disabled={shopItems.sort((a, b) => a.order_position - b.order_position).findIndex(i => i.id === item.id) === 0}
+                          title="Переместить вверх"
+                        >
+                          <Icon name="ArrowUp" size={14} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMoveShopItem(item, 'down')}
+                          disabled={shopItems.sort((a, b) => a.order_position - b.order_position).findIndex(i => i.id === item.id) === shopItems.length - 1}
+                          title="Переместить вниз"
+                        >
+                          <Icon name="ArrowDown" size={14} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditShopItem(item)}
+                          className="flex-1"
+                        >
+                          <Icon name="Edit" size={14} className="mr-1" />
+                          Редактировать
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant={item.is_active ? "outline" : "default"}
+                          onClick={() => handleToggleActive(item)}
+                          className="flex-1"
+                        >
+                          <Icon name={item.is_active ? "EyeOff" : "Eye"} size={14} className="mr-1" />
+                          {item.is_active ? 'Скрыть' : 'Показать'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteShopItem(item.id)}
+                        >
+                          <Icon name="Trash2" size={14} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
