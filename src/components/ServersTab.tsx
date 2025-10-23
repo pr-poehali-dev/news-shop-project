@@ -7,10 +7,11 @@ import func2url from '../../backend/func2url.json';
 interface Server {
   id: number;
   name: string;
-  ip: string;
+  ipAddress: string;
+  port: number;
   map: string;
-  current_players: number;
-  max_players: number;
+  currentPlayers: number;
+  maxPlayers: number;
   status: 'online' | 'offline' | 'maintenance';
 }
 
@@ -123,11 +124,11 @@ const ServersTab = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Icon name="Users" size={16} />
-                      <span>{server.current_players}/{server.max_players}</span>
+                      <span>{server.currentPlayers}/{server.maxPlayers}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Icon name="Globe" size={16} />
-                      <span>{server.ip}</span>
+                      <span>{server.ipAddress}:{server.port}</span>
                     </div>
                   </div>
                 </div>
@@ -137,7 +138,7 @@ const ServersTab = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  onClick={() => copyToClipboard(server.ip)}
+                  onClick={() => copyToClipboard(`${server.ipAddress}:${server.port}`)}
                   className="gap-2"
                 >
                   <Icon name="Copy" size={18} />
@@ -146,7 +147,7 @@ const ServersTab = () => {
                 <Button 
                   size="lg" 
                   className="gap-2 shadow-lg shadow-primary/20"
-                  onClick={() => window.location.href = `steam://connect/${server.ip}`}
+                  onClick={() => window.location.href = `steam://connect/${server.ipAddress}:${server.port}`}
                 >
                   <Icon name="Play" size={18} />
                   Подключиться
