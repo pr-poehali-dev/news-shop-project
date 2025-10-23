@@ -48,6 +48,7 @@ const Index = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [isRegistering, setIsRegistering] = useState<number | null>(null);
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -56,6 +57,7 @@ const Index = () => {
     }
 
     loadNews();
+    loadProducts();
 
     const params = new URLSearchParams(window.location.search);
     const claimedId = params.get('openid.claimed_id');
@@ -97,6 +99,25 @@ const Index = () => {
       setNewsItems(formattedNews);
     } catch (error) {
       console.error('Failed to load news:', error);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      console.log('🛒 Loading shop items from:', func2url['shop-items']);
+      const response = await fetch(func2url['shop-items'], {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      console.log('📦 Response status:', response.status);
+      const data = await response.json();
+      console.log('📋 Received data:', data);
+      console.log('🎯 Items count:', data.items?.length || 0);
+      setProducts(data.items || []);
+    } catch (error) {
+      console.error('❌ Failed to load shop items:', error);
     }
   };
 
@@ -167,32 +188,7 @@ const Index = () => {
     localStorage.removeItem('steamUser');
   };
 
-  const products: Product[] = [
-    {
-      id: 1,
-      name: 'Стартовый пакет',
-      amount: '500 монет',
-      price: 199
-    },
-    {
-      id: 2,
-      name: 'Базовый пакет',
-      amount: '1,200 монет',
-      price: 399
-    },
-    {
-      id: 3,
-      name: 'Премиум пакет',
-      amount: '2,800 монет',
-      price: 799
-    },
-    {
-      id: 4,
-      name: 'Элитный пакет',
-      amount: '6,000 монет',
-      price: 1499
-    }
-  ];
+
 
   return (
     <div className="min-h-screen bg-background">
