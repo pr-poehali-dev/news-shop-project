@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Управление комментариями к новостям с привязкой к Steam профилям
+    Business: Управление комментариями к новостям с лайками и ответами
     Args: event с httpMethod, body, queryStringParameters; context с request_id
     Returns: HTTP ответ с комментариями или статусом создания
     '''
@@ -16,7 +16,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
@@ -42,9 +42,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'news_id required'})
                 }
             
+            steam_id = params.get('steam_id')
+            
             cur.execute('''
                 SELECT id, news_id, author, text, avatar, steam_id, avatar_url,
-                       EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)) as seconds_ago
+                       EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)) as seconds_ago,
+                       parent_comment_id
                 FROM t_p15345778_news_shop_project.comments
                 WHERE news_id = %s
                 ORDER BY created_at DESC
@@ -67,6 +70,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     days = int(seconds_ago / 86400)
                     time_str = f'{days} {"день" if days == 1 else "дней"} назад'
                 
+                comment_id = row[0]
+                
+                cur.execute('''
+                    SELECT COUNT(*) FROM t_p15345778_news_shop_project.comment_likes
+                    WHERE comment_id = %s
+                ''', (comment_id,))
+                likes_count = cur.fetchone()[0]
+                
+                is_liked = False
+                if steam_id:
+                    cur.execute('''
+                        SELECT COUNT(*) FROM t_p15345778_news_shop_project.comment_likes
+                        WHERE comment_id = %s AND steam_id = %s
+                    ''', (comment_id, steam_id))
+                    is_liked = cur.fetchone()[0] > 0
+                
                 comments.append({
                     'id': row[0],
                     'news_id': row[1],
@@ -75,7 +94,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'avatar': row[4],
                     'steam_id': row[5],
                     'avatar_url': row[6],
-                    'date': time_str
+                    'date': time_str,
+                    'parent_comment_id': row[8],
+                    'likes_count': likes_count,
+                    'is_liked': is_liked
                 })
             
             return {
@@ -96,6 +118,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             avatar = body_data.get('avatar', '👤')
             steam_id = body_data.get('steam_id')
             avatar_url = body_data.get('avatar_url')
+            parent_comment_id = body_data.get('parent_comment_id')
             
             if not news_id or not text:
                 return {
@@ -112,10 +135,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cur.execute('''
                 INSERT INTO t_p15345778_news_shop_project.comments 
-                (news_id, author, text, avatar, steam_id, avatar_url)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id, news_id, author, text, avatar, steam_id, avatar_url
-            ''', (int(news_id), author, text, avatar, steam_id, avatar_url))
+                (news_id, author, text, avatar, steam_id, avatar_url, parent_comment_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id, news_id, author, text, avatar, steam_id, avatar_url, parent_comment_id
+            ''', (int(news_id), author, text, avatar, steam_id, avatar_url, parent_comment_id))
             
             row = cur.fetchone()
             conn.commit()
@@ -136,10 +159,70 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'avatar': row[4],
                         'steam_id': row[5],
                         'avatar_url': row[6],
-                        'date': 'Только что'
+                        'date': 'Только что',
+                        'parent_comment_id': row[7],
+                        'likes_count': 0,
+                        'is_liked': False
                     }
                 })
             }
+        
+        elif method == 'PUT':
+            body_data = json.loads(event.get('body', '{}'))
+            action = body_data.get('action')
+            comment_id = body_data.get('comment_id')
+            steam_id = body_data.get('steam_id')
+            
+            if action == 'like':
+                if not comment_id or not steam_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'error': 'comment_id and steam_id required'})
+                    }
+                
+                cur.execute('''
+                    SELECT COUNT(*) FROM t_p15345778_news_shop_project.comment_likes
+                    WHERE comment_id = %s AND steam_id = %s
+                ''', (comment_id, steam_id))
+                
+                if cur.fetchone()[0] > 0:
+                    cur.execute('''
+                        DELETE FROM t_p15345778_news_shop_project.comment_likes
+                        WHERE comment_id = %s AND steam_id = %s
+                    ''', (comment_id, steam_id))
+                    is_liked = False
+                else:
+                    cur.execute('''
+                        INSERT INTO t_p15345778_news_shop_project.comment_likes
+                        (comment_id, steam_id)
+                        VALUES (%s, %s)
+                    ''', (comment_id, steam_id))
+                    is_liked = True
+                
+                conn.commit()
+                
+                cur.execute('''
+                    SELECT COUNT(*) FROM t_p15345778_news_shop_project.comment_likes
+                    WHERE comment_id = %s
+                ''', (comment_id,))
+                likes_count = cur.fetchone()[0]
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({
+                        'is_liked': is_liked,
+                        'likes_count': likes_count
+                    })
+                }
         
         elif method == 'DELETE':
             params = event.get('queryStringParameters', {})
