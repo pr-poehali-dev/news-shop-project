@@ -58,7 +58,9 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     setPurchasingItemId(product.id);
 
     try {
-      const response = await fetch(func2url.payment, {
+      const coinsAmount = parseInt(product.amount.replace(/[^0-9]/g, ''));
+      
+      const response = await fetch(func2url.balance, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,21 +68,23 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         body: JSON.stringify({
           steam_id: user.steamId,
           persona_name: user.personaName,
-          shop_item_id: product.id
+          amount: coinsAmount,
+          transaction_type: 'purchase',
+          description: `${product.name} - ${product.amount}`
         })
       });
 
       const data = await response.json();
 
-      if (response.ok && data.payment_url) {
-        window.open(data.payment_url, '_blank');
-        alert(`Откроется страница оплаты. После успешной оплаты ${data.coins} монет будут зачислены на ваш баланс!`);
+      if (response.ok) {
+        setBalance(data.balance);
+        alert(`Успешно! На ваш счет зачислено ${coinsAmount} монет!`);
       } else {
-        alert(data.error || 'Ошибка при создании платежа');
+        alert(data.error || 'Ошибка при пополнении баланса');
       }
     } catch (error) {
-      console.error('Payment creation failed:', error);
-      alert('Ошибка при создании платежа');
+      console.error('Purchase failed:', error);
+      alert('Ошибка при покупке');
     } finally {
       setPurchasingItemId(null);
     }
