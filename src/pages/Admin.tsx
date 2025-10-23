@@ -7,6 +7,7 @@ import func2url from '../../backend/func2url.json';
 import NewsManagement from '@/components/admin/NewsManagement';
 import ShopManagement from '@/components/admin/ShopManagement';
 import ServersManagement from '@/components/admin/ServersManagement';
+import UsersManagement from '@/components/admin/UsersManagement';
 
 interface NewsItem {
   id: number;
@@ -49,15 +50,30 @@ interface Server {
   orderPosition: number;
 }
 
+interface User {
+  id: number;
+  steamId: string;
+  personaName: string;
+  avatarUrl: string | null;
+  profileUrl: string | null;
+  balance: number;
+  isBlocked: boolean;
+  blockReason: string | null;
+  lastLogin: string | null;
+  createdAt: string | null;
+}
+
 export default function Admin() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users'>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingShop, setIsLoadingShop] = useState(false);
   const [isLoadingServers, setIsLoadingServers] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
@@ -71,6 +87,7 @@ export default function Admin() {
       loadNews();
       loadShopItems();
       loadServers();
+      loadUsers();
     }
   }, [isAdmin]);
 
@@ -149,6 +166,19 @@ export default function Admin() {
       console.error('Failed to load servers:', error);
     } finally {
       setIsLoadingServers(false);
+    }
+  };
+
+  const loadUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const response = await fetch(func2url.users);
+      const data = await response.json();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    } finally {
+      setIsLoadingUsers(false);
     }
   };
 
@@ -293,6 +323,23 @@ export default function Admin() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
+
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`px-6 py-3 font-medium transition-colors relative ${
+                activeTab === 'users'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="Users" size={20} />
+                Пользователи
+              </div>
+              {activeTab === 'users' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -321,6 +368,15 @@ export default function Admin() {
             user={user}
             onReload={loadServers}
             onUpdateStatus={updateServersStatus}
+          />
+        )}
+
+        {activeTab === 'users' && (
+          <UsersManagement
+            users={users}
+            isLoadingUsers={isLoadingUsers}
+            adminUser={user}
+            onReload={loadUsers}
           />
         )}
       </div>
