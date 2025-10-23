@@ -25,7 +25,7 @@ const NewsTab = ({ newsItems }: NewsTabProps) => {
         <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
           Новости
         </h2>
-        <p className="text-muted-foreground text-xl">Следите за событиями и обновлениями игры</p>
+        <p className="text-muted-foreground text-xl">События и обновления проекта</p>
       </div>
       
       <div className="grid gap-6">
