@@ -22,7 +22,12 @@ const Shop = () => {
 
   const loadProducts = async () => {
     try {
-      const response = await fetch(func2url['shop-items']);
+      const response = await fetch(func2url['shop-items'], {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       const data = await response.json();
       setProducts(data.items || []);
     } catch (error) {
