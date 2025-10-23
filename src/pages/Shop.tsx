@@ -43,8 +43,8 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="w-full px-6 py-16 max-w-full">
-        <div className="space-y-10">
+      <main className="w-full py-16">
+        <div className="space-y-10 px-6">
           <div className="space-y-3">
             <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
               <span className="text-sm font-medium text-primary">Пополнение баланса</span>
@@ -64,9 +64,9 @@ const Shop = () => {
               <p className="text-xl">Товары временно недоступны</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 -mx-6">
               {products.map((product) => (
-              <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+              <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 rounded-none border-x-0">
                 <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center gap-6 flex-1">
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
