@@ -8,6 +8,7 @@ import NewsManagement from '@/components/admin/NewsManagement';
 import ShopManagement from '@/components/admin/ShopManagement';
 import ServersManagement from '@/components/admin/ServersManagement';
 import UsersManagement from '@/components/admin/UsersManagement';
+import TournamentsManagement from '@/components/admin/TournamentsManagement';
 
 interface NewsItem {
   id: number;
@@ -63,17 +64,31 @@ interface User {
   createdAt: string | null;
 }
 
+interface Tournament {
+  id: number;
+  name: string;
+  description: string;
+  prize_pool: number;
+  max_participants: number;
+  status: string;
+  tournament_type: string;
+  start_date: string;
+  participants_count: number;
+}
+
 export default function Admin() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments'>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingShop, setIsLoadingShop] = useState(false);
   const [isLoadingServers, setIsLoadingServers] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isLoadingTournaments, setIsLoadingTournaments] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
@@ -88,6 +103,7 @@ export default function Admin() {
       loadShopItems();
       loadServers();
       loadUsers();
+      loadTournaments();
     }
   }, [isAdmin]);
 
@@ -179,6 +195,19 @@ export default function Admin() {
       console.error('Failed to load users:', error);
     } finally {
       setIsLoadingUsers(false);
+    }
+  };
+
+  const loadTournaments = async () => {
+    setIsLoadingTournaments(true);
+    try {
+      const response = await fetch(func2url.tournaments);
+      const data = await response.json();
+      setTournaments(data.tournaments || []);
+    } catch (error) {
+      console.error('Failed to load tournaments:', error);
+    } finally {
+      setIsLoadingTournaments(false);
     }
   };
 
@@ -340,6 +369,23 @@ export default function Admin() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
+
+            <button
+              onClick={() => setActiveTab('tournaments')}
+              className={`px-6 py-3 font-medium transition-colors relative ${
+                activeTab === 'tournaments'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="Trophy" size={20} />
+                Турниры
+              </div>
+              {activeTab === 'tournaments' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -377,6 +423,14 @@ export default function Admin() {
             isLoadingUsers={isLoadingUsers}
             adminUser={user}
             onReload={loadUsers}
+          />
+        )}
+
+        {activeTab === 'tournaments' && (
+          <TournamentsManagement
+            tournaments={tournaments}
+            user={user}
+            onReload={loadTournaments}
           />
         )}
       </div>
