@@ -273,6 +273,16 @@ const Index = () => {
                   <span className="font-medium">Турниры</span>
                 </div>
               </button>
+
+              <button
+                onClick={() => navigate('/leaderboard')}
+                className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="Award" size={18} />
+                  <span className="font-medium">Рейтинг</span>
+                </div>
+              </button>
             </div>
 
             <div className="flex items-center gap-3">
