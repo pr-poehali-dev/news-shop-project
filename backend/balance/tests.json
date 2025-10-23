@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Get user balance",
+      "method": "GET",
+      "path": "/?steam_id=76561198000000000",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "balance": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Add coins to balance",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "steam_id": "76561198000000000",
+        "persona_name": "TestPlayer",
+        "amount": 500,
+        "transaction_type": "purchase",
+        "description": "Стартовый пакет - 500 монет"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "balance": "number",
+        "added": 500
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
