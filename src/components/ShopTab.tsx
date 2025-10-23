@@ -230,21 +230,6 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
                         </>
                       )}
                     </Button>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      {products.slice(0, 4).map((product) => (
-                        <Button
-                          key={product.id}
-                          variant="outline"
-                          onClick={() => handleTopUp(product.id)}
-                          disabled={isCreatingPayment}
-                          className="h-auto py-3 flex-col gap-1"
-                        >
-                          <span className="text-lg font-bold">{product.price} ₽</span>
-                          <span className="text-xs text-muted-foreground">{product.amount}</span>
-                        </Button>
-                      ))}
-                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
