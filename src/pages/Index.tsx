@@ -4,6 +4,7 @@ import NewsTab from '@/components/NewsTab';
 import ShopTab from '@/components/ShopTab';
 import ServersTab from '@/components/ServersTab';
 import TournamentsTab from '@/components/TournamentsTab';
+import PartnersTab from '@/components/PartnersTab';
 import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
@@ -41,7 +42,7 @@ interface Tournament {
 }
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments' | 'partners'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
@@ -218,6 +219,7 @@ const Index = () => {
             onRegister={handleTournamentRegister}
           />
         )}
+        {activeTab === 'partners' && <PartnersTab />}
       </main>
     </div>
   );

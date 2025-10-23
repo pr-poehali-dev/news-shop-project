@@ -13,8 +13,8 @@ interface SteamUser {
 }
 
 interface NavigationProps {
-  activeTab: 'news' | 'shop' | 'servers' | 'tournaments';
-  setActiveTab: (tab: 'news' | 'shop' | 'servers' | 'tournaments') => void;
+  activeTab: 'news' | 'shop' | 'servers' | 'tournaments' | 'partners';
+  setActiveTab: (tab: 'news' | 'shop' | 'servers' | 'tournaments' | 'partners') => void;
   user: SteamUser | null;
   isLoginOpen: boolean;
   setIsLoginOpen: (open: boolean) => void;
@@ -103,6 +103,20 @@ const Navigation = ({
                 <div className="flex items-center gap-2">
                   <Icon name="Trophy" size={18} />
                   <span className="font-medium">Турниры</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('partners')}
+                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
+                  activeTab === 'partners'
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="Handshake" size={18} />
+                  <span className="font-medium">Партнёры</span>
                 </div>
               </button>
             </div>
