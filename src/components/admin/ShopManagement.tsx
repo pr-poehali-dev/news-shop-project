@@ -82,7 +82,8 @@ function SortableShopItem({ item, shopItems, onEdit, onToggle, onDelete, onMove 
         <div 
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary/10 rounded"
+          className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary/10 rounded touch-none"
+          style={{ touchAction: 'none' }}
         >
           <Icon name="GripVertical" size={20} className="text-muted-foreground" />
         </div>
@@ -263,7 +264,11 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -421,8 +426,8 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
       </div>
 
       <div>
-        <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <Card className="p-6 bg-card/80 backdrop-blur border-primary/20 max-h-[800px] flex flex-col">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 flex-shrink-0">
             <Icon name="ShoppingBag" size={24} />
             Список товаров ({shopItems.length})
           </h2>
@@ -437,32 +442,34 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
               <p>Товары не добавлены</p>
             </div>
           ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={shopItems.sort((a, b) => a.order_position - b.order_position).map(item => item.id)}
-                strategy={verticalListSortingStrategy}
+            <div className="overflow-y-auto flex-1">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {shopItems
-                    .sort((a, b) => a.order_position - b.order_position)
-                    .map((item) => (
-                      <SortableShopItem
-                        key={item.id}
-                        item={item}
-                        shopItems={shopItems}
-                        onEdit={handleEditShopItem}
-                        onToggle={handleToggleActive}
-                        onDelete={handleDeleteShopItem}
-                        onMove={handleMoveShopItem}
-                      />
-                    ))}
-                </div>
-              </SortableContext>
-            </DndContext>
+                <SortableContext
+                  items={shopItems.sort((a, b) => a.order_position - b.order_position).map(item => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {shopItems
+                      .sort((a, b) => a.order_position - b.order_position)
+                      .map((item) => (
+                        <SortableShopItem
+                          key={item.id}
+                          item={item}
+                          shopItems={shopItems}
+                          onEdit={handleEditShopItem}
+                          onToggle={handleToggleActive}
+                          onDelete={handleDeleteShopItem}
+                          onMove={handleMoveShopItem}
+                        />
+                      ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
           )}
         </Card>
       </div>
