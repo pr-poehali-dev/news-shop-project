@@ -9,6 +9,7 @@ import ShopManagement from '@/components/admin/ShopManagement';
 import ServersManagement from '@/components/admin/ServersManagement';
 import UsersManagement from '@/components/admin/UsersManagement';
 import TournamentsManagement from '@/components/admin/TournamentsManagement';
+import PartnersManagement from '@/components/admin/PartnersManagement';
 
 interface NewsItem {
   id: number;
@@ -77,19 +78,32 @@ interface Tournament {
   participants_count: number;
 }
 
+interface Partner {
+  id: number;
+  name: string;
+  description: string;
+  logo: string;
+  website: string;
+  category: string;
+  isActive: boolean;
+  orderPosition: number;
+}
+
 export default function Admin() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments' | 'partners'>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingShop, setIsLoadingShop] = useState(false);
   const [isLoadingServers, setIsLoadingServers] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [isLoadingTournaments, setIsLoadingTournaments] = useState(false);
+  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
@@ -105,6 +119,7 @@ export default function Admin() {
       loadServers();
       loadUsers();
       loadTournaments();
+      loadPartners();
     }
   }, [isAdmin]);
 
@@ -209,6 +224,19 @@ export default function Admin() {
       console.error('Failed to load tournaments:', error);
     } finally {
       setIsLoadingTournaments(false);
+    }
+  };
+
+  const loadPartners = async () => {
+    setIsLoadingPartners(true);
+    try {
+      const response = await fetch(`${func2url.partners}?include_inactive=true`);
+      const data = await response.json();
+      setPartners(data.partners || []);
+    } catch (error) {
+      console.error('Failed to load partners:', error);
+    } finally {
+      setIsLoadingPartners(false);
     }
   };
 
@@ -387,6 +415,23 @@ export default function Admin() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
+
+            <button
+              onClick={() => setActiveTab('partners')}
+              className={`px-6 py-3 font-medium transition-colors relative ${
+                activeTab === 'partners'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="Handshake" size={20} />
+                Партнёры
+              </div>
+              {activeTab === 'partners' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -432,6 +477,15 @@ export default function Admin() {
             tournaments={tournaments}
             user={user}
             onReload={loadTournaments}
+          />
+        )}
+
+        {activeTab === 'partners' && (
+          <PartnersManagement
+            partners={partners}
+            isLoadingPartners={isLoadingPartners}
+            user={user}
+            onReload={loadPartners}
           />
         )}
       </div>

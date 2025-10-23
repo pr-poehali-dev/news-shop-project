@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface Partner {
   id: number;
@@ -9,27 +11,29 @@ interface Partner {
   logo: string;
   website: string;
   category: string;
+  isActive: boolean;
+  orderPosition: number;
 }
 
 const PartnersTab = () => {
-  const partners: Partner[] = [
-    {
-      id: 1,
-      name: 'Steam',
-      description: 'Платформа цифровой дистрибуции игр',
-      logo: '🎮',
-      website: 'https://store.steampowered.com',
-      category: 'Игровые платформы'
-    },
-    {
-      id: 2,
-      name: 'Discord',
-      description: 'Платформа для голосового и текстового общения',
-      logo: '💬',
-      website: 'https://discord.com',
-      category: 'Коммуникации'
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadPartners();
+  }, []);
+
+  const loadPartners = async () => {
+    try {
+      const response = await fetch(func2url.partners);
+      const data = await response.json();
+      setPartners(data.partners || []);
+    } catch (error) {
+      console.error('Failed to load partners:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   const categories = Array.from(new Set(partners.map(p => p.category)));
 
@@ -48,12 +52,23 @@ const PartnersTab = () => {
           </p>
         </div>
 
-        {categories.map((category) => (
-          <div key={category} className="space-y-6">
-            <h3 className="text-2xl font-bold flex items-center gap-3">
-              <Icon name="Building2" size={24} className="text-primary" />
-              {category}
-            </h3>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin text-primary" />
+            <p className="text-lg text-muted-foreground">Загрузка партнёров...</p>
+          </div>
+        ) : partners.length === 0 ? (
+          <div className="text-center py-12">
+            <Icon name="Handshake" size={48} className="mx-auto mb-3 opacity-20" />
+            <p className="text-lg text-muted-foreground">Пока нет партнёров</p>
+          </div>
+        ) : (
+          categories.map((category) => (
+            <div key={category} className="space-y-6">
+              <h3 className="text-2xl font-bold flex items-center gap-3">
+                <Icon name="Building2" size={24} className="text-primary" />
+                {category}
+              </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {partners
@@ -88,7 +103,8 @@ const PartnersTab = () => {
                 ))}
             </div>
           </div>
-        ))}
+          ))
+        )}
 
         <Card className="p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
           <div className="text-center space-y-4">
