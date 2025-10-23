@@ -28,7 +28,7 @@ interface SteamUser {
 }
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'news' | 'shop'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
@@ -172,6 +172,34 @@ const Index = () => {
                   <span className="font-medium">Магазин</span>
                 </div>
               </button>
+
+              <button
+                onClick={() => setActiveTab('servers')}
+                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
+                  activeTab === 'servers'
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="Server" size={18} />
+                  <span className="font-medium">Наши сервера</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('tournaments')}
+                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
+                  activeTab === 'tournaments'
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="Trophy" size={18} />
+                  <span className="font-medium">Турниры</span>
+                </div>
+              </button>
             </div>
 
             <div className="flex items-center gap-3">
@@ -289,6 +317,264 @@ const Index = () => {
                   </div>
                 </Card>
               ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'servers' && (
+          <div className="space-y-10">
+            <div className="space-y-3">
+              <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
+                <span className="text-sm font-medium text-primary">Игровые площадки</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+                Наши сервера
+              </h2>
+              <p className="text-muted-foreground text-xl">Выберите сервер и начните играть</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-500">Онлайн</span>
+                    </div>
+                    <h3 className="text-2xl font-bold">EU Server #1</h3>
+                    <p className="text-muted-foreground">Европейский регион</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Server" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Игроков онлайн</span>
+                    <span className="font-bold text-lg">247 / 500</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Ping</span>
+                    <span className="font-bold text-lg text-green-500">12 ms</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Режим игры</span>
+                    <span className="font-bold text-lg">Классика</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-6">Подключиться</Button>
+              </Card>
+
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-500">Онлайн</span>
+                    </div>
+                    <h3 className="text-2xl font-bold">RU Server #1</h3>
+                    <p className="text-muted-foreground">Российский регион</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Server" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Игроков онлайн</span>
+                    <span className="font-bold text-lg">189 / 500</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Ping</span>
+                    <span className="font-bold text-lg text-green-500">8 ms</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Режим игры</span>
+                    <span className="font-bold text-lg">Классика</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-6">Подключиться</Button>
+              </Card>
+
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-500">Онлайн</span>
+                    </div>
+                    <h3 className="text-2xl font-bold">US Server #1</h3>
+                    <p className="text-muted-foreground">Американский регион</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Server" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Игроков онлайн</span>
+                    <span className="font-bold text-lg">312 / 500</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Ping</span>
+                    <span className="font-bold text-lg text-yellow-500">156 ms</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Режим игры</span>
+                    <span className="font-bold text-lg">Турнир</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-6">Подключиться</Button>
+              </Card>
+
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse"></div>
+                      <span className="text-sm font-medium text-orange-500">Заполнен</span>
+                    </div>
+                    <h3 className="text-2xl font-bold">ASIA Server #1</h3>
+                    <p className="text-muted-foreground">Азиатский регион</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Server" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Игроков онлайн</span>
+                    <span className="font-bold text-lg">500 / 500</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Ping</span>
+                    <span className="font-bold text-lg text-red-500">245 ms</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-t border-border">
+                    <span className="text-muted-foreground">Режим игры</span>
+                    <span className="font-bold text-lg">Классика</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-6" disabled>Сервер заполнен</Button>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'tournaments' && (
+          <div className="space-y-10">
+            <div className="space-y-3">
+              <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
+                <span className="text-sm font-medium text-primary">Соревнования</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+                Турниры
+              </h2>
+              <p className="text-muted-foreground text-xl">Участвуйте в турнирах и выигрывайте призы</p>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="p-8 border border-border bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border-primary/20">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="px-3 py-1 bg-primary rounded-full">
+                        <span className="text-xs font-bold text-primary-foreground">АКТИВНЫЙ</span>
+                      </div>
+                      <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
+                        <span className="text-xs font-bold text-yellow-500">VIP</span>
+                      </div>
+                    </div>
+                    <h3 className="text-3xl font-bold">Чемпионат Осени 2025</h3>
+                    <p className="text-muted-foreground text-lg">Главный турнир сезона с максимальным призовым фондом</p>
+                  </div>
+                  <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <Icon name="Trophy" size={32} className="text-primary" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-6 mb-6">
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-2">Призовой фонд</p>
+                    <p className="text-3xl font-bold text-primary">100,000₽</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-2">Участников</p>
+                    <p className="text-3xl font-bold">247 / 500</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-2">До начала</p>
+                    <p className="text-3xl font-bold text-orange-500">2 дня</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button className="flex-1" size="lg">Зарегистрироваться</Button>
+                  <Button variant="outline" size="lg">Подробнее</Button>
+                </div>
+              </Card>
+
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                        <span className="text-xs font-bold text-green-500">ОТКРЫТА РЕГИСТРАЦИЯ</span>
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold">Еженедельный турнир</h3>
+                    <p className="text-muted-foreground">Быстрый формат для всех желающих</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Zap" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Призовой фонд</p>
+                    <p className="text-xl font-bold">15,000₽</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Участников</p>
+                    <p className="text-xl font-bold">89 / 128</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">До начала</p>
+                    <p className="text-xl font-bold text-green-500">5 дней</p>
+                  </div>
+                </div>
+                <Button className="w-full">Зарегистрироваться</Button>
+              </Card>
+
+              <Card className="p-8 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full">
+                        <span className="text-xs font-bold text-blue-500">СКОРО</span>
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold">Зимний Кубок 2025</h3>
+                    <p className="text-muted-foreground">Командный турнир 5 на 5</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon name="Users" size={24} className="text-primary" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Призовой фонд</p>
+                    <p className="text-xl font-bold">50,000₽</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Команд</p>
+                    <p className="text-xl font-bold">0 / 32</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Старт</p>
+                    <p className="text-xl font-bold">15 дек</p>
+                  </div>
+                </div>
+                <Button className="w-full" variant="outline">Уведомить о старте</Button>
+              </Card>
             </div>
           </div>
         )}
