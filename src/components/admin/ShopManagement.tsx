@@ -134,23 +134,36 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
   };
 
   const handleMoveShopItem = async (item: ShopItem, direction: 'up' | 'down') => {
-    if (!user) return;
+    if (!user) {
+      console.log('❌ No user for move');
+      return;
+    }
 
+    console.log('🔄 Moving item:', item.name, direction);
+    
     const sortedItems = [...shopItems].sort((a, b) => a.order_position - b.order_position);
     const currentIndex = sortedItems.findIndex(i => i.id === item.id);
+    
+    console.log('📊 Current index:', currentIndex, 'Total items:', sortedItems.length);
     
     if (
       (direction === 'up' && currentIndex === 0) ||
       (direction === 'down' && currentIndex === sortedItems.length - 1)
     ) {
+      console.log('⛔ Cannot move - at boundary');
       return;
     }
 
     const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     const swapItem = sortedItems[swapIndex];
 
+    console.log('🔀 Swapping:', {
+      item1: { id: item.id, pos: item.order_position, newPos: swapItem.order_position },
+      item2: { id: swapItem.id, pos: swapItem.order_position, newPos: item.order_position }
+    });
+
     try {
-      await fetch(func2url['shop-items'], {
+      const response1 = await fetch(func2url['shop-items'], {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +175,9 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
         })
       });
 
-      await fetch(func2url['shop-items'], {
+      console.log('✅ Response 1:', response1.status);
+
+      const response2 = await fetch(func2url['shop-items'], {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -174,9 +189,12 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
         })
       });
 
+      console.log('✅ Response 2:', response2.status);
+
       await onReload();
+      console.log('🔄 Reloaded items');
     } catch (error) {
-      console.error('Failed to reorder shop items:', error);
+      console.error('❌ Failed to reorder shop items:', error);
     }
   };
 
