@@ -92,27 +92,75 @@ const Profile = () => {
       <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-                <Icon name="ArrowLeft" size={20} />
-              </Button>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
-                </div>
-                <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
               </div>
+              <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
             </div>
 
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Icon name="LogOut" size={18} className="mr-2" />
-              Выйти
-            </Button>
+            <div className="flex items-center gap-6">
+              <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
+                <button
+                  onClick={() => navigate('/?tab=news')}
+                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Newspaper" size={18} />
+                    <span className="font-medium">Новости</span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/?tab=shop')}
+                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="ShoppingBag" size={18} />
+                    <span className="font-medium">Магазин</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/?tab=servers')}
+                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Server" size={18} />
+                    <span className="font-medium">Наши сервера</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/?tab=tournaments')}
+                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Trophy" size={18} />
+                    <span className="font-medium">Турниры</span>
+                  </div>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-300"
+                >
+                  <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-lg" />
+                  <span className="font-medium text-foreground">{user.personaName}</span>
+                </button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="LogOut" size={18} />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </nav>
