@@ -287,48 +287,14 @@ const NewsDetail = () => {
       <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
-                </div>
-                <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="mr-1">
+                <Icon name="ArrowLeft" size={20} />
+              </Button>
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
               </div>
-              
-              <div className="hidden md:flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/')}
-                  className="gap-2"
-                >
-                  <Icon name="Newspaper" size={18} />
-                  Новости
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'shop' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="ShoppingBag" size={18} />
-                  Магазин
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'servers' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="Server" size={18} />
-                  Сервера
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => { navigate('/'); setTimeout(() => { const event = new CustomEvent('changeTab', { detail: 'tournaments' }); window.dispatchEvent(event); }, 100); }}
-                  className="gap-2"
-                >
-                  <Icon name="Trophy" size={18} />
-                  Турниры
-                </Button>
-              </div>
+              <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
             </div>
 
             {user ? (
