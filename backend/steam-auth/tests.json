@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Get Steam login URL",
+      "method": "GET",
+      "path": "/?mode=login&return_url=http://localhost:5173/auth/callback",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "redirectUrl": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
