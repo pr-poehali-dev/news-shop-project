@@ -40,12 +40,12 @@ export default function UsersManagement({
   onReload 
 }: UsersManagementProps) {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [balanceAmount, setBalanceAmount] = useState<number>(0);
-  const [blockReason, setBlockReason] = useState<string>('');
+  const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
+  const [blockReason, setBlockReason] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const handleUpdateBalance = async (user: User, newBalance: number) => {
-    if (!adminUser) return;
+  const handleUpdateBalance = async (user: User, newBalance: number | null) => {
+    if (!adminUser || newBalance === null) return;
 
     try {
       const response = await fetch(func2url.users, {
@@ -63,7 +63,7 @@ export default function UsersManagement({
       if (response.ok) {
         await onReload();
         setEditingUserId(null);
-        setBalanceAmount(0);
+        setBalanceAmount(null);
       }
     } catch (error) {
       console.error('Failed to update balance:', error);
@@ -128,19 +128,19 @@ export default function UsersManagement({
   const startEditBalance = (user: User) => {
     setEditingUserId(user.steamId);
     setBalanceAmount(user.balance);
-    setBlockReason('');
+    setBlockReason(null);
   };
 
   const startBlock = (user: User) => {
     setEditingUserId(user.steamId);
     setBlockReason(user.blockReason || '');
-    setBalanceAmount(0);
+    setBalanceAmount(null);
   };
 
   const cancelEdit = () => {
     setEditingUserId(null);
-    setBalanceAmount(0);
-    setBlockReason('');
+    setBalanceAmount(null);
+    setBlockReason(null);
   };
 
   const filteredUsers = users.filter(user => 
@@ -287,7 +287,7 @@ export default function UsersManagement({
                   <div className="flex flex-col gap-2 min-w-[140px]">
                     {editingUserId === user.steamId ? (
                       <>
-                        {balanceAmount !== 0 && (
+                        {balanceAmount !== null && (
                           <>
                             <Input
                               type="number"
@@ -315,7 +315,7 @@ export default function UsersManagement({
                             </div>
                           </>
                         )}
-                        {blockReason !== null && balanceAmount === 0 && (
+                        {blockReason !== null && balanceAmount === null && (
                           <>
                             <Textarea
                               value={blockReason}
