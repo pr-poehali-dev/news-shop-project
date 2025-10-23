@@ -352,7 +352,6 @@ export default function UsersManagement({
                           variant="outline"
                           onClick={() => startEditBalance(user)}
                           className="gap-2"
-                          disabled={user.isBlocked}
                         >
                           <Icon name="Wallet" size={14} />
                           Баланс
