@@ -47,12 +47,12 @@ const Shop = () => {
         <div className="space-y-10">
           <div className="space-y-3">
             <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
-              <span className="text-sm font-medium text-primary">Игровая валюта</span>
+              <span className="text-sm font-medium text-primary">Пополнение баланса</span>
             </div>
             <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
               Магазин
             </h2>
-            <p className="text-muted-foreground text-xl">Приобретайте игровую валюту и развивайте своего персонажа</p>
+            <p className="text-muted-foreground text-xl">Пополняйте баланс рублей</p>
           </div>
           
           {isLoading ? (

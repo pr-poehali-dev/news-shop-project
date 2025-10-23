@@ -101,7 +101,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
     }
 
     if (balance < product.price) {
-      alert(`Недостаточно монет! Требуется ${product.price}, у вас ${balance}`);
+      alert(`Недостаточно рублей! Требуется ${product.price} ₽, у вас ${balance} ₽`);
       return;
     }
 
@@ -145,7 +145,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
         <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
           Магазин
         </h2>
-        <p className="text-muted-foreground text-xl">Пополните баланс игровой валюты</p>
+        <p className="text-muted-foreground text-xl">Пополните баланс рублей</p>
       </div>
 
       {user && (
@@ -160,7 +160,7 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
                 ) : (
                   <span className="text-4xl font-bold">{balance.toLocaleString()}</span>
                 )}
-                <span className="text-2xl text-muted-foreground">монет</span>
+                <span className="text-2xl text-muted-foreground">₽</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
