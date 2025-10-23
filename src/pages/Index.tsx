@@ -105,13 +105,15 @@ const Index = () => {
   const loadProducts = async () => {
     try {
       console.log('🛒 Loading shop items from:', func2url['shop-items']);
-      const response = await fetch(func2url['shop-items'], {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${func2url['shop-items']}?_=${timestamp}`);
       console.log('📦 Response status:', response.status);
+      console.log('📦 Response ok:', response.ok);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('📋 Received data:', data);
       console.log('🎯 Items count:', data.items?.length || 0);
