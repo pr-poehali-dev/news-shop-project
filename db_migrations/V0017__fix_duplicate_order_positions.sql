@@ -1,0 +1,1 @@
+UPDATE t_p15345778_news_shop_project.shop_items SET order_position = 40 WHERE id = 9;
