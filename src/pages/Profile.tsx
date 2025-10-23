@@ -140,13 +140,13 @@ const Profile = () => {
                   </a>
                 </div>
 
-                <div className="grid grid-cols-4 gap-6 pt-4">
+                <div className="grid grid-cols-2 gap-6 pt-4">
                   <div className="p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Icon name="Wallet" size={20} className="text-primary" />
                       <p className="text-sm text-muted-foreground">Баланс</p>
                     </div>
-                    <p className="text-3xl font-bold text-primary">${profileData.user.balance}</p>
+                    <p className="text-3xl font-bold text-primary">{profileData.user.balance}₽</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-background/50 border border-border">
@@ -155,22 +155,6 @@ const Profile = () => {
                       <p className="text-sm text-muted-foreground">Турниров</p>
                     </div>
                     <p className="text-3xl font-bold">{profileData.statistics.tournaments_count}</p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-background/50 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon name="ShoppingBag" size={20} className="text-primary" />
-                      <p className="text-sm text-muted-foreground">Покупок</p>
-                    </div>
-                    <p className="text-3xl font-bold">{profileData.statistics.purchases_count}</p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-background/50 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon name="Coins" size={20} className="text-primary" />
-                      <p className="text-sm text-muted-foreground">Потрачено</p>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">${profileData.statistics.total_spent}</p>
                   </div>
                 </div>
               </div>
