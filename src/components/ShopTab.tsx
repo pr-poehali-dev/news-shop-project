@@ -198,12 +198,12 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
                   <DialogHeader>
                     <DialogTitle>Пополнение баланса</DialogTitle>
                     <DialogDescription>
-                      Выберите готовую сумму или укажите свою
+                      Укажите сумму
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="custom-amount">Своя сумма (₽)</Label>
+                      <Label htmlFor="custom-amount">Сумма (₽)</Label>
                       <Input
                         id="custom-amount"
                         type="number"
