@@ -102,7 +102,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Get user balance
         cursor.execute(f"""
             SELECT balance 
-            FROM t_p15345778_news_shop_project.user_balances 
+            FROM t_p15345778_news_shop_project.users 
             WHERE steam_id = '{escaped_steam_id}'
         """)
         
@@ -131,8 +131,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         new_balance = current_balance - item_price
         
         cursor.execute(f"""
-            UPDATE t_p15345778_news_shop_project.user_balances 
-            SET balance = {int(new_balance)}, updated_at = CURRENT_TIMESTAMP
+            UPDATE t_p15345778_news_shop_project.users 
+            SET balance = {int(new_balance)}, updated_at = NOW()
             WHERE steam_id = '{escaped_steam_id}'
         """)
         

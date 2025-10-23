@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Manage user balance - get balance and add coins via purchase
+    Business: Get user balance from users table and add rubles via purchase
     Args: event with httpMethod, queryStringParameters for steam_id, body for transactions
     Returns: User balance or transaction result
     '''
@@ -45,8 +45,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             escaped_steam_id = steam_id.replace("'", "''")
             
             cur.execute(f"""
-                SELECT balance, persona_name, created_at, updated_at
-                FROM t_p15345778_news_shop_project.user_balances
+                SELECT balance
+                FROM t_p15345778_news_shop_project.users
                 WHERE steam_id = '{escaped_steam_id}'
             """)
             
@@ -60,10 +60,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'Access-Control-Allow-Origin': '*'
                     },
                     'body': json.dumps({
-                        'balance': row[0],
-                        'persona_name': row[1],
-                        'created_at': row[2].isoformat() if row[2] else None,
-                        'updated_at': row[3].isoformat() if row[3] else None
+                        'balance': row[0]
                     })
                 }
             else:
@@ -99,16 +96,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             escaped_description = description.replace("'", "''")
             
             cur.execute(f"""
-                INSERT INTO t_p15345778_news_shop_project.user_balances (steam_id, persona_name, balance)
-                VALUES ('{escaped_steam_id}', '{escaped_persona_name}', {int(amount)})
-                ON CONFLICT (steam_id) 
-                DO UPDATE SET 
-                    balance = t_p15345778_news_shop_project.user_balances.balance + {int(amount)},
-                    updated_at = CURRENT_TIMESTAMP
+                UPDATE t_p15345778_news_shop_project.users
+                SET balance = balance + {int(amount)},
+                    updated_at = NOW()
+                WHERE steam_id = '{escaped_steam_id}'
                 RETURNING balance
             """)
             
-            new_balance = cur.fetchone()[0]
+            result = cur.fetchone()
+            if not result:
+                conn.close()
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'User not found'})
+                }
+            
+            new_balance = result[0]
             
             cur.execute(f"""
                 INSERT INTO t_p15345778_news_shop_project.balance_transactions 
