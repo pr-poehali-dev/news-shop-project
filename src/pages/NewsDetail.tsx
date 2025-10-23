@@ -334,6 +334,16 @@ const NewsDetail = () => {
                     <span className="font-medium">Турниры</span>
                   </div>
                 </button>
+
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Handshake" size={18} />
+                    <span className="font-medium">Партнёры</span>
+                  </div>
+                </button>
               </div>
 
               {user && (
