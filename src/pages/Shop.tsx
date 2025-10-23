@@ -1,53 +1,36 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface Product {
   id: number;
   name: string;
   amount: string;
   price: number;
+  is_active?: boolean;
 }
 
 const Shop = () => {
-  const products: Product[] = [
-    {
-      id: 1,
-      name: 'Стартовый пакет',
-      amount: '500 монет',
-      price: 199
-    },
-    {
-      id: 2,
-      name: 'Базовый пакет',
-      amount: '1,200 монет',
-      price: 399
-    },
-    {
-      id: 3,
-      name: 'Премиум пакет',
-      amount: '2,800 монет',
-      price: 799
-    },
-    {
-      id: 4,
-      name: 'Элитный пакет',
-      amount: '6,000 монет',
-      price: 1499
-    },
-    {
-      id: 5,
-      name: 'Мега пакет',
-      amount: '15,000 монет',
-      price: 2999
-    },
-    {
-      id: 6,
-      name: 'Легендарный пакет',
-      amount: '50,000 монет',
-      price: 7999
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const response = await fetch(func2url['shop-items']);
+      const data = await response.json();
+      setProducts(data.items || []);
+    } catch (error) {
+      console.error('Failed to load shop items:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,8 +46,17 @@ const Shop = () => {
             <p className="text-muted-foreground text-xl">Приобретайте игровую валюту и развивайте своего персонажа</p>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-xl">Загрузка товаров...</p>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-xl">Товары временно недоступны</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
               <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:scale-[1.05]">
                 <div className="space-y-6">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
@@ -89,8 +81,9 @@ const Shop = () => {
                   </div>
                 </div>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

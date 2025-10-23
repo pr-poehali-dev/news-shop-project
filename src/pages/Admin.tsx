@@ -28,6 +28,14 @@ interface Comment {
   date: string;
 }
 
+interface ShopItem {
+  id: number;
+  name: string;
+  amount: string;
+  price: number;
+  is_active: boolean;
+}
+
 interface SteamUser {
   steamId: string;
   personaName: string;
@@ -37,12 +45,16 @@ interface SteamUser {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'news' | 'shop'>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isLoadingShop, setIsLoadingShop] = useState(false);
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingShopId, setEditingShopId] = useState<number | null>(null);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
@@ -53,6 +65,12 @@ export default function Admin() {
     content: '',
     badge: ''
   });
+  const [shopFormData, setShopFormData] = useState({
+    name: '',
+    amount: '',
+    price: 0,
+    is_active: true
+  });
 
   useEffect(() => {
     checkAccess();
@@ -61,6 +79,7 @@ export default function Admin() {
   useEffect(() => {
     if (isAdmin) {
       loadNews();
+      loadShopItems();
     }
   }, [isAdmin]);
 
@@ -207,6 +226,88 @@ export default function Admin() {
     }
   };
 
+  const loadShopItems = async () => {
+    setIsLoadingShop(true);
+    try {
+      const response = await fetch(`${func2url['shop-items']}?include_inactive=true`);
+      const data = await response.json();
+      setShopItems(data.items || []);
+    } catch (error) {
+      console.error('Failed to load shop items:', error);
+    } finally {
+      setIsLoadingShop(false);
+    }
+  };
+
+  const handleShopSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const url = func2url['shop-items'];
+      const method = editingShopId ? 'PUT' : 'POST';
+      const body = editingShopId 
+        ? { ...shopFormData, id: editingShopId }
+        : shopFormData;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        await loadShopItems();
+        resetShopForm();
+      }
+    } catch (error) {
+      console.error('Failed to save shop item:', error);
+    }
+  };
+
+  const handleEditShopItem = (item: ShopItem) => {
+    setEditingShopId(item.id);
+    setShopFormData({
+      name: item.name,
+      amount: item.amount,
+      price: item.price,
+      is_active: item.is_active
+    });
+  };
+
+  const handleDeleteShopItem = async (id: number) => {
+    if (!confirm('Удалить этот товар?')) return;
+    if (!user) return;
+
+    try {
+      const response = await fetch(`${func2url['shop-items']}?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Admin-Steam-Id': user.steamId
+        }
+      });
+
+      if (response.ok) {
+        await loadShopItems();
+      }
+    } catch (error) {
+      console.error('Failed to delete shop item:', error);
+    }
+  };
+
+  const resetShopForm = () => {
+    setEditingShopId(null);
+    setShopFormData({
+      name: '',
+      amount: '',
+      price: 0,
+      is_active: true
+    });
+  };
+
   if (isCheckingAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -271,9 +372,29 @@ export default function Admin() {
             <Icon name="Settings" size={36} />
             Админ-панель
           </h1>
-          <p className="text-muted-foreground">Управление новостями сайта</p>
+          <p className="text-muted-foreground">Управление контентом сайта</p>
+          
+          <div className="flex gap-2 mt-6">
+            <Button 
+              variant={activeTab === 'news' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('news')}
+              className="gap-2"
+            >
+              <Icon name="Newspaper" size={18} />
+              Новости
+            </Button>
+            <Button 
+              variant={activeTab === 'shop' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('shop')}
+              className="gap-2"
+            >
+              <Icon name="ShoppingBag" size={18} />
+              Магазин
+            </Button>
+          </div>
         </div>
 
+        {activeTab === 'news' && (
         <div className="grid gap-8 lg:grid-cols-3">
           <div>
             <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
@@ -478,6 +599,142 @@ export default function Admin() {
             </Card>
           </div>
         </div>
+        )}
+
+        {activeTab === 'shop' && (
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div>
+            <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name={editingShopId ? "Edit" : "Plus"} size={24} />
+                {editingShopId ? 'Редактировать товар' : 'Добавить товар'}
+              </h2>
+              
+              <form onSubmit={handleShopSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Название</label>
+                  <Input
+                    value={shopFormData.name}
+                    onChange={(e) => setShopFormData({ ...shopFormData, name: e.target.value })}
+                    placeholder="Стартовый пакет"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Количество</label>
+                  <Input
+                    value={shopFormData.amount}
+                    onChange={(e) => setShopFormData({ ...shopFormData, amount: e.target.value })}
+                    placeholder="500 монет"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Цена (₽)</label>
+                  <Input
+                    type="number"
+                    value={shopFormData.price}
+                    onChange={(e) => setShopFormData({ ...shopFormData, price: Number(e.target.value) })}
+                    placeholder="199"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={shopFormData.is_active}
+                    onChange={(e) => setShopFormData({ ...shopFormData, is_active: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="is_active" className="text-sm font-medium">
+                    Активен (отображается на сайте)
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button type="submit" className="flex-1">
+                    <Icon name={editingShopId ? "Save" : "Plus"} size={18} className="mr-2" />
+                    {editingShopId ? 'Сохранить' : 'Добавить'}
+                  </Button>
+                  {editingShopId && (
+                    <Button type="button" variant="outline" onClick={resetShopForm}>
+                      Отмена
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </Card>
+          </div>
+
+          <div>
+            <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="ShoppingBag" size={24} />
+                Товары в магазине ({shopItems.length})
+              </h2>
+
+              {isLoadingShop ? (
+                <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+              ) : shopItems.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">Товаров пока нет</div>
+              ) : (
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                  {shopItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`p-4 rounded-lg border ${item.is_active ? 'border-border bg-background/50' : 'border-border/50 bg-background/20 opacity-60'} hover:border-primary/30 transition-colors`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold truncate">{item.name}</h3>
+                            {!item.is_active && (
+                              <span className="text-xs bg-destructive/20 text-destructive px-2 py-0.5 rounded">
+                                Скрыт
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+                            <span className="flex items-center gap-1">
+                              <Icon name="Coins" size={14} />
+                              {item.amount}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 font-semibold text-primary">
+                              {item.price} ₽
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditShopItem(item)}
+                          >
+                            <Icon name="Edit" size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteShopItem(item.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Icon name="Trash2" size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
+        )}
       </div>
     </div>
   );

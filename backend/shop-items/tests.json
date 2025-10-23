@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Get active shop items",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "items": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
