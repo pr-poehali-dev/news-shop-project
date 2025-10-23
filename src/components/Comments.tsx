@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import func2url from '../../backend/func2url.json';
 
@@ -12,6 +11,15 @@ interface Comment {
   text: string;
   date: string;
   avatar: string;
+  steam_id?: string;
+  avatar_url?: string;
+}
+
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
 }
 
 interface CommentsProps {
@@ -20,11 +28,16 @@ interface CommentsProps {
 
 export default function Comments({ newsId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState({ author: '', text: '' });
+  const [newComment, setNewComment] = useState({ text: '' });
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<SteamUser | null>(null);
 
   useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
     loadComments();
   }, [newsId]);
 
@@ -42,33 +55,36 @@ export default function Comments({ newsId }: CommentsProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.author.trim() && newComment.text.trim()) {
-      try {
-        const avatars = ['🎮', '⚔️', '🔮', '🏆', '👥', '🔥', '🛡️', '🐛', '👤'];
-        const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+    if (!newComment.text.trim()) return;
 
-        const response = await fetch(func2url.comments, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            news_id: parseInt(newsId),
-            author: newComment.author,
-            text: newComment.text,
-            avatar: randomAvatar
-          })
-        });
+    if (!user) {
+      alert('Войдите через Steam, чтобы оставить комментарий');
+      return;
+    }
 
-        const data = await response.json();
-        if (data.comment) {
-          setComments([data.comment, ...comments]);
-          setNewComment({ author: '', text: '' });
-          setIsFormVisible(false);
-        }
-      } catch (error) {
-        console.error('Failed to create comment:', error);
+    try {
+      const response = await fetch(func2url.comments, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          news_id: parseInt(newsId),
+          author: user.personaName,
+          text: newComment.text,
+          steam_id: user.steamId,
+          avatar_url: user.avatarUrl
+        })
+      });
+
+      const data = await response.json();
+      if (data.comment) {
+        setComments([data.comment, ...comments]);
+        setNewComment({ text: '' });
+        setIsFormVisible(false);
       }
+    } catch (error) {
+      console.error('Failed to create comment:', error);
     }
   };
 
@@ -79,33 +95,42 @@ export default function Comments({ newsId }: CommentsProps) {
           <Icon name="MessageSquare" size={28} />
           Комментарии ({comments.length})
         </h3>
-        {!isFormVisible && (
-          <Button onClick={() => setIsFormVisible(true)} className="gap-2">
-            <Icon name="Plus" size={18} />
-            Оставить комментарий
-          </Button>
+        {user ? (
+          !isFormVisible && (
+            <Button onClick={() => setIsFormVisible(true)} className="gap-2">
+              <Icon name="Plus" size={18} />
+              Оставить комментарий
+            </Button>
+          )
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            Войдите через Steam, чтобы комментировать
+          </div>
         )}
       </div>
 
-      {isFormVisible && (
+      {isFormVisible && user && (
         <Card className="p-6 border-primary/30 bg-card/80 backdrop-blur">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Ваше имя</label>
-              <Input
-                value={newComment.author}
-                onChange={(e) => setNewComment({ ...newComment, author: e.target.value })}
-                placeholder="Введите ваш никнейм"
-                className="bg-background/50"
+            <div className="flex items-center gap-3 mb-4">
+              <img 
+                src={user.avatarUrl} 
+                alt={user.personaName} 
+                className="w-12 h-12 rounded-full border-2 border-primary/20"
               />
+              <div>
+                <div className="font-semibold">{user.personaName}</div>
+                <div className="text-sm text-muted-foreground">Steam пользователь</div>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Комментарий</label>
               <Textarea
                 value={newComment.text}
-                onChange={(e) => setNewComment({ ...newComment, text: e.target.value })}
+                onChange={(e) => setNewComment({ text: e.target.value })}
                 placeholder="Поделитесь своим мнением об обновлении..."
                 className="min-h-[100px] bg-background/50"
+                required
               />
             </div>
             <div className="flex gap-3">
@@ -116,7 +141,10 @@ export default function Comments({ newsId }: CommentsProps) {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setIsFormVisible(false)}
+                onClick={() => {
+                  setIsFormVisible(false);
+                  setNewComment({ text: '' });
+                }}
               >
                 Отмена
               </Button>
@@ -134,12 +162,28 @@ export default function Comments({ newsId }: CommentsProps) {
           comments.map((comment) => (
           <Card key={comment.id} className="p-6 bg-card/50 backdrop-blur border-border hover:border-primary/30 transition-colors">
             <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl flex-shrink-0">
-                {comment.avatar}
-              </div>
+              {comment.avatar_url ? (
+                <img 
+                  src={comment.avatar_url} 
+                  alt={comment.author} 
+                  className="w-12 h-12 rounded-full border-2 border-primary/20 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl flex-shrink-0">
+                  {comment.avatar}
+                </div>
+              )}
               <div className="flex-1 space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-lg">{comment.author}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-lg">{comment.author}</h4>
+                    {comment.steam_id && (
+                      <span className="px-2 py-0.5 bg-[#171a21] text-xs rounded flex items-center gap-1">
+                        <Icon name="Gamepad2" size={12} />
+                        Steam
+                      </span>
+                    )}
+                  </div>
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <Icon name="Clock" size={14} />
                     {comment.date}

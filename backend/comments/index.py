@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Управление комментариями к новостям (получение и создание)
+    Business: Управление комментариями к новостям с привязкой к Steam профилям
     Args: event с httpMethod, body, queryStringParameters; context с request_id
     Returns: HTTP ответ с комментариями или статусом создания
     '''
@@ -17,7 +17,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -43,7 +43,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute('''
-                SELECT id, news_id, author, text, avatar, 
+                SELECT id, news_id, author, text, avatar, steam_id, avatar_url,
                        EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)) as seconds_ago
                 FROM t_p15345778_news_shop_project.comments
                 WHERE news_id = %s
@@ -54,7 +54,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             comments: List[Dict[str, Any]] = []
             
             for row in rows:
-                seconds_ago = row[5]
+                seconds_ago = row[7]
                 if seconds_ago < 60:
                     time_str = 'Только что'
                 elif seconds_ago < 3600:
@@ -73,6 +73,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'author': row[2],
                     'text': row[3],
                     'avatar': row[4],
+                    'steam_id': row[5],
+                    'avatar_url': row[6],
                     'date': time_str
                 })
             
@@ -92,23 +94,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             author = body_data.get('author', '').strip()
             text = body_data.get('text', '').strip()
             avatar = body_data.get('avatar', '👤')
+            steam_id = body_data.get('steam_id')
+            avatar_url = body_data.get('avatar_url')
             
-            if not news_id or not author or not text:
+            if not news_id or not text:
                 return {
                     'statusCode': 400,
                     'headers': {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps({'error': 'news_id, author and text required'})
+                    'body': json.dumps({'error': 'news_id and text required'})
                 }
+            
+            if not author:
+                author = 'Аноним'
             
             cur.execute('''
                 INSERT INTO t_p15345778_news_shop_project.comments 
-                (news_id, author, text, avatar)
-                VALUES (%s, %s, %s, %s)
-                RETURNING id, news_id, author, text, avatar
-            ''', (int(news_id), author, text, avatar))
+                (news_id, author, text, avatar, steam_id, avatar_url)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id, news_id, author, text, avatar, steam_id, avatar_url
+            ''', (int(news_id), author, text, avatar, steam_id, avatar_url))
             
             row = cur.fetchone()
             conn.commit()
@@ -127,6 +134,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'author': row[2],
                         'text': row[3],
                         'avatar': row[4],
+                        'steam_id': row[5],
+                        'avatar_url': row[6],
                         'date': 'Только что'
                     }
                 })
