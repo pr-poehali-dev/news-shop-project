@@ -46,7 +46,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cur.execute('''
                 SELECT id, news_id, author, text, avatar, steam_id, avatar_url,
-                       EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)) as seconds_ago,
+                       to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
                        parent_comment_id
                 FROM t_p15345778_news_shop_project.comments
                 WHERE news_id = %s
@@ -57,19 +57,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             comments: List[Dict[str, Any]] = []
             
             for row in rows:
-                seconds_ago = row[7]
-                if seconds_ago < 60:
-                    time_str = 'Только что'
-                elif seconds_ago < 3600:
-                    minutes = int(seconds_ago / 60)
-                    time_str = f'{minutes} {"минута" if minutes == 1 else "минут"} назад'
-                elif seconds_ago < 86400:
-                    hours = int(seconds_ago / 3600)
-                    time_str = f'{hours} {"час" if hours == 1 else "часов"} назад'
-                else:
-                    days = int(seconds_ago / 86400)
-                    time_str = f'{days} {"день" if days == 1 else "дней"} назад'
-                
+                created_at = row[7]
                 comment_id = row[0]
                 
                 cur.execute('''
@@ -94,7 +82,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'avatar': row[4],
                     'steam_id': row[5],
                     'avatar_url': row[6],
-                    'date': time_str,
+                    'date': created_at,
                     'parent_comment_id': row[8],
                     'likes_count': likes_count,
                     'is_liked': is_liked
@@ -137,7 +125,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 INSERT INTO t_p15345778_news_shop_project.comments 
                 (news_id, author, text, avatar, steam_id, avatar_url, parent_comment_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-                RETURNING id, news_id, author, text, avatar, steam_id, avatar_url, parent_comment_id
+                RETURNING id, news_id, author, text, avatar, steam_id, avatar_url, parent_comment_id,
+                          to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at
             ''', (int(news_id), author, text, avatar, steam_id, avatar_url, parent_comment_id))
             
             row = cur.fetchone()
@@ -159,7 +148,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'avatar': row[4],
                         'steam_id': row[5],
                         'avatar_url': row[6],
-                        'date': 'Только что',
+                        'date': row[8],
                         'parent_comment_id': row[7],
                         'likes_count': 0,
                         'is_liked': False
