@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
+import { formatShortDate } from '@/utils/dateFormat';
 import func2url from '../../../backend/func2url.json';
 
 interface Tournament {
@@ -427,13 +428,7 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
                       <Icon name="Calendar" size={16} className="text-primary" />
                       <span className="text-muted-foreground">Начало:</span>
                       <span className="font-bold">
-                        {new Date(tournament.start_date).toLocaleDateString('ru-RU', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          timeZone: 'Europe/Moscow'
-                        })}
+                        {formatShortDate(tournament.start_date)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

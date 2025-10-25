@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import { formatTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
 interface ChatMessage {
@@ -135,10 +136,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
     }
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  };
+
 
   return (
     <Card className="w-full h-[calc(100vh-120px)] flex flex-col bg-card/95 backdrop-blur sticky top-6">

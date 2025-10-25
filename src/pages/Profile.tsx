@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
 
 interface SteamUser {
   steamId: string;
@@ -271,13 +272,7 @@ const Profile = () => {
                             <Icon name="Calendar" size={16} className="text-primary" />
                             <span className="text-muted-foreground">Начало:</span>
                             <span className="font-bold">
-                              {new Date(tournament.start_date).toLocaleDateString('ru-RU', {
-                                day: 'numeric',
-                                month: 'short',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                timeZone: 'Europe/Moscow'
-                              })}
+                              {formatShortDate(tournament.start_date)}
                             </span>
                           </div>
                         </div>
@@ -286,14 +281,7 @@ const Profile = () => {
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Icon name="Clock" size={14} />
                             <span>
-                              Зарегистрирован {new Date(tournament.registered_at).toLocaleDateString('ru-RU', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                timeZone: 'Europe/Moscow'
-                              })}
+                              Зарегистрирован {formatDateTime(tournament.registered_at)}
                             </span>
                           </div>
                         </div>

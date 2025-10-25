@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import Navigation from '@/components/Navigation';
+import { formatShortDate, formatDateTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
 interface Participant {
@@ -254,13 +255,7 @@ const TournamentDetail = () => {
                   <p className="text-muted-foreground font-medium">Начало турнира</p>
                 </div>
                 <p className="text-4xl font-bold text-orange-500">
-                  {new Date(tournament.start_date).toLocaleDateString('ru-RU', { 
-                    day: 'numeric', 
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: 'Europe/Moscow'
-                  })}
+                  {formatShortDate(tournament.start_date)}
                 </p>
               </div>
             </div>
@@ -313,12 +308,7 @@ const TournamentDetail = () => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-lg truncate">{participant.persona_name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(participant.registered_at).toLocaleDateString('ru-RU', {
-                            day: 'numeric',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {formatDateTime(participant.registered_at)}
                         </p>
                       </div>
                     </div>

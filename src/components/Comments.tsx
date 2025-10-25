@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
+import { formatRelativeTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
 interface Comment {
@@ -226,7 +227,7 @@ export default function Comments({ newsId }: CommentsProps) {
               </div>
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <Icon name="Clock" size={14} />
-                {comment.date}
+                {formatRelativeTime(comment.date)}
               </span>
             </div>
             <p className="text-muted-foreground leading-relaxed">{comment.text}</p>
