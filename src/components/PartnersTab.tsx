@@ -24,10 +24,17 @@ const PartnersTab = () => {
   }, []);
 
   const loadPartners = async () => {
+    const cachedPartners = localStorage.getItem('partners');
+    if (cachedPartners) {
+      setPartners(JSON.parse(cachedPartners));
+      setIsLoading(false);
+    }
+
     try {
       const response = await fetch(func2url.partners);
       const data = await response.json();
       setPartners(data.partners || []);
+      localStorage.setItem('partners', JSON.stringify(data.partners || []));
     } catch (error) {
       console.error('Failed to load partners:', error);
     } finally {
