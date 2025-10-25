@@ -221,13 +221,13 @@ export default function Comments({ newsId }: CommentsProps) {
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-semibold text-lg">{comment.author}</h4>
                 {comment.is_admin && (
-                  <span className="px-2 py-0.5 bg-destructive/20 text-destructive text-xs font-semibold rounded uppercase">
-                    Админ
+                  <span className="px-2 py-0.5 bg-destructive/20 text-destructive text-xs font-semibold rounded">
+                    Администратор
                   </span>
                 )}
                 {comment.is_moderator && (
-                  <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-semibold rounded uppercase">
-                    Модер
+                  <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-semibold rounded">
+                    Модератор
                   </span>
                 )}
                 {comment.steam_id && (

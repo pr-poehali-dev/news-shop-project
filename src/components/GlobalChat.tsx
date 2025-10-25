@@ -187,13 +187,13 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
                     {msg.personaName}
                   </span>
                   {msg.isAdmin && (
-                    <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded uppercase">
-                      Админ
+                    <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded">
+                      Администратор
                     </span>
                   )}
                   {msg.isModerator && (
-                    <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded uppercase">
-                      Модер
+                    <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded">
+                      Модератор
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground">

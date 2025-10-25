@@ -77,13 +77,13 @@ export default function UserListItem({
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold truncate">{user.personaName}</h3>
               {user.isAdmin && (
-                <span className="text-xs px-2 py-0.5 bg-destructive/20 text-destructive rounded font-semibold uppercase">
-                  Админ
+                <span className="text-xs px-2 py-0.5 bg-destructive/20 text-destructive rounded font-semibold">
+                  Администратор
                 </span>
               )}
               {user.isModerator && (
-                <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded font-semibold uppercase">
-                  Модер
+                <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded font-semibold">
+                  Модератор
                 </span>
               )}
               {user.isBlocked && (

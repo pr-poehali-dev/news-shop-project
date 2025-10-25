@@ -282,13 +282,13 @@ const TournamentDetail = () => {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <h3 className="font-bold text-lg truncate">{participant.persona_name}</h3>
                           {participant.is_admin && (
-                            <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded uppercase">
-                              Админ
+                            <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded">
+                              Администратор
                             </span>
                           )}
                           {participant.is_moderator && (
-                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded uppercase">
-                              Модер
+                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded">
+                              Модератор
                             </span>
                           )}
                         </div>
