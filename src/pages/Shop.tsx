@@ -86,10 +86,17 @@ const Shop = () => {
   };
 
   const loadBalance = async (steamId: string) => {
+    const cacheKey = `balance_${steamId}`;
+    const cachedBalance = localStorage.getItem(cacheKey);
+    if (cachedBalance) {
+      setBalance(JSON.parse(cachedBalance));
+    }
+
     try {
       const response = await fetch(`${func2url['balance']}?steam_id=${steamId}`);
       const data = await response.json();
       setBalance(data.balance);
+      localStorage.setItem(cacheKey, JSON.stringify(data.balance));
     } catch (error) {
       console.error('Failed to load balance:', error);
     }
