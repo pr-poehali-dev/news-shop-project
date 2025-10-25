@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import Navigation from '@/components/Navigation';
 import func2url from '../../backend/func2url.json';
 
 interface Product {
@@ -12,12 +13,49 @@ interface Product {
   is_active?: boolean;
 }
 
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
+}
+
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [user, setUser] = useState<SteamUser | null>(null);
 
   useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
     loadProducts();
+
+    const params = new URLSearchParams(window.location.search);
+    const claimedId = params.get('openid.claimed_id');
+    
+    if (claimedId) {
+      const verifyParams = new URLSearchParams();
+      params.forEach((value, key) => {
+        verifyParams.append(key, value);
+      });
+      verifyParams.append('mode', 'verify');
+      
+      fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?${verifyParams.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.steamId) {
+            setUser(data);
+            localStorage.setItem('steamUser', JSON.stringify(data));
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        })
+        .catch(err => console.error('Steam auth error:', err));
+    }
   }, []);
 
   const loadProducts = async () => {
@@ -41,8 +79,34 @@ const Shop = () => {
     }
   };
 
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}${window.location.pathname}`;
+    const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('steamUser');
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <Navigation
+        activeTab="shop"
+        setActiveTab={() => {}}
+        user={user}
+        isLoginOpen={isLoginOpen}
+        setIsLoginOpen={setIsLoginOpen}
+        isRegisterOpen={isRegisterOpen}
+        setIsRegisterOpen={setIsRegisterOpen}
+        handleSteamLogin={handleSteamLogin}
+        handleLogout={handleLogout}
+      />
       <main className="w-full py-16">
         <div className="space-y-10 px-6">
           <div className="space-y-3">

@@ -41,7 +41,7 @@ const Navigation = ({
     <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
       <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
             </div>
@@ -51,7 +51,7 @@ const Navigation = ({
           <div className="flex items-center gap-6">
             <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
               <button
-                onClick={() => setActiveTab('news')}
+                onClick={() => navigate('/news')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   activeTab === 'news'
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
@@ -65,7 +65,7 @@ const Navigation = ({
               </button>
               
               <button
-                onClick={() => setActiveTab('shop')}
+                onClick={() => navigate('/shop')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   activeTab === 'shop'
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
@@ -79,7 +79,7 @@ const Navigation = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('servers')}
+                onClick={() => navigate('/servers')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   activeTab === 'servers'
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
@@ -93,7 +93,7 @@ const Navigation = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('tournaments')}
+                onClick={() => navigate('/tournaments')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   activeTab === 'tournaments'
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
@@ -107,7 +107,7 @@ const Navigation = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('partners')}
+                onClick={() => navigate('/partners')}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   activeTab === 'partners'
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'

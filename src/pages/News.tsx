@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
+import Navigation from '@/components/Navigation';
+import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
   id: number;
@@ -8,48 +11,96 @@ interface NewsItem {
   date: string;
 }
 
+interface SteamUser {
+  steamId: string;
+  personaName: string;
+  avatarUrl: string;
+  profileUrl: string;
+}
+
 const News = () => {
-  const newsItems: NewsItem[] = [
-    {
-      id: 1,
-      title: 'Обновление 2.5: Новая локация',
-      description: 'Исследуйте загадочные руины древней цивилизации. Открывайте секреты прошлого и получайте уникальные награды.',
-      date: '22 октября 2025'
-    },
-    {
-      id: 2,
-      title: 'Турнир сезона начинается',
-      description: 'Зарегистрируйтесь на главный турнир сезона. Призовой фонд 100,000 игровой валюты ждёт лучших игроков.',
-      date: '20 октября 2025'
-    },
-    {
-      id: 3,
-      title: 'Новые персонажи доступны',
-      description: 'Встречайте трёх новых легендарных героев. Каждый обладает уникальными способностями и стилем игры.',
-      date: '18 октября 2025'
-    },
-    {
-      id: 4,
-      title: 'Исправление багов',
-      description: 'Улучшена стабильность игры, исправлены проблемы с подключением и оптимизирована производительность.',
-      date: '15 октября 2025'
-    },
-    {
-      id: 5,
-      title: 'Летний ивент запущен',
-      description: 'Специальное летнее мероприятие с эксклюзивными наградами. Выполняйте задания и получайте уникальные скины.',
-      date: '12 октября 2025'
-    },
-    {
-      id: 6,
-      title: 'Улучшение графики',
-      description: 'Внедрены новые визуальные эффекты и улучшено освещение. Игра стала ещё красивее и реалистичнее.',
-      date: '10 октября 2025'
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [user, setUser] = useState<SteamUser | null>(null);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
-  ];
+
+    loadNews();
+
+    const params = new URLSearchParams(window.location.search);
+    const claimedId = params.get('openid.claimed_id');
+    
+    if (claimedId) {
+      const verifyParams = new URLSearchParams();
+      params.forEach((value, key) => {
+        verifyParams.append(key, value);
+      });
+      verifyParams.append('mode', 'verify');
+      
+      fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?${verifyParams.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.steamId) {
+            setUser(data);
+            localStorage.setItem('steamUser', JSON.stringify(data));
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        })
+        .catch(err => console.error('Steam auth error:', err));
+    }
+  }, []);
+
+  const loadNews = async () => {
+    try {
+      const response = await fetch(func2url.news);
+      const data = await response.json();
+      const formattedNews = (data.news || []).map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.content.substring(0, 150) + '...',
+        date: item.date
+      }));
+      setNewsItems(formattedNews);
+    } catch (error) {
+      console.error('Failed to load news:', error);
+    }
+  };
+
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}${window.location.pathname}`;
+    const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('steamUser');
+  };
+
+
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation
+        activeTab="news"
+        setActiveTab={() => {}}
+        user={user}
+        isLoginOpen={isLoginOpen}
+        setIsLoginOpen={setIsLoginOpen}
+        isRegisterOpen={isRegisterOpen}
+        setIsRegisterOpen={setIsRegisterOpen}
+        handleSteamLogin={handleSteamLogin}
+        handleLogout={handleLogout}
+      />
       <main className="container mx-auto px-6 py-16">
         <div className="space-y-10">
           <div className="space-y-3">
