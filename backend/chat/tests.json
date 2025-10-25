@@ -3,7 +3,7 @@
     {
       "name": "Get chat messages",
       "method": "GET",
-      "path": "/",
+      "path": "/?limit=10",
       "expectedStatus": 200,
       "expectedBody": {
         "messages": "array"
@@ -18,7 +18,8 @@
         "steam_id": "76561198000000000",
         "persona_name": "TestUser",
         "avatar_url": "https://example.com/avatar.jpg",
-        "message": "Hello world!"
+        "message": "Hello world!",
+        "reply_to_message_id": null
       },
       "expectedStatus": 201,
       "expectedBody": {

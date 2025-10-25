@@ -55,8 +55,9 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     
     cur.execute('''
         SELECT id, steam_id, persona_name, avatar_url, message, 
-               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at
-        FROM chat_messages
+               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at,
+               reply_to_message_id
+        FROM t_p15345778_news_shop_project.chat_messages
         WHERE is_hidden = FALSE
         ORDER BY created_at DESC
         LIMIT %s
@@ -66,13 +67,29 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     
     messages = []
     for row in rows:
+        reply_to = None
+        if row[6]:
+            cur.execute('''
+                SELECT id, persona_name, message
+                FROM t_p15345778_news_shop_project.chat_messages
+                WHERE id = %s
+            ''', (row[6],))
+            reply_row = cur.fetchone()
+            if reply_row:
+                reply_to = {
+                    'id': reply_row[0],
+                    'personaName': reply_row[1],
+                    'message': reply_row[2]
+                }
+        
         messages.append({
             'id': row[0],
             'steamId': row[1],
             'personaName': row[2],
             'avatarUrl': row[3],
             'message': row[4],
-            'createdAt': row[5]
+            'createdAt': row[5],
+            'replyTo': reply_to
         })
     
     messages.reverse()
@@ -97,6 +114,7 @@ def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
     persona_name = body_data.get('persona_name')
     avatar_url = body_data.get('avatar_url')
     message = body_data.get('message', '').strip()
+    reply_to_message_id = body_data.get('reply_to_message_id')
     
     if not steam_id or not persona_name:
         return {
@@ -122,10 +140,11 @@ def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
     cur = conn.cursor()
     
     cur.execute('''
-        INSERT INTO chat_messages (steam_id, persona_name, avatar_url, message)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO t_p15345778_news_shop_project.chat_messages 
+        (steam_id, persona_name, avatar_url, message, reply_to_message_id)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING id, to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at
-    ''', (steam_id, persona_name, avatar_url, message))
+    ''', (steam_id, persona_name, avatar_url, message, reply_to_message_id))
     
     row = cur.fetchone()
     message_id = row[0]

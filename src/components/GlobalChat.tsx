@@ -6,6 +6,12 @@ import Icon from '@/components/ui/icon';
 import { formatTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
+interface ReplyTo {
+  id: number;
+  personaName: string;
+  message: string;
+}
+
 interface ChatMessage {
   id: number;
   steamId: string;
@@ -13,6 +19,7 @@ interface ChatMessage {
   avatarUrl?: string;
   message: string;
   createdAt: string;
+  replyTo?: ReplyTo | null;
 }
 
 interface SteamUser {
@@ -33,6 +40,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,12 +99,14 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
           steam_id: user.steamId,
           persona_name: user.personaName,
           avatar_url: user.avatarUrl,
-          message: newMessage.trim()
+          message: newMessage.trim(),
+          reply_to_message_id: replyingTo?.id || null
         })
       });
 
       if (response.ok) {
         setNewMessage('');
+        setReplyingTo(null);
         await loadMessages();
       }
     } catch (error) {
@@ -178,18 +188,35 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
                     {formatTime(msg.createdAt)}
                   </span>
                 </div>
+                {msg.replyTo && (
+                  <div className="mb-1 pl-3 border-l-2 border-primary/50 text-xs text-muted-foreground">
+                    <span className="font-semibold">{msg.replyTo.personaName}:</span> {msg.replyTo.message.substring(0, 50)}{msg.replyTo.message.length > 50 ? '...' : ''}
+                  </div>
+                )}
                 <p className="text-sm break-words">{msg.message}</p>
               </div>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteMessage(msg.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-destructive hover:text-destructive"
-                >
-                  <Icon name="Trash2" size={14} />
-                </Button>
-              )}
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {user && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setReplyingTo(msg)}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                  >
+                    <Icon name="Reply" size={14} />
+                  </Button>
+                )}
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Icon name="Trash2" size={14} />
+                  </Button>
+                )}
+              </div>
             </div>
           ))
         )}
@@ -198,6 +225,25 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
 
       {/* Input */}
       <form onSubmit={handleSendMessage} className="p-4 border-t border-border">
+        {replyingTo && (
+          <div className="mb-2 p-2 bg-secondary/50 rounded-lg flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-muted-foreground mb-1">
+                Ответ на сообщение <span className="font-semibold">{replyingTo.personaName}</span>
+              </div>
+              <p className="text-xs truncate">{replyingTo.message}</p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setReplyingTo(null)}
+              className="h-6 w-6 p-0 flex-shrink-0"
+            >
+              <Icon name="X" size={14} />
+            </Button>
+          </div>
+        )}
         {!user ? (
           <Button
             type="button"
