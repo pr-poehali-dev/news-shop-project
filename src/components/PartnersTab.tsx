@@ -16,7 +16,10 @@ interface Partner {
 }
 
 const PartnersTab = () => {
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const cachedPartners = localStorage.getItem('partners');
+  const [partners, setPartners] = useState<Partner[]>(
+    cachedPartners ? JSON.parse(cachedPartners) : []
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -24,11 +27,6 @@ const PartnersTab = () => {
   }, []);
 
   const loadPartners = async () => {
-    const cachedPartners = localStorage.getItem('partners');
-    if (cachedPartners) {
-      setPartners(JSON.parse(cachedPartners));
-    }
-
     try {
       const response = await fetch(func2url.partners);
       const data = await response.json();
