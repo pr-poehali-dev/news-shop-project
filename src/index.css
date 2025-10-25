@@ -101,10 +101,10 @@
 
   html {
     overflow-y: scroll;
-    width: 100vw;
   }
 
-  body {
-    overflow-x: hidden;
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+    overflow-y: scroll !important;
   }
 }
