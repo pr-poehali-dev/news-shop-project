@@ -20,6 +20,8 @@ interface ChatMessage {
   message: string;
   createdAt: string;
   replyTo?: ReplyTo | null;
+  isAdmin?: boolean;
+  isModerator?: boolean;
 }
 
 interface SteamUser {
@@ -180,10 +182,20 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
                 className="w-8 h-8 rounded-full flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="font-semibold text-sm truncate">
                     {msg.personaName}
                   </span>
+                  {msg.isAdmin && (
+                    <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded uppercase">
+                      Админ
+                    </span>
+                  )}
+                  {msg.isModerator && (
+                    <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded uppercase">
+                      Модер
+                    </span>
+                  )}
                   <span className="text-xs text-muted-foreground">
                     {formatTime(msg.createdAt)}
                   </span>

@@ -54,12 +54,15 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     cur = conn.cursor()
     
     cur.execute('''
-        SELECT id, steam_id, persona_name, avatar_url, message, 
-               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at,
-               reply_to_message_id
-        FROM t_p15345778_news_shop_project.chat_messages
-        WHERE is_hidden = FALSE
-        ORDER BY created_at DESC
+        SELECT cm.id, cm.steam_id, cm.persona_name, cm.avatar_url, cm.message, 
+               to_char(cm.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at,
+               cm.reply_to_message_id,
+               COALESCE(u.is_admin, false) as is_admin,
+               COALESCE(u.is_moderator, false) as is_moderator
+        FROM t_p15345778_news_shop_project.chat_messages cm
+        LEFT JOIN t_p15345778_news_shop_project.users u ON cm.steam_id = u.steam_id
+        WHERE cm.is_hidden = FALSE
+        ORDER BY cm.created_at DESC
         LIMIT %s
     ''', (limit,))
     
@@ -89,7 +92,9 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
             'avatarUrl': row[3],
             'message': row[4],
             'createdAt': row[5],
-            'replyTo': reply_to
+            'replyTo': reply_to,
+            'isAdmin': row[7],
+            'isModerator': row[8]
         })
     
     messages.reverse()

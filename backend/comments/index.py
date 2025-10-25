@@ -45,12 +45,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             steam_id = params.get('steam_id')
             
             cur.execute('''
-                SELECT id, news_id, author, text, avatar, steam_id, avatar_url,
-                       to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
-                       parent_comment_id
-                FROM t_p15345778_news_shop_project.comments
-                WHERE news_id = %s
-                ORDER BY created_at DESC
+                SELECT c.id, c.news_id, c.author, c.text, c.avatar, c.steam_id, c.avatar_url,
+                       to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
+                       c.parent_comment_id,
+                       COALESCE(u.is_admin, false) as is_admin,
+                       COALESCE(u.is_moderator, false) as is_moderator
+                FROM t_p15345778_news_shop_project.comments c
+                LEFT JOIN t_p15345778_news_shop_project.users u ON c.steam_id = u.steam_id
+                WHERE c.news_id = %s
+                ORDER BY c.created_at DESC
             ''', (int(news_id),))
             
             rows = cur.fetchall()
@@ -85,7 +88,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'date': created_at,
                     'parent_comment_id': row[8],
                     'likes_count': likes_count,
-                    'is_liked': is_liked
+                    'is_liked': is_liked,
+                    'is_admin': row[9],
+                    'is_moderator': row[10]
                 })
             
             return {

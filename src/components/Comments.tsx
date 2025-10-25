@@ -17,6 +17,8 @@ interface Comment {
   parent_comment_id?: number | null;
   likes_count: number;
   is_liked: boolean;
+  is_admin?: boolean;
+  is_moderator?: boolean;
 }
 
 interface SteamUser {
@@ -216,8 +218,18 @@ export default function Comments({ newsId }: CommentsProps) {
           )}
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-semibold text-lg">{comment.author}</h4>
+                {comment.is_admin && (
+                  <span className="px-2 py-0.5 bg-destructive/20 text-destructive text-xs font-semibold rounded uppercase">
+                    Админ
+                  </span>
+                )}
+                {comment.is_moderator && (
+                  <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-semibold rounded uppercase">
+                    Модер
+                  </span>
+                )}
                 {comment.steam_id && (
                   <span className="px-2 py-0.5 bg-[#171a21] text-xs rounded flex items-center gap-1">
                     <Icon name="Gamepad2" size={12} />
