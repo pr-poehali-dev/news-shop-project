@@ -11,6 +11,8 @@ interface Participant {
   persona_name: string;
   avatar_url: string;
   registered_at: string;
+  is_admin?: boolean;
+  is_moderator?: boolean;
 }
 
 interface TournamentDetail {
@@ -277,7 +279,19 @@ const TournamentDetail = () => {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg truncate">{participant.persona_name}</h3>
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h3 className="font-bold text-lg truncate">{participant.persona_name}</h3>
+                          {participant.is_admin && (
+                            <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded uppercase">
+                              Админ
+                            </span>
+                          )}
+                          {participant.is_moderator && (
+                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded uppercase">
+                              Модер
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {formatDateTime(participant.registered_at)}
                         </p>

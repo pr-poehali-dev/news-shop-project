@@ -89,13 +89,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 # Получить участников турнира
                 cursor.execute('''
                     SELECT 
-                        steam_id,
-                        persona_name,
-                        avatar_url,
-                        to_char(registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at
-                    FROM tournament_registrations
-                    WHERE tournament_id = %s
-                    ORDER BY registered_at ASC
+                        tr.steam_id,
+                        tr.persona_name,
+                        tr.avatar_url,
+                        to_char(tr.registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at,
+                        COALESCE(u.is_admin, false) as is_admin,
+                        COALESCE(u.is_moderator, false) as is_moderator
+                    FROM tournament_registrations tr
+                    LEFT JOIN t_p15345778_news_shop_project.users u ON tr.steam_id = u.steam_id
+                    WHERE tr.tournament_id = %s
+                    ORDER BY tr.registered_at ASC
                 ''', (tournament_id,))
                 
                 participants = cursor.fetchall()
