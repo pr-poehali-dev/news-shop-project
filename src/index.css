@@ -100,10 +100,6 @@
   }
 
   html {
-    overflow-y: scroll;
-  }
-
-  body[style*="overflow: hidden"] {
-    padding-right: 0 !important;
+    scrollbar-gutter: stable;
   }
 }
