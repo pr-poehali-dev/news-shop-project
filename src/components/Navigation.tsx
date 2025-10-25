@@ -98,7 +98,7 @@ const Navigation = ({
             </div>
 
             {user ? (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
                     <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
