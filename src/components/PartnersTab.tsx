@@ -84,19 +84,22 @@ const PartnersTab = () => {
           ))}
         </div>
 
-        <Card className="p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Icon name="Handshake" size={32} className="text-primary" />
+        <Card className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <Icon name="Handshake" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Хотите стать партнёром?</h3>
+                <p className="text-sm text-muted-foreground">
+                  Свяжитесь с нами, чтобы обсудить возможности партнёрства
+                </p>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold">Хотите стать партнёром?</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Мы всегда открыты к новым предложениям о сотрудничестве. 
-              Свяжитесь с нами, чтобы обсудить возможности партнёрства.
-            </p>
-            <Button className="gap-2" size="lg">
-              <Icon name="Mail" size={18} />
-              Связаться с нами
+            <Button className="gap-2 flex-shrink-0">
+              <Icon name="Mail" size={16} />
+              Связаться
             </Button>
           </div>
         </Card>
