@@ -47,8 +47,6 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 15000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

@@ -60,8 +60,6 @@ const ServersTab = () => {
 
   useEffect(() => {
     updateServersStatus();
-    const interval = setInterval(updateServersStatus, 60000);
-    return () => clearInterval(interval);
   }, []);
 
   const copyToClipboard = (text: string) => {
