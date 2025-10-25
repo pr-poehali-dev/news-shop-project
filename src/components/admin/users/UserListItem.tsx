@@ -197,7 +197,7 @@ export default function UserListItem({
               </Button>
               <Button
                 size="sm"
-                variant={user.isAdmin ? "secondary" : "default"}
+                variant={user.isAdmin ? "secondary" : "outline"}
                 onClick={() => onToggleAdmin(user)}
                 className="gap-2"
               >
