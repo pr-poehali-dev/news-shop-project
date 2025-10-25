@@ -42,6 +42,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isFrozen, setIsFrozen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +65,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
       const response = await fetch(`${func2url.chat}?limit=50`);
       const data = await response.json();
       setMessages(data.messages || []);
+      setIsFrozen(data.isFrozen || false);
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {
@@ -157,6 +159,12 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
         <span className="text-xs text-muted-foreground">
           ({messages.length})
         </span>
+        {isFrozen && (
+          <span className="ml-auto flex items-center gap-1 px-2 py-1 bg-muted text-xs text-muted-foreground rounded">
+            <Icon name="Lock" size={12} />
+            Заморожен
+          </span>
+        )}
       </div>
 
       {/* Messages */}
@@ -264,6 +272,13 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
             <Icon name="User" size={16} className="mr-2" />
             Войти для отправки
           </Button>
+        ) : isFrozen && !isAdmin ? (
+          <div className="w-full p-3 bg-muted/50 rounded-lg border border-border flex items-center gap-2">
+            <Icon name="Lock" size={16} className="text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Чат временно заморожен администратором
+            </p>
+          </div>
         ) : (
           <div className="flex gap-2">
             <Input

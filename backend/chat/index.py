@@ -23,7 +23,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, DELETE, PUT, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
@@ -36,6 +36,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return post_message(event)
     elif method == 'DELETE':
         return hide_message(event)
+    elif method == 'PUT':
+        return toggle_chat_freeze(event)
     
     return {
         'statusCode': 405,
@@ -52,6 +54,10 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    cur.execute('SELECT is_frozen FROM t_p15345778_news_shop_project.chat_settings LIMIT 1')
+    is_frozen_row = cur.fetchone()
+    is_frozen = is_frozen_row[0] if is_frozen_row else False
     
     cur.execute('''
         SELECT cm.id, cm.steam_id, cm.persona_name, cm.avatar_url, cm.message, 
@@ -109,7 +115,7 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
             'Access-Control-Allow-Origin': '*'
         },
         'isBase64Encoded': False,
-        'body': json.dumps({'messages': messages})
+        'body': json.dumps({'messages': messages, 'isFrozen': is_frozen})
     }
 
 def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
@@ -120,6 +126,32 @@ def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
     avatar_url = body_data.get('avatar_url')
     message = body_data.get('message', '').strip()
     reply_to_message_id = body_data.get('reply_to_message_id')
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('SELECT is_frozen FROM t_p15345778_news_shop_project.chat_settings LIMIT 1')
+    is_frozen_row = cur.fetchone()
+    is_frozen = is_frozen_row[0] if is_frozen_row else False
+    
+    cur.execute('SELECT is_admin FROM t_p15345778_news_shop_project.users WHERE steam_id = %s', (steam_id,))
+    result = cur.fetchone()
+    is_admin = result[0] if result else False
+    
+    if is_frozen and not is_admin:
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Chat is frozen by administrator'})
+        }
+    
+    cur.close()
+    conn.close()
     
     if not steam_id or not persona_name:
         return {
@@ -235,4 +267,56 @@ def hide_message(event: Dict[str, Any]) -> Dict[str, Any]:
         },
         'isBase64Encoded': False,
         'body': json.dumps({'message': 'Message hidden successfully'})
+    }
+
+def toggle_chat_freeze(event: Dict[str, Any]) -> Dict[str, Any]:
+    headers = event.get('headers', {})
+    admin_steam_id = headers.get('x-admin-steam-id') or headers.get('X-Admin-Steam-Id')
+    
+    if not admin_steam_id:
+        return {
+            'statusCode': 401,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Admin authentication required'})
+        }
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('SELECT is_admin FROM t_p15345778_news_shop_project.users WHERE steam_id = %s', (admin_steam_id,))
+    result = cur.fetchone()
+    is_admin = result[0] if result else False
+    
+    if not is_admin:
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Admin access required'})
+        }
+    
+    body_data = json.loads(event.get('body', '{}'))
+    is_frozen = body_data.get('is_frozen', False)
+    
+    cur.execute('UPDATE t_p15345778_news_shop_project.chat_settings SET is_frozen = %s, updated_at = NOW()', (is_frozen,))
+    conn.commit()
+    
+    cur.close()
+    conn.close()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'isBase64Encoded': False,
+        'body': json.dumps({'message': 'Chat freeze status updated', 'isFrozen': is_frozen})
     }
