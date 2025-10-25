@@ -20,17 +20,24 @@ interface SteamUser {
   profileUrl: string;
 }
 
+interface UserBalance {
+  balance: number;
+}
+
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      loadBalance(userData.steamId);
     }
 
     loadProducts();
@@ -76,6 +83,16 @@ const Shop = () => {
     }
   };
 
+  const loadBalance = async (steamId: string) => {
+    try {
+      const response = await fetch(`${func2url['balance']}?steam_id=${steamId}`);
+      const data = await response.json();
+      setBalance(data.balance);
+    } catch (error) {
+      console.error('Failed to load balance:', error);
+    }
+  };
+
   const handleSteamLogin = async () => {
     const returnUrl = `${window.location.origin}${window.location.pathname}`;
     const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
@@ -115,6 +132,26 @@ const Shop = () => {
             </h2>
             <p className="text-muted-foreground text-xl">Пополняйте баланс рублей</p>
           </div>
+          
+          {user && balance !== null && (
+            <Card className="p-6 backdrop-blur-sm bg-card/50 border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <Icon name="Wallet" size={32} className="text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ваш баланс</p>
+                    <p className="text-3xl font-bold">{balance} ₽</p>
+                  </div>
+                </div>
+                <Button size="lg" className="h-12 px-6">
+                  <Icon name="Plus" size={20} className="mr-2" />
+                  Пополнить
+                </Button>
+              </div>
+            </Card>
+          )}
           
           {isLoading ? (
             <div className="text-center py-12 text-muted-foreground">
