@@ -136,7 +136,7 @@ const Tournaments = () => {
   };
 
   return (
-      <main className="container mx-auto px-6 py-16 max-w-6xl">
+      <main className="container mx-auto px-6 py-16">
         <TournamentsTab
           tournaments={tournaments}
           user={user}

@@ -201,7 +201,7 @@ const Index = () => {
 
 
   return (
-      <main className="container mx-auto px-6 py-16 max-w-7xl">
+      <main className="container mx-auto px-6 py-16">
         <div className="flex gap-6">
           <div className="flex-1 min-w-0">
             {activeTab === 'news' && <NewsTab newsItems={newsItems} />}
