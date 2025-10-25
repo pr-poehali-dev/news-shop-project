@@ -42,9 +42,6 @@ interface Tournament {
   is_registered?: boolean;
 }
 
-const productsLoaded = false;
-const newsLoaded = false;
-
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments' | 'partners'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -61,14 +58,8 @@ const Index = () => {
       setUser(JSON.parse(savedUser));
     }
 
-    if (!newsLoaded) {
-      loadNews();
-      newsLoaded = true;
-    }
-    if (!productsLoaded) {
-      loadProducts();
-      productsLoaded = true;
-    }
+    loadNews();
+    loadProducts();
 
     const params = new URLSearchParams(window.location.search);
     const claimedId = params.get('openid.claimed_id');
@@ -121,16 +112,22 @@ const Index = () => {
 
   const loadProducts = async () => {
     try {
-      const response = await fetch(func2url['shop-items']);
+      console.log('🛒 Loading shop items from:', func2url['shop-items']);
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${func2url['shop-items']}?_=${timestamp}`);
+      console.log('📦 Response status:', response.status);
+      console.log('📦 Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('📋 Received data:', data);
+      console.log('🎯 Items count:', data.items?.length || 0);
       setProducts(data.items || []);
     } catch (error) {
-      console.error('Failed to load shop items:', error);
+      console.error('❌ Failed to load shop items:', error);
     }
   };
 
