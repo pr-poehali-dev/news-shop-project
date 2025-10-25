@@ -97,10 +97,14 @@
 
   body {
     @apply bg-background text-foreground;
-    scrollbar-gutter: stable;
   }
 
   html {
     overflow-y: scroll;
+    width: 100vw;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 }
