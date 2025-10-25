@@ -208,22 +208,28 @@ const Index = () => {
         handleLogout={handleLogout}
       />
 
-      <main className="container mx-auto px-6 py-16 max-w-6xl">
-        {activeTab === 'news' && <NewsTab newsItems={newsItems} />}
-        {activeTab === 'shop' && <ShopTab products={products} user={user} />}
-        {activeTab === 'servers' && <ServersTab />}
-        {activeTab === 'tournaments' && (
-          <TournamentsTab
-            tournaments={tournaments}
-            user={user}
-            isRegistering={isRegistering}
-            onRegister={handleTournamentRegister}
-          />
-        )}
-        {activeTab === 'partners' && <PartnersTab />}
+      <main className="container mx-auto px-6 py-16 max-w-7xl">
+        <div className="flex gap-6">
+          <div className="flex-1 min-w-0">
+            {activeTab === 'news' && <NewsTab newsItems={newsItems} />}
+            {activeTab === 'shop' && <ShopTab products={products} user={user} />}
+            {activeTab === 'servers' && <ServersTab />}
+            {activeTab === 'tournaments' && (
+              <TournamentsTab
+                tournaments={tournaments}
+                user={user}
+                isRegistering={isRegistering}
+                onRegister={handleTournamentRegister}
+              />
+            )}
+            {activeTab === 'partners' && <PartnersTab />}
+          </div>
+          
+          <aside className="w-96 flex-shrink-0">
+            <GlobalChat user={user} onLoginClick={handleSteamLogin} />
+          </aside>
+        </div>
       </main>
-
-      <GlobalChat user={user} onLoginClick={handleSteamLogin} />
     </div>
   );
 };

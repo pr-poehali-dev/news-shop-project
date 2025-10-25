@@ -31,7 +31,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,10 +41,8 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-    }
-  }, [messages, isOpen]);
+    scrollToBottom();
+  }, [messages]);
 
   const loadMessages = async () => {
     try {
@@ -106,36 +104,15 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center z-50"
-      >
-        <Icon name="MessageCircle" size={24} />
-      </button>
-    );
-  }
-
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[500px] flex flex-col shadow-2xl z-50 bg-card/95 backdrop-blur">
+    <Card className="w-full h-[calc(100vh-120px)] flex flex-col bg-card/95 backdrop-blur sticky top-6">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <Icon name="MessageCircle" size={20} className="text-primary" />
-          <h3 className="font-semibold">Общий чат</h3>
-          <span className="text-xs text-muted-foreground">
-            ({messages.length})
-          </span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsOpen(false)}
-          className="h-8 w-8 p-0"
-        >
-          <Icon name="X" size={18} />
-        </Button>
+      <div className="flex items-center gap-2 p-4 border-b border-border">
+        <Icon name="MessageCircle" size={20} className="text-primary" />
+        <h3 className="font-semibold">Общий чат</h3>
+        <span className="text-xs text-muted-foreground">
+          ({messages.length})
+        </span>
       </div>
 
       {/* Messages */}
