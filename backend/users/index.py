@@ -67,9 +67,8 @@ def get_users(cursor) -> Dict[str, Any]:
     cursor.execute("""
         SELECT u.id, u.steam_id, u.persona_name, u.avatar_url, u.profile_url, 
                u.balance, u.is_blocked, u.block_reason, u.is_moderator, u.last_login, u.created_at, u.updated_at,
-               CASE WHEN a.steam_id IS NOT NULL THEN true ELSE false END as is_admin
+               COALESCE(u.is_admin, false) as is_admin
         FROM t_p15345778_news_shop_project.users u
-        LEFT JOIN admins a ON u.steam_id = a.steam_id
         ORDER BY u.last_login DESC NULLS LAST, u.created_at DESC
     """)
     

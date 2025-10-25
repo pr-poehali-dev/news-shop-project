@@ -50,15 +50,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         with conn.cursor() as cur:
             # Escape single quotes for simple query protocol
             escaped_steam_id = steam_id.replace("'", "''")
-            query = f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'"
+            query = f"SELECT COALESCE(is_admin, false) FROM t_p15345778_news_shop_project.users WHERE steam_id = '{escaped_steam_id}'"
             
             print(f"Checking admin for steam_id: {steam_id}")
             print(f"Query: {query}")
             
             cur.execute(query)
-            count = cur.fetchone()[0]
+            result = cur.fetchone()
+            is_admin = result[0] if result else False
             
-            print(f"Result count: {count}")
+            print(f"Result is_admin: {is_admin}")
             
             return {
                 'statusCode': 200,
@@ -66,7 +67,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({'isAdmin': count > 0, 'steam_id': steam_id})
+                'body': json.dumps({'isAdmin': is_admin, 'steam_id': steam_id}),
+                'isBase64Encoded': False
             }
     
     finally:
