@@ -63,6 +63,7 @@ interface User {
   isBlocked: boolean;
   blockReason: string | null;
   isAdmin: boolean;
+  isModerator: boolean;
   lastLogin: string | null;
   createdAt: string | null;
 }

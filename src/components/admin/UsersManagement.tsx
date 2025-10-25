@@ -16,6 +16,7 @@ interface User {
   isBlocked: boolean;
   blockReason: string | null;
   isAdmin: boolean;
+  isModerator: boolean;
   lastLogin: string | null;
   createdAt: string | null;
 }
@@ -173,6 +174,38 @@ export default function UsersManagement({
     }
   };
 
+  const handleToggleModerator = async (user: User) => {
+    if (!adminUser) return;
+
+    const action = user.isModerator ? 'снять права модератора' : 'назначить модератором';
+    if (!confirm(`Вы уверены, что хотите ${action} для ${user.personaName}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(func2url.users, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': adminUser.steamId
+        },
+        body: JSON.stringify({
+          steamId: user.steamId,
+          isModerator: !user.isModerator
+        })
+      });
+
+      if (response.ok) {
+        await onReload();
+      } else {
+        alert('Ошибка при изменении прав модератора');
+      }
+    } catch (error) {
+      console.error('Failed to toggle moderator:', error);
+      alert('Ошибка при изменении прав: ' + error);
+    }
+  };
+
   const startEditBalance = (user: User) => {
     setEditingUserId(user.steamId);
     setBalanceAmount(user.balance);
@@ -198,10 +231,11 @@ export default function UsersManagement({
 
   const totalBalance = users.reduce((sum, user) => sum + user.balance, 0);
   const blockedCount = users.filter(user => user.isBlocked).length;
+  const moderatorsCount = users.filter(user => user.isModerator).length;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -222,6 +256,18 @@ export default function UsersManagement({
             <div>
               <p className="text-sm text-muted-foreground">Общий баланс</p>
               <p className="text-2xl font-bold">{totalBalance} ₽</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <Icon name="Shield" size={24} className="text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Модераторов</p>
+              <p className="text-2xl font-bold">{moderatorsCount}</p>
             </div>
           </div>
         </Card>
@@ -298,6 +344,11 @@ export default function UsersManagement({
                         {user.isAdmin && (
                           <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded font-medium">
                             Администратор
+                          </span>
+                        )}
+                        {user.isModerator && (
+                          <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-500 rounded font-medium">
+                            Модератор
                           </span>
                         )}
                         {user.isBlocked && (
@@ -416,7 +467,16 @@ export default function UsersManagement({
                           className="gap-2"
                         >
                           <Icon name={user.isAdmin ? "UserMinus" : "UserPlus"} size={14} />
-                          {user.isAdmin ? "Снять права" : "Сделать админом"}
+                          {user.isAdmin ? "Снять админа" : "Админ"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={user.isModerator ? "secondary" : "outline"}
+                          onClick={() => handleToggleModerator(user)}
+                          className="gap-2"
+                        >
+                          <Icon name={user.isModerator ? "ShieldOff" : "Shield"} size={14} />
+                          {user.isModerator ? "Снять модера" : "Модер"}
                         </Button>
                         {user.isBlocked ? (
                           <Button
