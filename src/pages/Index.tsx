@@ -111,23 +111,29 @@ const Index = () => {
   };
 
   const loadProducts = async () => {
+    const cachedProducts = localStorage.getItem('shopProducts');
+    const cacheTime = localStorage.getItem('shopProductsTime');
+    const now = new Date().getTime();
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 минут
+
+    if (cachedProducts && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
+      setProducts(JSON.parse(cachedProducts));
+      return;
+    }
+
     try {
-      console.log('🛒 Loading shop items from:', func2url['shop-items']);
-      const timestamp = new Date().getTime();
-      const response = await fetch(`${func2url['shop-items']}?_=${timestamp}`);
-      console.log('📦 Response status:', response.status);
-      console.log('📦 Response ok:', response.ok);
+      const response = await fetch(func2url['shop-items']);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('📋 Received data:', data);
-      console.log('🎯 Items count:', data.items?.length || 0);
       setProducts(data.items || []);
+      localStorage.setItem('shopProducts', JSON.stringify(data.items || []));
+      localStorage.setItem('shopProductsTime', now.toString());
     } catch (error) {
-      console.error('❌ Failed to load shop items:', error);
+      console.error('Failed to load shop items:', error);
     }
   };
 
