@@ -103,17 +103,7 @@ const Profile = () => {
             <div className="flex items-center gap-6">
               <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
                 <button
-                  onClick={() => navigate('/?tab=news')}
-                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Newspaper" size={18} />
-                    <span className="font-medium">Новости</span>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => navigate('/?tab=shop')}
+                  onClick={() => navigate('/shop')}
                   className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
                 >
                   <div className="flex items-center gap-2">
@@ -123,7 +113,7 @@ const Profile = () => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/?tab=servers')}
+                  onClick={() => navigate('/servers')}
                   className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
                 >
                   <div className="flex items-center gap-2">
@@ -133,12 +123,22 @@ const Profile = () => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/?tab=tournaments')}
+                  onClick={() => navigate('/tournaments')}
                   className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
                 >
                   <div className="flex items-center gap-2">
                     <Icon name="Trophy" size={18} />
                     <span className="font-medium">Турниры</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/partners')}
+                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name="Handshake" size={18} />
+                    <span className="font-medium">Партнёры</span>
                   </div>
                 </button>
               </div>
