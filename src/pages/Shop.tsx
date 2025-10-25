@@ -64,6 +64,11 @@ const Shop = () => {
   }, []);
 
   const loadProducts = async () => {
+    const cachedProducts = localStorage.getItem('shopProducts');
+    if (cachedProducts) {
+      setProducts(JSON.parse(cachedProducts));
+    }
+
     try {
       const timestamp = new Date().getTime();
       const response = await fetch(`${func2url['shop-items']}?_=${timestamp}`);
@@ -74,6 +79,7 @@ const Shop = () => {
       
       const data = await response.json();
       setProducts(data.items || []);
+      localStorage.setItem('shopProducts', JSON.stringify(data.items || []));
     } catch (error) {
       console.error('Failed to load shop items:', error);
     }
