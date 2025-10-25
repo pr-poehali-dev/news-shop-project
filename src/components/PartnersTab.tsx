@@ -42,7 +42,6 @@ const PartnersTab = () => {
   const categories = Array.from(new Set(partners.map(p => p.category)));
 
   return (
-    <div className="container mx-auto px-6 py-16">
       <div className="space-y-10">
         <div className="space-y-3">
           <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
@@ -122,7 +121,6 @@ const PartnersTab = () => {
           </div>
         </Card>
       </div>
-    </div>
   );
 };
 
