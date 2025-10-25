@@ -124,7 +124,7 @@ const Shop = () => {
             <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
               <span className="text-sm font-medium text-primary">Пополнение баланса</span>
             </div>
-            <p className="text-muted-foreground text-xl">Пополняйте баланс рублей</p>
+            <p className="text-muted-foreground text-xl">Пополняйте баланс</p>
           </div>
           
           {user && balance !== null && (
