@@ -137,20 +137,14 @@ def update_user(body_data: Dict[str, Any], cursor, conn) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    # Handle admin status separately
+    # Handle admin status
     if 'isAdmin' in body_data:
-        if body_data['isAdmin']:
-            # Add to admins table
-            cursor.execute(f"""
-                INSERT INTO admins (steam_id)
-                VALUES ('{escaped_steam_id}')
-                ON CONFLICT (steam_id) DO NOTHING
-            """)
-        else:
-            # Remove from admins table
-            cursor.execute(f"""
-                DELETE FROM admins WHERE steam_id = '{escaped_steam_id}'
-            """)
+        is_admin = 'true' if body_data['isAdmin'] else 'false'
+        cursor.execute(f"""
+            UPDATE t_p15345778_news_shop_project.users
+            SET is_admin = {is_admin}, updated_at = NOW()
+            WHERE steam_id = '{escaped_steam_id}'
+        """)
         conn.commit()
         return {
             'statusCode': 200,
