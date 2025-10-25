@@ -46,8 +46,11 @@ export default function Comments({ newsId }: CommentsProps) {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+  }, []);
+
+  useEffect(() => {
     loadComments();
-  }, [newsId]);
+  }, [newsId, user]);
 
   const loadComments = async () => {
     try {
