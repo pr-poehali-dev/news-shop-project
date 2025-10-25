@@ -90,6 +90,14 @@ const Index = () => {
 
   const loadNews = async () => {
     const cachedNews = localStorage.getItem('newsItems');
+    const cacheTime = localStorage.getItem('newsItems_time');
+    const now = Date.now();
+    
+    if (cachedNews && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+      setNewsItems(JSON.parse(cachedNews));
+      return;
+    }
+
     if (cachedNews) {
       setNewsItems(JSON.parse(cachedNews));
     }
@@ -105,33 +113,52 @@ const Index = () => {
       }));
       setNewsItems(formattedNews);
       localStorage.setItem('newsItems', JSON.stringify(formattedNews));
+      localStorage.setItem('newsItems_time', now.toString());
     } catch (error) {
       console.error('Failed to load news:', error);
     }
   };
 
   const loadProducts = async () => {
+    const cachedProducts = localStorage.getItem('shopProducts');
+    const cacheTime = localStorage.getItem('shopProducts_time');
+    const now = Date.now();
+    
+    if (cachedProducts && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+      setProducts(JSON.parse(cachedProducts));
+      return;
+    }
+
+    if (cachedProducts) {
+      setProducts(JSON.parse(cachedProducts));
+    }
+
     try {
-      console.log('🛒 Loading shop items from:', func2url['shop-items']);
-      const timestamp = new Date().getTime();
-      const response = await fetch(`${func2url['shop-items']}?_=${timestamp}`);
-      console.log('📦 Response status:', response.status);
-      console.log('📦 Response ok:', response.ok);
-      
+      const response = await fetch(func2url['shop-items']);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('📋 Received data:', data);
-      console.log('🎯 Items count:', data.items?.length || 0);
       setProducts(data.items || []);
+      localStorage.setItem('shopProducts', JSON.stringify(data.items || []));
+      localStorage.setItem('shopProducts_time', now.toString());
     } catch (error) {
-      console.error('❌ Failed to load shop items:', error);
+      console.error('Failed to load shop items:', error);
     }
   };
 
   const loadTournaments = async () => {
+    const cacheKey = user ? `tournaments_${user.steamId}` : 'tournaments';
+    const cachedTournaments = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(`${cacheKey}_time`);
+    const now = Date.now();
+    
+    if (cachedTournaments && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+      setTournaments(JSON.parse(cachedTournaments));
+      return;
+    }
+
     try {
       const url = user 
         ? `https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675?steam_id=${user.steamId}`
@@ -140,6 +167,8 @@ const Index = () => {
       const response = await fetch(url);
       const data = await response.json();
       setTournaments(data.tournaments || []);
+      localStorage.setItem(cacheKey, JSON.stringify(data.tournaments || []));
+      localStorage.setItem(`${cacheKey}_time`, now.toString());
     } catch (error) {
       console.error('Failed to load tournaments:', error);
     }
