@@ -17,7 +17,7 @@ interface Partner {
 
 const PartnersTab = () => {
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadPartners();
@@ -27,7 +27,6 @@ const PartnersTab = () => {
     const cachedPartners = localStorage.getItem('partners');
     if (cachedPartners) {
       setPartners(JSON.parse(cachedPartners));
-      setIsLoading(false);
     }
 
     try {
@@ -37,8 +36,6 @@ const PartnersTab = () => {
       localStorage.setItem('partners', JSON.stringify(data.partners || []));
     } catch (error) {
       console.error('Failed to load partners:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -59,15 +56,10 @@ const PartnersTab = () => {
           </p>
         </div>
 
-        {isLoading ? (
+        {partners.length === 0 ? (
           <div className="text-center py-12">
             <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin text-primary" />
             <p className="text-lg text-muted-foreground">Загрузка партнёров...</p>
-          </div>
-        ) : partners.length === 0 ? (
-          <div className="text-center py-12">
-            <Icon name="Handshake" size={48} className="mx-auto mb-3 opacity-20" />
-            <p className="text-lg text-muted-foreground">Пока нет партнёров</p>
           </div>
         ) : (
           categories.map((category) => (

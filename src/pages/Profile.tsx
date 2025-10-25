@@ -45,7 +45,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SteamUser | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -64,7 +64,6 @@ const Profile = () => {
     const cachedProfile = localStorage.getItem(cacheKey);
     if (cachedProfile) {
       setProfileData(JSON.parse(cachedProfile));
-      setIsLoading(false);
     }
 
     try {
@@ -76,23 +75,17 @@ const Profile = () => {
       localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error('Failed to load profile data:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
 
 
-  if (isLoading) {
+  if (!user || !profileData) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="text-2xl text-muted-foreground">Загрузка профиля...</div>
       </div>
     );
-  }
-
-  if (!user || !profileData) {
-    return null;
   }
 
   return (

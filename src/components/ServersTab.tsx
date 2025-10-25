@@ -17,13 +17,12 @@ interface Server {
 
 const ServersTab = () => {
   const [servers, setServers] = useState<Server[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadServers = async () => {
     const cachedServers = localStorage.getItem('servers');
     if (cachedServers) {
       setServers(JSON.parse(cachedServers));
-      setIsLoading(false);
     }
 
     try {
@@ -33,8 +32,6 @@ const ServersTab = () => {
       localStorage.setItem('servers', JSON.stringify(data.servers || []));
     } catch (error) {
       console.error('Failed to load servers:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -83,15 +80,10 @@ const ServersTab = () => {
         <p className="text-muted-foreground text-xl">Выберите сервер и присоединяйтесь к игре</p>
       </div>
 
-      {isLoading ? (
+      {servers.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin" />
           <p className="text-lg">Загрузка серверов...</p>
-        </div>
-      ) : servers.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Icon name="Server" size={48} className="mx-auto mb-3 opacity-20" />
-          <p className="text-lg">Серверы не найдены</p>
         </div>
       ) : (
         <div className="grid gap-6">
