@@ -129,7 +129,7 @@ export default function Admin() {
   useEffect(() => {
     if (isAdmin && activeTab === 'servers') {
       updateServersStatus();
-      const interval = setInterval(updateServersStatus, 30000);
+      const interval = setInterval(updateServersStatus, 60000);
       return () => clearInterval(interval);
     }
   }, [isAdmin, activeTab]);
