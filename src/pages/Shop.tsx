@@ -25,7 +25,6 @@ interface UserBalance {
 
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [user, setUser] = useState<SteamUser | null>(null);
@@ -77,8 +76,6 @@ const Shop = () => {
       setProducts(data.items || []);
     } catch (error) {
       console.error('Failed to load shop items:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -140,13 +137,9 @@ const Shop = () => {
             </Card>
           )}
           
-          {isLoading ? (
+          {products.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p className="text-xl">Загрузка товаров...</p>
-            </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-xl">Товары временно недоступны</p>
             </div>
           ) : (
             <div className="space-y-6">
