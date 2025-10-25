@@ -302,8 +302,9 @@ export default function Admin() {
         {activeTab === 'users' && (
           <UsersManagement
             users={users}
-            isLoading={isLoadingUsers}
-            onRefresh={loadUsers}
+            isLoadingUsers={isLoadingUsers}
+            adminUser={user}
+            onReload={loadUsers}
           />
         )}
 
