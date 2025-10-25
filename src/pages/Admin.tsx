@@ -10,6 +10,7 @@ import ServersManagement from '@/components/admin/ServersManagement';
 import UsersManagement from '@/components/admin/UsersManagement';
 import TournamentsManagement from '@/components/admin/TournamentsManagement';
 import PartnersManagement from '@/components/admin/PartnersManagement';
+import MenuManagement from '@/components/admin/MenuManagement';
 
 interface NewsItem {
   id: number;
@@ -91,7 +92,7 @@ interface Partner {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments' | 'partners'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments' | 'partners' | 'menu'>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
@@ -432,6 +433,23 @@ export default function Admin() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
+
+            <button
+              onClick={() => setActiveTab('menu')}
+              className={`px-6 py-3 font-medium transition-colors relative ${
+                activeTab === 'menu'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="Menu" size={20} />
+                Меню
+              </div>
+              {activeTab === 'menu' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -487,6 +505,10 @@ export default function Admin() {
             user={user}
             onReload={loadPartners}
           />
+        )}
+
+        {activeTab === 'menu' && (
+          <MenuManagement />
         )}
       </div>
     </div>

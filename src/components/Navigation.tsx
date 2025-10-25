@@ -1,15 +1,27 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
   steamId: string;
   personaName: string;
   avatarUrl: string;
   profileUrl: string;
+}
+
+interface MenuItem {
+  id: number;
+  name: string;
+  label: string;
+  route: string;
+  icon: string;
+  isVisible: boolean;
+  orderPosition: number;
 }
 
 interface NavigationProps {
@@ -36,6 +48,22 @@ const Navigation = ({
   handleLogout
 }: NavigationProps) => {
   const navigate = useNavigate();
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+    loadMenuItems();
+  }, []);
+
+  const loadMenuItems = async () => {
+    try {
+      const response = await fetch(func2url['menu-items']);
+      const data = await response.json();
+      const visibleItems = (data.menuItems || []).filter((item: MenuItem) => item.isVisible);
+      setMenuItems(visibleItems);
+    } catch (error) {
+      console.error('Failed to load menu items:', error);
+    }
+  };
 
   return (
     <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
@@ -50,75 +78,22 @@ const Navigation = ({
 
           <div className="flex items-center gap-6">
             <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
-              <button
-                onClick={() => navigate('/news')}
-                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                  activeTab === 'news'
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="Newspaper" size={18} />
-                  <span className="font-medium">Новости</span>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => navigate('/shop')}
-                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                  activeTab === 'shop'
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="ShoppingBag" size={18} />
-                  <span className="font-medium">Магазин</span>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate('/servers')}
-                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                  activeTab === 'servers'
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="Server" size={18} />
-                  <span className="font-medium">Наши сервера</span>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate('/tournaments')}
-                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                  activeTab === 'tournaments'
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="Trophy" size={18} />
-                  <span className="font-medium">Турниры</span>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate('/partners')}
-                className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
-                  activeTab === 'partners'
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="Handshake" size={18} />
-                  <span className="font-medium">Партнёры</span>
-                </div>
-              </button>
+              {menuItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.route)}
+                  className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
+                    activeTab === item.name
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon name={item.icon as any} size={18} />
+                    <span className="font-medium">{item.label}</span>
+                  </div>
+                </button>
+              ))}
             </div>
 
             {user ? (
