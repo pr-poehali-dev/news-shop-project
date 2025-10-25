@@ -139,7 +139,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
 
 
   return (
-    <Card className="w-full h-[calc(100vh-120px)] flex flex-col bg-card/95 backdrop-blur sticky top-6">
+    <Card className="w-full h-[calc(50vh-60px)] flex flex-col bg-card/95 backdrop-blur sticky top-6">
       {/* Header */}
       <div className="flex items-center gap-2 p-4 border-b border-border">
         <Icon name="MessageCircle" size={20} className="text-primary" />
