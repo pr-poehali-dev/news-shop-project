@@ -152,29 +152,29 @@ const Shop = () => {
           
           <div className="space-y-6">
               {products.map((product) => (
-              <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
-                <div className="flex items-center justify-between gap-8">
-                  <div className="flex items-center gap-6 flex-1">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                      <Icon name="Coins" size={40} className="text-primary" />
+              <Card key={product.id} className="group p-6 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Icon name="Coins" size={28} className="text-primary" />
                     </div>
                     
-                    <div className="space-y-2 flex-1">
-                      <h3 className="text-3xl font-bold">{product.name}</h3>
-                      <p className="text-xl text-primary font-semibold">{product.amount}</p>
+                    <div className="space-y-1 flex-1">
+                      <h3 className="text-xl font-bold">{product.name}</h3>
+                      <p className="text-sm text-primary font-semibold">{product.amount}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-8">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-5xl font-bold">{product.price}</span>
-                        <span className="text-2xl text-muted-foreground">₽</span>
+                        <span className="text-3xl font-bold">{product.price}</span>
+                        <span className="text-lg text-muted-foreground">₽</span>
                       </div>
                     </div>
                     
-                    <Button size="lg" className="h-14 px-8 text-lg font-semibold shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30">
-                      <Icon name="ShoppingCart" size={24} className="mr-2" />
+                    <Button className="h-11 px-6 shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30">
+                      <Icon name="ShoppingCart" size={18} className="mr-2" />
                       Купить
                     </Button>
                   </div>
