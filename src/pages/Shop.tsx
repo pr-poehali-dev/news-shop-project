@@ -150,12 +150,7 @@ const Shop = () => {
             </Card>
           )}
           
-          {products.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-xl">Загрузка товаров...</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
+          <div className="space-y-6">
               {products.map((product) => (
               <Card key={product.id} className="group p-8 backdrop-blur-sm bg-card/50 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
                 <div className="flex items-center justify-between gap-8">
@@ -186,8 +181,7 @@ const Shop = () => {
                 </div>
               </Card>
               ))}
-            </div>
-          )}
+          </div>
         </div>
       </main>
   );

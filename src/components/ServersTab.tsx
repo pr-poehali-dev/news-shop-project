@@ -80,13 +80,7 @@ const ServersTab = () => {
         <p className="text-muted-foreground text-xl">Выберите сервер и присоединяйтесь к игре</p>
       </div>
 
-      {servers.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin" />
-          <p className="text-lg">Загрузка серверов...</p>
-        </div>
-      ) : (
-        <div className="grid gap-6">
+      <div className="grid gap-6">
           {servers.map((server, index) => (
           <Card 
             key={server.id}
@@ -155,8 +149,7 @@ const ServersTab = () => {
             </div>
           </Card>
           ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 };

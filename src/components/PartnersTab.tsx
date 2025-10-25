@@ -55,13 +55,7 @@ const PartnersTab = () => {
           </p>
         </div>
 
-        {partners.length === 0 ? (
-          <div className="text-center py-12">
-            <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin text-primary" />
-            <p className="text-lg text-muted-foreground">Загрузка партнёров...</p>
-          </div>
-        ) : (
-          categories.map((category) => (
+        {categories.map((category) => (
             <div key={category} className="space-y-6">
               <h3 className="text-2xl font-bold flex items-center gap-3">
                 <Icon name="Building2" size={24} className="text-primary" />
@@ -101,8 +95,7 @@ const PartnersTab = () => {
                 ))}
             </div>
           </div>
-          ))
-        )}
+          ))}
 
         <Card className="p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
           <div className="text-center space-y-4">
