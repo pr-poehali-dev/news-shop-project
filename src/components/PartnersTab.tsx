@@ -41,17 +41,7 @@ const PartnersTab = () => {
 
   return (
       <div className="space-y-10">
-        <div className="space-y-3">
-          <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
-            <span className="text-sm font-medium text-primary">Партнёрство</span>
-          </div>
-          <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Наши партнёры
-          </h2>
-          <p className="text-muted-foreground text-xl">
-            Компании и проекты, с которыми мы работаем
-          </p>
-        </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {partners.map((partner) => (

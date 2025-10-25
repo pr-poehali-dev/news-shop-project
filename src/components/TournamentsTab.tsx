@@ -74,15 +74,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
   return (
     <div className="space-y-10">
-      <div className="space-y-3">
-        <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
-          <span className="text-sm font-medium text-primary">Соревнования</span>
-        </div>
-        <h2 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-          Турниры
-        </h2>
-        <p className="text-muted-foreground text-xl">Участвуйте в турнирах и выигрывайте призы</p>
-      </div>
+
 
       <div className="grid gap-6">
         {tournaments.map((tournament, index) => (
