@@ -53,17 +53,8 @@ const PartnersTab = () => {
           </p>
         </div>
 
-        {categories.map((category) => (
-            <div key={category} className="space-y-6">
-              <h3 className="text-2xl font-bold flex items-center gap-3">
-                <Icon name="Building2" size={24} className="text-primary" />
-                {category}
-              </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {partners
-                .filter(p => p.category === category)
-                .map((partner) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {partners.map((partner) => (
                   <Card
                     key={partner.id}
                     className="p-6 bg-card/80 backdrop-blur border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
@@ -90,10 +81,8 @@ const PartnersTab = () => {
                       </Button>
                     </div>
                   </Card>
-                ))}
-            </div>
-          </div>
           ))}
+        </div>
 
         <Card className="p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
           <div className="text-center space-y-4">
