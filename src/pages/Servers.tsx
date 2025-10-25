@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
 import ServersTab from '@/components/ServersTab';
 
 interface SteamUser {
@@ -59,23 +58,9 @@ const Servers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation
-        activeTab="servers"
-        setActiveTab={() => {}}
-        user={user}
-        isLoginOpen={isLoginOpen}
-        setIsLoginOpen={setIsLoginOpen}
-        isRegisterOpen={isRegisterOpen}
-        setIsRegisterOpen={setIsRegisterOpen}
-        handleSteamLogin={handleSteamLogin}
-        handleLogout={handleLogout}
-      />
-
       <main className="container mx-auto px-6 py-16 max-w-6xl">
         <ServersTab />
       </main>
-    </div>
   );
 };
 

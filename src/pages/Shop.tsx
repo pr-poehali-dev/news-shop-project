@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import Navigation from '@/components/Navigation';
 import func2url from '../../backend/func2url.json';
 
 interface Product {
@@ -109,18 +108,6 @@ const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation
-        activeTab="shop"
-        setActiveTab={() => {}}
-        user={user}
-        isLoginOpen={isLoginOpen}
-        setIsLoginOpen={setIsLoginOpen}
-        isRegisterOpen={isRegisterOpen}
-        setIsRegisterOpen={setIsRegisterOpen}
-        handleSteamLogin={handleSteamLogin}
-        handleLogout={handleLogout}
-      />
       <main className="container mx-auto px-6 py-16 max-w-6xl">
         <div className="space-y-10">
           <div className="space-y-3">
@@ -197,7 +184,6 @@ const Shop = () => {
           )}
         </div>
       </main>
-    </div>
   );
 };
 

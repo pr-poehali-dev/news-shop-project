@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import Navigation from '@/components/Navigation';
 import { formatShortDate, formatDateTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
@@ -144,7 +143,7 @@ const TournamentDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-2xl text-muted-foreground">Загрузка...</div>
       </div>
     );
@@ -152,7 +151,7 @@ const TournamentDetail = () => {
 
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center space-y-4">
           <div className="text-2xl text-muted-foreground">Турнир не найден</div>
           <Button onClick={() => navigate('/')}>Вернуться назад</Button>
@@ -165,19 +164,6 @@ const TournamentDetail = () => {
   const isFull = tournament.participants_count >= tournament.max_participants;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation
-        activeTab="tournaments"
-        setActiveTab={() => {}}
-        user={user}
-        isLoginOpen={isLoginOpen}
-        setIsLoginOpen={setIsLoginOpen}
-        isRegisterOpen={isRegisterOpen}
-        setIsRegisterOpen={setIsRegisterOpen}
-        handleSteamLogin={handleSteamLogin}
-        handleLogout={handleLogout}
-      />
-
       <main className="container mx-auto px-6 py-16">
         <div className="space-y-10">
           <Card className={`p-10 border border-border backdrop-blur ${
@@ -325,21 +311,6 @@ const TournamentDetail = () => {
           </div>
         </div>
       </main>
-
-      <footer className="border-t border-border mt-32 bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-6 py-12">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Icon name="Gamepad2" size={20} className="text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold">Okyes</span>
-            </div>
-            <p className="text-muted-foreground text-sm">© 2025 Okyes. Все права защищены.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
   );
 };
 
