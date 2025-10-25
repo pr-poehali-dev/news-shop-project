@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
 import NewsTab from '@/components/NewsTab';
 import ShopTab from '@/components/ShopTab';
 import ServersTab from '@/components/ServersTab';
@@ -196,19 +195,6 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        user={user}
-        isLoginOpen={isLoginOpen}
-        setIsLoginOpen={setIsLoginOpen}
-        isRegisterOpen={isRegisterOpen}
-        setIsRegisterOpen={setIsRegisterOpen}
-        handleSteamLogin={handleSteamLogin}
-        handleLogout={handleLogout}
-      />
-
       <main className="container mx-auto px-6 py-16 max-w-7xl">
         <div className="flex gap-6">
           <div className="flex-1 min-w-0">
@@ -231,7 +217,6 @@ const Index = () => {
           </aside>
         </div>
       </main>
-    </div>
   );
 };
 
