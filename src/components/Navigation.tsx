@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Icon from '@/components/ui/icon';
 import func2url from '../../backend/func2url.json';
 
@@ -97,13 +98,26 @@ const Navigation = ({
             </div>
 
             {user ? (
-              <button
-                onClick={() => navigate('/profile')}
-                className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
-              >
-                <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
-                <span className="font-medium">{user.personaName}</span>
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
+                    <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
+                    <span className="font-medium">{user.personaName}</span>
+                    <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    <Icon name="User" size={16} className="mr-2" />
+                    Профиль
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <Icon name="LogOut" size={16} className="mr-2" />
+                    Выйти
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="flex gap-3">
                 <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
