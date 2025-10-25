@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
-import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
   steamId: string;
@@ -40,22 +39,13 @@ interface ProfileData {
   };
 }
 
-interface MenuItem {
-  id: number;
-  name: string;
-  label: string;
-  route: string;
-  icon: string;
-  isVisible: boolean;
-  orderPosition: number;
-}
+
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SteamUser | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -67,7 +57,6 @@ const Profile = () => {
     const userData = JSON.parse(savedUser);
     setUser(userData);
     loadProfileData(userData.steamId);
-    loadMenuItems();
   }, [navigate]);
 
   const loadProfileData = async (steamId: string) => {
@@ -84,25 +73,11 @@ const Profile = () => {
     }
   };
 
-  const loadMenuItems = async () => {
-    try {
-      const response = await fetch(func2url['menu-items']);
-      const data = await response.json();
-      const visibleItems = (data.menuItems || []).filter((item: MenuItem) => item.isVisible);
-      setMenuItems(visibleItems);
-    } catch (error) {
-      console.error('Failed to load menu items:', error);
-    }
-  };
 
-  const handleLogout = () => {
-    localStorage.removeItem('steamUser');
-    navigate('/');
-  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-2xl text-muted-foreground">Загрузка профиля...</div>
       </div>
     );
@@ -113,56 +88,6 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => navigate(item.route)}
-                    className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon name={item.icon as any} size={18} />
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => navigate('/profile')}
-                  className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-300"
-                >
-                  <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-lg" />
-                  <span className="font-medium text-foreground">{user.personaName}</span>
-                </button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="LogOut" size={18} />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="container mx-auto px-6 py-16">
         <div className="space-y-10">
           <Card className="p-10 border border-border bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur border-primary/20">
@@ -308,21 +233,6 @@ const Profile = () => {
           </div>
         </div>
       </main>
-
-      <footer className="border-t border-border mt-32 bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-6 py-12">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Icon name="Gamepad2" size={20} className="text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold">Okyes</span>
-            </div>
-            <p className="text-muted-foreground text-sm">© 2025 Okyes. Все права защищены.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
   );
 };
 
