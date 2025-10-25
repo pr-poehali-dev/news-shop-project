@@ -20,10 +20,17 @@ const ServersTab = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadServers = async () => {
+    const cachedServers = localStorage.getItem('servers');
+    if (cachedServers) {
+      setServers(JSON.parse(cachedServers));
+      setIsLoading(false);
+    }
+
     try {
       const response = await fetch(func2url.servers);
       const data = await response.json();
       setServers(data.servers || []);
+      localStorage.setItem('servers', JSON.stringify(data.servers || []));
     } catch (error) {
       console.error('Failed to load servers:', error);
     } finally {

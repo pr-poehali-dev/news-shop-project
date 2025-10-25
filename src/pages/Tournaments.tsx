@@ -62,6 +62,12 @@ const Tournaments = () => {
   }, [user]);
 
   const loadTournaments = async () => {
+    const cacheKey = user ? `tournaments_${user.steamId}` : 'tournaments';
+    const cachedTournaments = localStorage.getItem(cacheKey);
+    if (cachedTournaments) {
+      setTournaments(JSON.parse(cachedTournaments));
+    }
+
     try {
       const url = user 
         ? `https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675?steam_id=${user.steamId}`
@@ -70,6 +76,7 @@ const Tournaments = () => {
       const response = await fetch(url);
       const data = await response.json();
       setTournaments(data.tournaments || []);
+      localStorage.setItem(cacheKey, JSON.stringify(data.tournaments || []));
     } catch (error) {
       console.error('Failed to load tournaments:', error);
     }

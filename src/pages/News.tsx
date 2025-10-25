@@ -56,6 +56,11 @@ const News = () => {
   }, []);
 
   const loadNews = async () => {
+    const cachedNews = localStorage.getItem('newsItems');
+    if (cachedNews) {
+      setNewsItems(JSON.parse(cachedNews));
+    }
+
     try {
       const response = await fetch(func2url.news);
       const data = await response.json();
@@ -66,6 +71,7 @@ const News = () => {
         date: formatShortDate(item.date)
       }));
       setNewsItems(formattedNews);
+      localStorage.setItem('newsItems', JSON.stringify(formattedNews));
     } catch (error) {
       console.error('Failed to load news:', error);
     }

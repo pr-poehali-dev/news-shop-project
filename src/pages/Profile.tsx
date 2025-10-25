@@ -60,12 +60,20 @@ const Profile = () => {
   }, [navigate]);
 
   const loadProfileData = async (steamId: string) => {
+    const cacheKey = `profile_${steamId}`;
+    const cachedProfile = localStorage.getItem(cacheKey);
+    if (cachedProfile) {
+      setProfileData(JSON.parse(cachedProfile));
+      setIsLoading(false);
+    }
+
     try {
       const response = await fetch(
         `https://functions.poehali.dev/88f7bd27-aac7-4eab-b045-2d423b092ebb?steam_id=${steamId}`
       );
       const data = await response.json();
       setProfileData(data);
+      localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error('Failed to load profile data:', error);
     } finally {
