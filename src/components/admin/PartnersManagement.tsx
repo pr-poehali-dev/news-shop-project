@@ -42,8 +42,7 @@ export default function PartnersManagement({
     name: '',
     description: '',
     logo: '',
-    website: '',
-    category: ''
+    website: ''
   });
 
   const handleEdit = (partner: Partner) => {
@@ -52,8 +51,7 @@ export default function PartnersManagement({
       name: partner.name,
       description: partner.description,
       logo: partner.logo,
-      website: partner.website,
-      category: partner.category
+      website: partner.website
     });
   };
 
@@ -138,8 +136,7 @@ export default function PartnersManagement({
       name: '',
       description: '',
       logo: '',
-      website: '',
-      category: ''
+      website: ''
     });
   };
 
@@ -149,8 +146,7 @@ export default function PartnersManagement({
       name: '',
       description: '',
       logo: '🤝',
-      website: '',
-      category: 'Общее'
+      website: ''
     });
   };
 
@@ -174,20 +170,12 @@ export default function PartnersManagement({
               {editingId === 0 ? 'Новый партнёр' : 'Редактирование партнёра'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 col-span-2">
                 <label className="text-sm font-medium">Название</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Название компании"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Категория</label>
-                <Input
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="Игровые платформы"
                 />
               </div>
               <div className="space-y-2">
@@ -264,9 +252,6 @@ export default function PartnersManagement({
                             Скрыт
                           </span>
                         )}
-                        <span className="text-xs px-2 py-0.5 bg-primary/10 rounded">
-                          {partner.category}
-                        </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {partner.description}
