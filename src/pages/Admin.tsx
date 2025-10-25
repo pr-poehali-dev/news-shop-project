@@ -1,8 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Icon from '@/components/ui/icon';
 import func2url from '../../backend/func2url.json';
 import NewsManagement from '@/components/admin/NewsManagement';
 import ShopManagement from '@/components/admin/ShopManagement';
@@ -11,6 +7,10 @@ import UsersManagement from '@/components/admin/UsersManagement';
 import TournamentsManagement from '@/components/admin/TournamentsManagement';
 import PartnersManagement from '@/components/admin/PartnersManagement';
 import MenuManagement from '@/components/admin/MenuManagement';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminTabs from '@/components/admin/AdminTabs';
+import AdminAccessDenied from '@/components/admin/AdminAccessDenied';
+import AdminLoadingState from '@/components/admin/AdminLoadingState';
 
 interface NewsItem {
   id: number;
@@ -90,9 +90,10 @@ interface Partner {
   orderPosition: number;
 }
 
+type TabType = 'news' | 'shop' | 'servers' | 'users' | 'tournaments' | 'partners' | 'menu';
+
 export default function Admin() {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'users' | 'tournaments' | 'partners' | 'menu'>('news');
+  const [activeTab, setActiveTab] = useState<TabType>('news');
   const [news, setNews] = useState<NewsItem[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
@@ -261,256 +262,71 @@ export default function Admin() {
   };
 
   if (isCheckingAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <Card className="p-8 bg-card/80 backdrop-blur border-primary/20">
-          <div className="flex items-center gap-3">
-            <Icon name="Loader2" size={24} className="animate-spin" />
-            <span className="text-lg">Проверка доступа...</span>
-          </div>
-        </Card>
-      </div>
-    );
+    return <AdminLoadingState />;
   }
 
   if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-        <Card className="p-8 bg-card/80 backdrop-blur border-primary/20 max-w-md w-full">
-          <div className="text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Icon name="Shield" size={40} className="text-primary" />
-            </div>
-            
-            <div>
-              <h1 className="text-2xl font-bold mb-2">Админ-панель</h1>
-              <p className="text-muted-foreground">
-                {!user 
-                  ? 'Войдите через Steam для доступа к админ-панели'
-                  : 'У вас нет прав доступа к этой странице'
-                }
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              {!user ? (
-                <Button onClick={handleSteamLogin} className="w-full gap-2">
-                  <Icon name="LogIn" size={18} />
-                  Войти через Steam
-                </Button>
-              ) : (
-                <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2">
-                  <Icon name="Home" size={18} />
-                  На главную
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
+    return <AdminAccessDenied user={user} onSteamLogin={handleSteamLogin} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-                <Icon name="Shield" size={36} className="text-primary" />
-                Админ-панель
-              </h1>
-              <p className="text-muted-foreground">
-                Добро пожаловать, {user.personaName}
-              </p>
-            </div>
-            <Button onClick={() => navigate('/')} variant="outline" className="gap-2">
-              <Icon name="Home" size={18} />
-              На главную
-            </Button>
-          </div>
+      <AdminHeader user={user} />
+      <AdminTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="flex gap-3 border-b border-border">
-            <button
-              onClick={() => setActiveTab('news')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'news'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Newspaper" size={20} />
-                Новости
-              </div>
-              {activeTab === 'news' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('shop')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'shop'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="ShoppingBag" size={20} />
-                Магазин
-              </div>
-              {activeTab === 'shop' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('servers')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'servers'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Server" size={20} />
-                Серверы
-              </div>
-              {activeTab === 'servers' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'users'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Users" size={20} />
-                Пользователи
-              </div>
-              {activeTab === 'users' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('tournaments')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'tournaments'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Trophy" size={20} />
-                Турниры
-              </div>
-              {activeTab === 'tournaments' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('partners')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'partners'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Handshake" size={20} />
-                Партнёры
-              </div>
-              {activeTab === 'partners' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('menu')}
-              className={`px-6 py-3 font-medium transition-colors relative ${
-                activeTab === 'menu'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="Menu" size={20} />
-                Меню
-              </div>
-              {activeTab === 'menu' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
-          </div>
-        </div>
-
+      <main className="container mx-auto px-6 py-8">
         {activeTab === 'news' && (
-          <NewsManagement
+          <NewsManagement 
             news={news}
             isLoading={isLoading}
-            user={user}
-            onReload={loadNews}
+            onRefresh={loadNews}
           />
         )}
 
         {activeTab === 'shop' && (
           <ShopManagement
             shopItems={shopItems}
-            isLoadingShop={isLoadingShop}
-            user={user}
-            onReload={loadShopItems}
+            isLoading={isLoadingShop}
+            onRefresh={loadShopItems}
           />
         )}
 
         {activeTab === 'servers' && (
           <ServersManagement
             servers={servers}
-            isLoadingServers={isLoadingServers}
-            user={user}
-            onReload={loadServers}
-            onUpdateStatus={updateServersStatus}
+            isLoading={isLoadingServers}
+            onRefresh={loadServers}
           />
         )}
 
         {activeTab === 'users' && (
           <UsersManagement
             users={users}
-            isLoadingUsers={isLoadingUsers}
-            adminUser={user}
-            onReload={loadUsers}
+            isLoading={isLoadingUsers}
+            onRefresh={loadUsers}
           />
         )}
 
         {activeTab === 'tournaments' && (
           <TournamentsManagement
             tournaments={tournaments}
-            user={user}
-            onReload={loadTournaments}
+            isLoading={isLoadingTournaments}
+            onRefresh={loadTournaments}
           />
         )}
 
         {activeTab === 'partners' && (
           <PartnersManagement
             partners={partners}
-            isLoadingPartners={isLoadingPartners}
-            user={user}
-            onReload={loadPartners}
+            isLoading={isLoadingPartners}
+            onRefresh={loadPartners}
           />
         )}
 
         {activeTab === 'menu' && (
           <MenuManagement />
         )}
-      </div>
+      </main>
     </div>
   );
 }
