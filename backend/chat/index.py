@@ -190,8 +190,9 @@ def hide_message(event: Dict[str, Any]) -> Dict[str, Any]:
     conn = get_db_connection()
     cur = conn.cursor()
     
-    cur.execute('SELECT COUNT(*) FROM t_p15345778_news_shop_project.admins WHERE steam_id = %s', (admin_steam_id,))
-    is_admin = cur.fetchone()[0] > 0
+    cur.execute('SELECT is_admin FROM t_p15345778_news_shop_project.users WHERE steam_id = %s', (admin_steam_id,))
+    result = cur.fetchone()
+    is_admin = result[0] if result else False
     
     if not is_admin:
         cur.close()
