@@ -52,10 +52,8 @@ export default function Comments({ newsId }: CommentsProps) {
     setIsLoading(true);
     try {
       const steamId = user?.steamId || '';
-      console.log('💬 Loading comments for news_id:', newsId, 'steam_id:', steamId);
       const response = await fetch(`${func2url.comments}?news_id=${newsId}&steam_id=${steamId}`);
       const data = await response.json();
-      console.log('💬 Loaded comments:', data.comments?.length || 0, 'Data:', data);
       setComments(data.comments || []);
     } catch (error) {
       console.error('Failed to load comments:', error);
@@ -203,8 +201,6 @@ export default function Comments({ newsId }: CommentsProps) {
   const topLevelComments = comments.filter(c => !c.parent_comment_id);
   const getReplies = (parentId: number) => comments.filter(c => c.parent_comment_id === parentId);
 
-  console.log('💬 Render state - isLoading:', isLoading, 'comments:', comments.length, 'topLevel:', topLevelComments.length);
-
   const renderComment = (comment: Comment, isReply = false) => (
     <div key={comment.id}>
       <Card className={`p-6 bg-card/50 backdrop-blur border-border hover:border-primary/30 transition-colors ${isReply ? 'ml-16 mt-3' : ''}`}>
@@ -331,7 +327,7 @@ export default function Comments({ newsId }: CommentsProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold flex items-center gap-2">
           <Icon name="MessageSquare" size={28} />
-          Комментарии ({topLevelComments.length})
+          Комментарии {isLoading ? <Icon name="Loader2" size={20} className="animate-spin" /> : `(${topLevelComments.length})`}
         </h3>
         {user ? (
           !isFormVisible && (
