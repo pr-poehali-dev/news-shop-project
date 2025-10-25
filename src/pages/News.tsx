@@ -77,7 +77,7 @@ const News = () => {
                         {item.date}
                       </p>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed line-clamp-none">{item.description}</p>
+                    <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                   </div>
                 </div>
               </Card>
