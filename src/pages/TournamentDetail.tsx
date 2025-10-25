@@ -141,15 +141,8 @@ const TournamentDetail = () => {
     localStorage.removeItem('steamUser');
   };
 
-  if (!tournament) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center space-y-4">
-          <div className="text-2xl text-muted-foreground">Турнир не найден</div>
-          <Button onClick={() => navigate('/')}>Вернуться назад</Button>
-        </div>
-      </div>
-    );
+  if (isLoading || !tournament) {
+    return null;
   }
 
   const isRegistered = tournament.participants.some(p => p.steam_id === user?.steamId);
