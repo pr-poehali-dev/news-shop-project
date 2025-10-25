@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import Comments from '@/components/Comments';
+import Navigation from '@/components/Navigation';
 import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
@@ -29,6 +30,8 @@ const NewsDetail = () => {
   const [news, setNews] = useState<NewsItem | null>(null);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -37,6 +40,28 @@ const NewsDetail = () => {
     }
 
     loadNews();
+
+    const params = new URLSearchParams(window.location.search);
+    const claimedId = params.get('openid.claimed_id');
+    
+    if (claimedId) {
+      const verifyParams = new URLSearchParams();
+      params.forEach((value, key) => {
+        verifyParams.append(key, value);
+      });
+      verifyParams.append('mode', 'verify');
+      
+      fetch(`${func2url['steam-auth']}?${verifyParams.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.steamId) {
+            setUser(data);
+            localStorage.setItem('steamUser', JSON.stringify(data));
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        })
+        .catch(error => console.error('Steam auth failed:', error));
+    }
   }, [id]);
 
   const loadNews = async () => {
@@ -262,6 +287,21 @@ const NewsDetail = () => {
     setNews(foundNews || null);
   };
 
+  const handleSteamLogin = async () => {
+    const returnUrl = `${window.location.origin}${window.location.pathname}`;
+    const response = await fetch(`${func2url['steam-auth']}?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('steamUser');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -283,82 +323,17 @@ const NewsDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center cursor-pointer" onClick={() => navigate('/')}>
-                <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight cursor-pointer" onClick={() => navigate('/')}>Okyes</h1>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="hidden md:flex gap-2 bg-card p-1.5 rounded-xl border border-border">
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Newspaper" size={18} />
-                    <span className="font-medium">Новости</span>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="ShoppingBag" size={18} />
-                    <span className="font-medium">Магазин</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Server" size={18} />
-                    <span className="font-medium">Наши сервера</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Trophy" size={18} />
-                    <span className="font-medium">Турниры</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-2.5 rounded-lg transition-all duration-300 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Handshake" size={18} />
-                    <span className="font-medium">Партнёры</span>
-                  </div>
-                </button>
-              </div>
-
-              {user && (
-                <button
-                  onClick={() => navigate('/profile')}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
-                >
-                  <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
-                  <span className="font-medium hidden sm:block">{user.personaName}</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        activeTab="news"
+        setActiveTab={() => {}}
+        user={user}
+        isLoginOpen={isLoginOpen}
+        setIsLoginOpen={setIsLoginOpen}
+        isRegisterOpen={isRegisterOpen}
+        setIsRegisterOpen={setIsRegisterOpen}
+        handleSteamLogin={handleSteamLogin}
+        handleLogout={handleLogout}
+      />
 
       <main className="container mx-auto px-6 py-16 max-w-4xl">
         <article className="space-y-8">
