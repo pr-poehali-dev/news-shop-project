@@ -1,7 +1,7 @@
 '''
-Business: Handle global chat messages - get recent messages and post new messages
+Business: Handle global chat messages - get, post, and moderate (hide) messages
 Args: event with httpMethod, body, queryStringParameters
-Returns: HTTP response with chat messages or post confirmation
+Returns: HTTP response with chat messages or operation confirmation
 '''
 
 import json
@@ -23,8 +23,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Steam-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -34,6 +34,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return get_messages(event)
     elif method == 'POST':
         return post_message(event)
+    elif method == 'DELETE':
+        return hide_message(event)
     
     return {
         'statusCode': 405,
@@ -55,6 +57,7 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
         SELECT id, steam_id, persona_name, avatar_url, message, 
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
         FROM chat_messages
+        WHERE is_hidden = FALSE
         ORDER BY created_at DESC
         LIMIT %s
     ''', (limit,))
@@ -144,4 +147,67 @@ def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
             'id': message_id,
             'createdAt': created_at
         })
+    }
+
+def hide_message(event: Dict[str, Any]) -> Dict[str, Any]:
+    headers = event.get('headers', {})
+    admin_steam_id = headers.get('x-admin-steam-id') or headers.get('X-Admin-Steam-Id')
+    
+    if not admin_steam_id:
+        return {
+            'statusCode': 401,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Admin authentication required'})
+        }
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('SELECT COUNT(*) FROM admins WHERE steam_id = %s', (admin_steam_id,))
+    is_admin = cur.fetchone()[0] > 0
+    
+    if not is_admin:
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Admin access required'})
+        }
+    
+    params = event.get('queryStringParameters') or {}
+    message_id = params.get('message_id')
+    
+    if not message_id:
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'message_id required'})
+        }
+    
+    cur.execute('UPDATE chat_messages SET is_hidden = TRUE WHERE id = %s', (message_id,))
+    conn.commit()
+    
+    cur.close()
+    conn.close()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'isBase64Encoded': False,
+        'body': json.dumps({'message': 'Message hidden successfully'})
     }

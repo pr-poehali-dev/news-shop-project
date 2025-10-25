@@ -31,7 +31,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,6 +39,12 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
     const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      checkAdmin();
+    }
+  }, [user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -99,6 +105,36 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
     }
   };
 
+  const checkAdmin = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`${func2url['check-admin']}?steam_id=${user.steamId}`);
+      const data = await response.json();
+      setIsAdmin(data.isAdmin || false);
+    } catch (error) {
+      console.error('Failed to check admin status:', error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!user || !isAdmin) return;
+
+    try {
+      const response = await fetch(`${func2url.chat}?message_id=${messageId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Admin-Steam-Id': user.steamId
+        }
+      });
+
+      if (response.ok) {
+        await loadMessages();
+      }
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+    }
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -129,7 +165,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
           </div>
         ) : (
           messages.map((msg) => (
-            <div key={msg.id} className="flex gap-2 animate-in fade-in slide-in-from-bottom-2">
+            <div key={msg.id} className="flex gap-2 animate-in fade-in slide-in-from-bottom-2 group">
               <img
                 src={msg.avatarUrl || 'https://via.placeholder.com/32'}
                 alt={msg.personaName}
@@ -146,6 +182,16 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
                 </div>
                 <p className="text-sm break-words">{msg.message}</p>
               </div>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteMessage(msg.id)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-destructive hover:text-destructive"
+                >
+                  <Icon name="Trash2" size={14} />
+                </Button>
+              )}
             </div>
           ))
         )}
