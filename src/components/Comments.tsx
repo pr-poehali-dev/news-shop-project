@@ -51,8 +51,10 @@ export default function Comments({ newsId }: CommentsProps) {
   const loadComments = async () => {
     try {
       const steamId = user?.steamId || '';
+      console.log('💬 Loading comments for news_id:', newsId, 'steam_id:', steamId);
       const response = await fetch(`${func2url.comments}?news_id=${newsId}&steam_id=${steamId}`);
       const data = await response.json();
+      console.log('💬 Loaded comments:', data.comments?.length || 0);
       setComments(data.comments || []);
     } catch (error) {
       console.error('Failed to load comments:', error);
