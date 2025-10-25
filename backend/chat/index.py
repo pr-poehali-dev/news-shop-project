@@ -190,7 +190,7 @@ def hide_message(event: Dict[str, Any]) -> Dict[str, Any]:
     conn = get_db_connection()
     cur = conn.cursor()
     
-    cur.execute('SELECT COUNT(*) FROM admins WHERE steam_id = %s', (admin_steam_id,))
+    cur.execute('SELECT COUNT(*) FROM t_p15345778_news_shop_project.admins WHERE steam_id = %s', (admin_steam_id,))
     is_admin = cur.fetchone()[0] > 0
     
     if not is_admin:
@@ -220,7 +220,7 @@ def hide_message(event: Dict[str, Any]) -> Dict[str, Any]:
             'body': json.dumps({'error': 'message_id required'})
         }
     
-    cur.execute('UPDATE chat_messages SET is_hidden = TRUE WHERE id = %s', (message_id,))
+    cur.execute('UPDATE t_p15345778_news_shop_project.chat_messages SET is_hidden = TRUE WHERE id = %s', (message_id,))
     conn.commit()
     
     cur.close()
