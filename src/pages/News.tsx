@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import Navigation from '@/components/Navigation';
 import func2url from '../../backend/func2url.json';
+import { formatShortDate } from '@/utils/dateFormat';
 
 interface NewsItem {
   id: number;
@@ -63,7 +64,7 @@ const News = () => {
         id: item.id,
         title: item.title,
         description: item.content.substring(0, 150) + '...',
-        date: item.date
+        date: formatShortDate(item.date)
       }));
       setNewsItems(formattedNews);
     } catch (error) {

@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import Comments from '@/components/Comments';
 import Navigation from '@/components/Navigation';
 import func2url from '../../backend/func2url.json';
+import { formatShortDate } from '@/utils/dateFormat';
 
 interface NewsItem {
   id: number;
@@ -74,7 +75,7 @@ const NewsDetail = () => {
           id: data.news.id,
           title: data.news.title,
           description: data.news.content.substring(0, 150) + '...',
-          date: data.news.date,
+          date: formatShortDate(data.news.date),
           content: data.news.content,
           image: data.news.image_url,
           category: data.news.category

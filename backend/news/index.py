@@ -35,17 +35,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 if news_id:
-                    cur.execute(
-                        "SELECT * FROM news WHERE id = %s",
-                        (int(news_id),)
-                    )
+                    cur.execute("""
+                        SELECT id, title, category, image_url, content, badge,
+                               to_char(date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as date,
+                               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
+                               to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as updated_at
+                        FROM news WHERE id = %s
+                    """, (int(news_id),))
                     news_item = cur.fetchone()
-                    result = None
-                    if news_item:
-                        result = dict(news_item)
-                        result['date'] = result['date'].strftime('%d.%m.%Y')
-                        result['created_at'] = result['created_at'].isoformat()
-                        result['updated_at'] = result['updated_at'].isoformat()
+                    result = dict(news_item) if news_item else None
                     return {
                         'statusCode': 200,
                         'headers': {
@@ -55,15 +53,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'news': result})
                     }
                 else:
-                    cur.execute("SELECT * FROM news ORDER BY date DESC")
+                    cur.execute("""
+                        SELECT id, title, category, image_url, content, badge,
+                               to_char(date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as date,
+                               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
+                               to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as updated_at
+                        FROM news ORDER BY date DESC
+                    """)
                     news_list = cur.fetchall()
-                    results = []
-                    for item in news_list:
-                        result = dict(item)
-                        result['date'] = result['date'].strftime('%d.%m.%Y')
-                        result['created_at'] = result['created_at'].isoformat()
-                        result['updated_at'] = result['updated_at'].isoformat()
-                        results.append(result)
+                    results = [dict(item) for item in news_list]
                     return {
                         'statusCode': 200,
                         'headers': {
@@ -77,27 +75,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             body_data = json.loads(event.get('body', '{}'))
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(
-                    """
+                cur.execute("""
                     INSERT INTO news (title, category, image_url, content, badge)
                     VALUES (%s, %s, %s, %s, %s)
-                    RETURNING *
-                    """,
-                    (
-                        body_data['title'],
-                        body_data['category'],
-                        body_data.get('image_url'),
-                        body_data['content'],
-                        body_data.get('badge')
-                    )
-                )
+                    RETURNING id, title, category, image_url, content, badge,
+                              to_char(date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as date,
+                              to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
+                              to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as updated_at
+                """, (
+                    body_data['title'],
+                    body_data['category'],
+                    body_data.get('image_url'),
+                    body_data['content'],
+                    body_data.get('badge')
+                ))
                 new_news = cur.fetchone()
                 conn.commit()
                 
                 result = dict(new_news)
-                result['date'] = result['date'].strftime('%d.%m.%Y')
-                result['created_at'] = result['created_at'].isoformat()
-                result['updated_at'] = result['updated_at'].isoformat()
                 
                 return {
                     'statusCode': 201,
@@ -113,32 +108,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             news_id = body_data.get('id')
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(
-                    """
+                cur.execute("""
                     UPDATE news 
                     SET title = %s, category = %s, image_url = %s, 
                         content = %s, badge = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
-                    RETURNING *
-                    """,
-                    (
-                        body_data['title'],
-                        body_data['category'],
-                        body_data.get('image_url'),
-                        body_data['content'],
-                        body_data.get('badge'),
-                        news_id
-                    )
-                )
+                    RETURNING id, title, category, image_url, content, badge,
+                              to_char(date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as date,
+                              to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
+                              to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as updated_at
+                """, (
+                    body_data['title'],
+                    body_data['category'],
+                    body_data.get('image_url'),
+                    body_data['content'],
+                    body_data.get('badge'),
+                    news_id
+                ))
                 updated_news = cur.fetchone()
                 conn.commit()
                 
-                result = None
-                if updated_news:
-                    result = dict(updated_news)
-                    result['date'] = result['date'].strftime('%d.%m.%Y')
-                    result['created_at'] = result['created_at'].isoformat()
-                    result['updated_at'] = result['updated_at'].isoformat()
+                result = dict(updated_news) if updated_news else None
                 
                 return {
                     'statusCode': 200,

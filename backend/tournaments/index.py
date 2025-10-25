@@ -66,7 +66,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         t.max_participants,
                         t.status,
                         t.tournament_type,
-                        t.start_date,
+                        to_char(t.start_date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as start_date,
                         COUNT(tr.id) as participants_count
                     FROM tournaments t
                     LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
@@ -92,7 +92,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         steam_id,
                         persona_name,
                         avatar_url,
-                        registered_at
+                        to_char(registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at
                     FROM tournament_registrations
                     WHERE tournament_id = %s
                     ORDER BY registered_at ASC
@@ -110,7 +110,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'Access-Control-Allow-Origin': '*'
                     },
                     'isBase64Encoded': False,
-                    'body': json.dumps(result, default=str)
+                    'body': json.dumps(result)
                 }
             
             # Получить список турниров
@@ -125,7 +125,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         t.max_participants,
                         t.status,
                         t.tournament_type,
-                        t.start_date,
+                        to_char(t.start_date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as start_date,
                         COUNT(tr.id) as participants_count,
                         EXISTS(
                             SELECT 1 FROM tournament_registrations 
@@ -147,7 +147,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         t.max_participants,
                         t.status,
                         t.tournament_type,
-                        t.start_date,
+                        to_char(t.start_date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as start_date,
                         COUNT(tr.id) as participants_count
                     FROM tournaments t
                     LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
@@ -164,7 +164,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'isBase64Encoded': False,
-                'body': json.dumps({'tournaments': [dict(row) for row in tournaments]}, default=str)
+                'body': json.dumps({'tournaments': [dict(row) for row in tournaments]})
             }
         
         # POST: Создать турнир (админ) или зарегистрироваться на турнир (пользователь)

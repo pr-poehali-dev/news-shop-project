@@ -70,7 +70,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         cursor.execute(f"""
             SELECT id, steam_id, persona_name, avatar_url, profile_url, 
-                   balance, is_blocked, block_reason, last_login, created_at
+                   balance, is_blocked, block_reason,
+                   to_char(last_login, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as last_login,
+                   to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at
             FROM t_p15345778_news_shop_project.users
             WHERE steam_id = '{escaped_steam_id}'
         """)
@@ -92,8 +94,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'balance': user_profile['balance'],
                 'isBlocked': user_profile['is_blocked'],
                 'blockReason': user_profile['block_reason'],
-                'lastLogin': user_profile['last_login'].isoformat() if user_profile['last_login'] else None,
-                'createdAt': user_profile['created_at'].isoformat() if user_profile['created_at'] else None
+                'lastLogin': user_profile['last_login'],
+                'createdAt': user_profile['created_at']
             }
         
         # Получить турниры пользователя
@@ -106,8 +108,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 t.max_participants,
                 t.status,
                 t.tournament_type,
-                t.start_date,
-                tr.registered_at,
+                to_char(t.start_date, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as start_date,
+                to_char(tr.registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at,
                 (
                     SELECT COUNT(*) 
                     FROM tournament_registrations 
@@ -166,7 +168,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': False,
-            'body': json.dumps(result, default=str)
+            'body': json.dumps(result)
         }
     
     finally:
