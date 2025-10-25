@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
 import Index from "./pages/Index";
 import News from "./pages/News";
 import Shop from "./pages/Shop";
@@ -25,15 +26,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/servers" element={<Servers />} />
-          <Route path="/tournaments" element={<Tournaments />} />
-          <Route path="/partners" element={<Partners />} />
-          <Route path="/tournament/:id" element={<TournamentDetail />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/servers" element={<Servers />} />
+            <Route path="/tournaments" element={<Tournaments />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/tournament/:id" element={<TournamentDetail />} />
+            <Route path="/news/:id" element={<NewsDetail />} />
+          </Route>
           <Route path="/profile" element={<Profile />} />
-          <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
