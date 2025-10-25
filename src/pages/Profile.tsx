@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
+import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
   steamId: string;
@@ -39,11 +40,22 @@ interface ProfileData {
   };
 }
 
+interface MenuItem {
+  id: number;
+  name: string;
+  label: string;
+  route: string;
+  icon: string;
+  isVisible: boolean;
+  orderPosition: number;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SteamUser | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -55,6 +67,7 @@ const Profile = () => {
     const userData = JSON.parse(savedUser);
     setUser(userData);
     loadProfileData(userData.steamId);
+    loadMenuItems();
   }, [navigate]);
 
   const loadProfileData = async (steamId: string) => {
@@ -68,6 +81,17 @@ const Profile = () => {
       console.error('Failed to load profile data:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadMenuItems = async () => {
+    try {
+      const response = await fetch(func2url['menu-items']);
+      const data = await response.json();
+      const visibleItems = (data.menuItems || []).filter((item: MenuItem) => item.isVisible);
+      setMenuItems(visibleItems);
+    } catch (error) {
+      console.error('Failed to load menu items:', error);
     }
   };
 
@@ -102,45 +126,18 @@ const Profile = () => {
 
             <div className="flex items-center gap-6">
               <div className="flex gap-2 bg-card p-1.5 rounded-xl border border-border">
-                <button
-                  onClick={() => navigate('/shop')}
-                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="ShoppingBag" size={18} />
-                    <span className="font-medium">Магазин</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/servers')}
-                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Server" size={18} />
-                    <span className="font-medium">Наши сервера</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/tournaments')}
-                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Trophy" size={18} />
-                    <span className="font-medium">Турниры</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/partners')}
-                  className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon name="Handshake" size={18} />
-                    <span className="font-medium">Партнёры</span>
-                  </div>
-                </button>
+                {menuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(item.route)}
+                    className="px-6 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon name={item.icon as any} size={18} />
+                      <span className="font-medium">{item.label}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
 
               <div className="flex items-center gap-3">
