@@ -5,6 +5,7 @@ import ShopTab from '@/components/ShopTab';
 import ServersTab from '@/components/ServersTab';
 import TournamentsTab from '@/components/TournamentsTab';
 import PartnersTab from '@/components/PartnersTab';
+import GlobalChat from '@/components/GlobalChat';
 import func2url from '../../backend/func2url.json';
 
 interface NewsItem {
@@ -221,6 +222,8 @@ const Index = () => {
         )}
         {activeTab === 'partners' && <PartnersTab />}
       </main>
+
+      <GlobalChat user={user} onLoginClick={handleSteamLogin} />
     </div>
   );
 };

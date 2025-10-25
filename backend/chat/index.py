@@ -1,0 +1,147 @@
+'''
+Business: Handle global chat messages - get recent messages and post new messages
+Args: event with httpMethod, body, queryStringParameters
+Returns: HTTP response with chat messages or post confirmation
+'''
+
+import json
+import os
+import psycopg2
+from typing import Dict, Any
+
+def get_db_connection():
+    dsn = os.environ.get('DATABASE_URL')
+    if not dsn:
+        raise ValueError('DATABASE_URL environment variable is not set')
+    return psycopg2.connect(dsn)
+
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    method: str = event.get('httpMethod', 'GET')
+    
+    if method == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+                'Access-Control-Max-Age': '86400'
+            },
+            'body': ''
+        }
+    
+    if method == 'GET':
+        return get_messages(event)
+    elif method == 'POST':
+        return post_message(event)
+    
+    return {
+        'statusCode': 405,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({'error': 'Method not allowed'})
+    }
+
+def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
+    params = event.get('queryStringParameters') or {}
+    limit = int(params.get('limit', '50'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('''
+        SELECT id, steam_id, persona_name, avatar_url, message, 
+               to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+        FROM chat_messages
+        ORDER BY created_at DESC
+        LIMIT %s
+    ''', (limit,))
+    
+    rows = cur.fetchall()
+    
+    messages = []
+    for row in rows:
+        messages.append({
+            'id': row[0],
+            'steamId': row[1],
+            'personaName': row[2],
+            'avatarUrl': row[3],
+            'message': row[4],
+            'createdAt': row[5]
+        })
+    
+    messages.reverse()
+    
+    cur.close()
+    conn.close()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'isBase64Encoded': False,
+        'body': json.dumps({'messages': messages})
+    }
+
+def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
+    body_data = json.loads(event.get('body', '{}'))
+    
+    steam_id = body_data.get('steam_id')
+    persona_name = body_data.get('persona_name')
+    avatar_url = body_data.get('avatar_url')
+    message = body_data.get('message', '').strip()
+    
+    if not steam_id or not persona_name:
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'steam_id and persona_name required'})
+        }
+    
+    if not message or len(message) > 500:
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Message must be 1-500 characters'})
+        }
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('''
+        INSERT INTO chat_messages (steam_id, persona_name, avatar_url, message)
+        VALUES (%s, %s, %s, %s)
+        RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+    ''', (steam_id, persona_name, avatar_url, message))
+    
+    row = cur.fetchone()
+    message_id = row[0]
+    created_at = row[1]
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+    return {
+        'statusCode': 201,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'isBase64Encoded': False,
+        'body': json.dumps({
+            'message': 'Message posted successfully',
+            'id': message_id,
+            'createdAt': created_at
+        })
+    }

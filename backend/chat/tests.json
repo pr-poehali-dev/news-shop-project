@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Get chat messages",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "messages": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Post new message",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "steam_id": "76561198000000000",
+        "persona_name": "TestUser",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "message": "Hello world!"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "message": "string",
+        "id": "number"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
