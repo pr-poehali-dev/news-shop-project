@@ -49,12 +49,13 @@ export default function Comments({ newsId }: CommentsProps) {
   }, [newsId]);
 
   const loadComments = async () => {
+    setIsLoading(true);
     try {
       const steamId = user?.steamId || '';
       console.log('💬 Loading comments for news_id:', newsId, 'steam_id:', steamId);
       const response = await fetch(`${func2url.comments}?news_id=${newsId}&steam_id=${steamId}`);
       const data = await response.json();
-      console.log('💬 Loaded comments:', data.comments?.length || 0);
+      console.log('💬 Loaded comments:', data.comments?.length || 0, 'Data:', data);
       setComments(data.comments || []);
     } catch (error) {
       console.error('Failed to load comments:', error);
@@ -201,6 +202,8 @@ export default function Comments({ newsId }: CommentsProps) {
 
   const topLevelComments = comments.filter(c => !c.parent_comment_id);
   const getReplies = (parentId: number) => comments.filter(c => c.parent_comment_id === parentId);
+
+  console.log('💬 Render state - isLoading:', isLoading, 'comments:', comments.length, 'topLevel:', topLevelComments.length);
 
   const renderComment = (comment: Comment, isReply = false) => (
     <div key={comment.id}>
