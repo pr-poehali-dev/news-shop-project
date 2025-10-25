@@ -37,20 +37,16 @@ export default function Comments({ newsId }: CommentsProps) {
   const [newComment, setNewComment] = useState({ text: '' });
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<SteamUser | null>(null);
+  const [user, setUser] = useState<SteamUser | null>(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('steamUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  useEffect(() => {
     loadComments();
-  }, [newsId, user]);
+  }, [newsId]);
 
   const loadComments = async () => {
     try {
