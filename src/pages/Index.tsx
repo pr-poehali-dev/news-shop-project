@@ -42,6 +42,9 @@ interface Tournament {
   is_registered?: boolean;
 }
 
+const productsLoaded = false;
+const newsLoaded = false;
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'shop' | 'servers' | 'tournaments' | 'partners'>('news');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -58,8 +61,14 @@ const Index = () => {
       setUser(JSON.parse(savedUser));
     }
 
-    loadNews();
-    loadProducts();
+    if (!newsLoaded) {
+      loadNews();
+      newsLoaded = true;
+    }
+    if (!productsLoaded) {
+      loadProducts();
+      productsLoaded = true;
+    }
 
     const params = new URLSearchParams(window.location.search);
     const claimedId = params.get('openid.claimed_id');
@@ -111,16 +120,6 @@ const Index = () => {
   };
 
   const loadProducts = async () => {
-    const cachedProducts = localStorage.getItem('shopProducts');
-    const cacheTime = localStorage.getItem('shopProductsTime');
-    const now = new Date().getTime();
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 минут
-
-    if (cachedProducts && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
-      setProducts(JSON.parse(cachedProducts));
-      return;
-    }
-
     try {
       const response = await fetch(func2url['shop-items']);
       
@@ -130,8 +129,6 @@ const Index = () => {
       
       const data = await response.json();
       setProducts(data.items || []);
-      localStorage.setItem('shopProducts', JSON.stringify(data.items || []));
-      localStorage.setItem('shopProductsTime', now.toString());
     } catch (error) {
       console.error('Failed to load shop items:', error);
     }
