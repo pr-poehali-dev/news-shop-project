@@ -55,7 +55,7 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     
     cur.execute('''
         SELECT id, steam_id, persona_name, avatar_url, message, 
-               to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+               to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at
         FROM chat_messages
         WHERE is_hidden = FALSE
         ORDER BY created_at DESC
@@ -124,7 +124,7 @@ def post_message(event: Dict[str, Any]) -> Dict[str, Any]:
     cur.execute('''
         INSERT INTO chat_messages (steam_id, persona_name, avatar_url, message)
         VALUES (%s, %s, %s, %s)
-        RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+        RETURNING id, to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at
     ''', (steam_id, persona_name, avatar_url, message))
     
     row = cur.fetchone()
