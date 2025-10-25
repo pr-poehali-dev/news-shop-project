@@ -157,6 +157,12 @@ const ShopTab = ({ products, user }: ShopTabProps) => {
 
   return (
     <div className="space-y-10">
+      <div className="space-y-3">
+        <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-2">
+          <span className="text-sm font-medium text-primary">Пополнение</span>
+        </div>
+        <p className="text-muted-foreground text-xl">Пополните баланс рублей</p>
+      </div>
 
 
       {user && (
