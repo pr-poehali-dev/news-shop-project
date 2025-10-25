@@ -49,6 +49,7 @@ export default function UsersManagement({
     if (!adminUser || newBalance === null) return;
 
     try {
+      console.log('Updating balance:', { steamId: user.steamId, balance: newBalance });
       const response = await fetch(func2url.users, {
         method: 'PUT',
         headers: {
@@ -61,13 +62,18 @@ export default function UsersManagement({
         })
       });
 
+      console.log('Balance update response:', response.status, await response.text());
+
       if (response.ok) {
         await onReload();
         setEditingUserId(null);
         setBalanceAmount(null);
+      } else {
+        alert('Ошибка при обновлении баланса');
       }
     } catch (error) {
       console.error('Failed to update balance:', error);
+      alert('Ошибка при обновлении баланса: ' + error);
     }
   };
 
@@ -79,6 +85,7 @@ export default function UsersManagement({
     }
 
     try {
+      console.log('Blocking user:', { steamId: user.steamId, reason });
       const response = await fetch(func2url.users, {
         method: 'PUT',
         headers: {
@@ -92,13 +99,18 @@ export default function UsersManagement({
         })
       });
 
+      console.log('Block response:', response.status);
+
       if (response.ok) {
         await onReload();
         setEditingUserId(null);
         setBlockReason('');
+      } else {
+        alert('Ошибка при блокировке пользователя');
       }
     } catch (error) {
       console.error('Failed to block user:', error);
+      alert('Ошибка при блокировке: ' + error);
     }
   };
 
@@ -135,6 +147,7 @@ export default function UsersManagement({
     }
 
     try {
+      console.log('Toggling admin:', { steamId: user.steamId, isAdmin: !user.isAdmin });
       const response = await fetch(func2url.users, {
         method: 'PUT',
         headers: {
@@ -147,11 +160,16 @@ export default function UsersManagement({
         })
       });
 
+      console.log('Toggle admin response:', response.status);
+
       if (response.ok) {
         await onReload();
+      } else {
+        alert('Ошибка при изменении прав администратора');
       }
     } catch (error) {
       console.error('Failed to toggle admin:', error);
+      alert('Ошибка при изменении прав: ' + error);
     }
   };
 
