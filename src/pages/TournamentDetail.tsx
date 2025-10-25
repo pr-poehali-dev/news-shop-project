@@ -141,14 +141,6 @@ const TournamentDetail = () => {
     localStorage.removeItem('steamUser');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-2xl text-muted-foreground">Загрузка...</div>
-      </div>
-    );
-  }
-
   if (!tournament) {
     return (
       <div className="flex items-center justify-center py-16">

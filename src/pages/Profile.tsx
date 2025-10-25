@@ -80,12 +80,8 @@ const Profile = () => {
 
 
 
-  if (!user || !profileData) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-2xl text-muted-foreground">Загрузка профиля...</div>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (

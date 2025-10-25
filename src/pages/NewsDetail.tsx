@@ -302,14 +302,6 @@ const NewsDetail = () => {
     localStorage.removeItem('steamUser');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-2xl text-muted-foreground">Загрузка...</div>
-      </div>
-    );
-  }
-
   if (!news) {
     return (
       <div className="flex items-center justify-center py-16">
