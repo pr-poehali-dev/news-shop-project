@@ -78,6 +78,18 @@ def query_source_server(ip: str, port: int, timeout: int = 3) -> Optional[Dict[s
         if len(data) < 6:
             return None
         
+        # Check for challenge response (0x41 = 'A')
+        if data[4:5] == b'A':
+            # This is a challenge response, we need to send another request with the challenge number
+            challenge = data[5:9]
+            request_with_challenge = b'\xFF\xFF\xFF\xFFTSource Engine Query\x00' + challenge
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(timeout)
+            sock.sendto(request_with_challenge, (ip, port))
+            data, _ = sock.recvfrom(4096)
+            sock.close()
+        
         # Skip header (4 bytes FF FF FF FF) and type (1 byte)
         offset = 5
         
@@ -104,13 +116,18 @@ def query_source_server(ip: str, port: int, timeout: int = 3) -> Optional[Dict[s
         game_name = data[offset:game_end].decode('utf-8', errors='ignore')
         offset = game_end + 1
         
-        # Read ID (2 bytes)
+        # Read ID (2 bytes, little-endian)
+        if offset + 2 > len(data):
+            return None
+        app_id = struct.unpack('<H', data[offset:offset+2])[0]
         offset += 2
         
         # Read players and max players
         if offset + 2 <= len(data):
             players = data[offset]
             max_players = data[offset + 1]
+            
+            print(f'Server query successful: {ip}:{port} - Map: {map_name}, Players: {players}/{max_players}')
             
             return {
                 'status': 'online',
