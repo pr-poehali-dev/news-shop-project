@@ -183,6 +183,39 @@ const Index = () => {
     }
   };
 
+  const handleTournamentUnregister = async (tournamentId: number) => {
+    if (!user) return;
+
+    setIsRegistering(tournamentId);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournament_id: tournamentId,
+          steam_id: user.steamId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Регистрация отменена');
+        await loadTournaments();
+      } else {
+        alert(data.error || 'Ошибка отмены регистрации');
+      }
+    } catch (error) {
+      console.error('Unregister failed:', error);
+      alert('Ошибка при отмене регистрации');
+    } finally {
+      setIsRegistering(null);
+    }
+  };
+
   const handleSteamLogin = async () => {
     const returnUrl = `${window.location.origin}${window.location.pathname}`;
     const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
@@ -213,6 +246,7 @@ const Index = () => {
                 user={user}
                 isRegistering={isRegistering}
                 onRegister={handleTournamentRegister}
+                onUnregister={handleTournamentUnregister}
               />
             )}
             {activeTab === 'partners' && <PartnersTab />}

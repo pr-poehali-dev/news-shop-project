@@ -28,9 +28,10 @@ interface TournamentsTabProps {
   user: SteamUser | null;
   isRegistering: number | null;
   onRegister: (tournamentId: number) => void;
+  onUnregister: (tournamentId: number) => void;
 }
 
-const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
+const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregister }: TournamentsTabProps) => {
   const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
@@ -128,10 +129,24 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
               <div className="flex gap-3 pt-4 border-t border-border" onClick={(e) => e.stopPropagation()}>
                 {tournament.is_registered ? (
-                  <Button disabled className="gap-2" variant="secondary">
-                    <Icon name="CheckCircle2" size={18} />
-                    Вы зарегистрированы
-                  </Button>
+                  <>
+                    <Button disabled className="gap-2" variant="secondary">
+                      <Icon name="CheckCircle2" size={18} />
+                      Вы зарегистрированы
+                    </Button>
+                    <Button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUnregister(tournament.id);
+                      }}
+                      disabled={isRegistering === tournament.id || tournament.status !== 'upcoming'}
+                      variant="destructive"
+                      className="gap-2"
+                    >
+                      <Icon name="UserMinus" size={18} />
+                      {isRegistering === tournament.id ? 'Отмена...' : 'Отменить регистрацию'}
+                    </Button>
+                  </>
                 ) : (
                   <Button 
                     onClick={(e) => {
