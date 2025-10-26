@@ -169,6 +169,20 @@ const Tournaments = () => {
   };
 
   return (
+    <div className="min-h-screen">
+      <section className="bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
+        <div className="container mx-auto px-6 py-16">
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Турниры
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Участвуйте в турнирах, побеждайте и получайте призы
+            </p>
+          </div>
+        </div>
+      </section>
+
       <main className="container mx-auto px-6 py-16">
         <TournamentsTab
           tournaments={tournaments}
@@ -178,6 +192,7 @@ const Tournaments = () => {
           onUnregister={handleTournamentUnregister}
         />
       </main>
+    </div>
   );
 };
 
