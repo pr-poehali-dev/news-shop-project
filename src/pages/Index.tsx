@@ -143,8 +143,15 @@ const Index = () => {
         ? `https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675?steam_id=${user.steamId}`
         : 'https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675';
       
+      console.log('🏆 Loading tournaments, user:', user?.steamId || 'not logged in');
+      console.log('🏆 URL:', url);
+      
       const response = await fetch(url);
       const data = await response.json();
+      
+      console.log('🏆 Tournaments response:', data);
+      console.log('🏆 Tournaments count:', data.tournaments?.length);
+      
       setTournaments(data.tournaments || []);
     } catch (error) {
       console.error('Failed to load tournaments:', error);
