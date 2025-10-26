@@ -84,7 +84,7 @@ const MainLayout = () => {
         handleSteamLogin={handleSteamLogin}
         handleLogout={handleLogout}
       />
-      <div className="flex-1">
+      <div className="flex-1 relative z-10">
         <Outlet />
       </div>
       <footer className="border-t border-border bg-card/50 backdrop-blur">
