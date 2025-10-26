@@ -62,21 +62,21 @@ const Tournaments = () => {
   }, [user]);
 
   const loadTournaments = async () => {
+    const cacheKey = user ? `tournaments_${user.steamId}` : 'tournaments';
+    const cachedTournaments = localStorage.getItem(cacheKey);
+    if (cachedTournaments) {
+      setTournaments(JSON.parse(cachedTournaments));
+    }
+
     try {
       const url = user 
         ? `https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675?steam_id=${user.steamId}`
         : 'https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675';
       
-      console.log('🏆 Loading tournaments, user:', user?.steamId || 'not logged in');
-      console.log('🏆 URL:', url);
-      
       const response = await fetch(url);
       const data = await response.json();
-      
-      console.log('🏆 Tournaments response:', data);
-      console.log('🏆 Tournaments count:', data.tournaments?.length);
-      
       setTournaments(data.tournaments || []);
+      localStorage.setItem(cacheKey, JSON.stringify(data.tournaments || []));
     } catch (error) {
       console.error('Failed to load tournaments:', error);
     }
@@ -120,39 +120,6 @@ const Tournaments = () => {
     }
   };
 
-  const handleTournamentUnregister = async (tournamentId: number) => {
-    if (!user) return;
-
-    setIsRegistering(tournamentId);
-
-    try {
-      const response = await fetch('https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tournament_id: tournamentId,
-          steam_id: user.steamId
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Регистрация отменена');
-        await loadTournaments();
-      } else {
-        alert(data.error || 'Ошибка отмены регистрации');
-      }
-    } catch (error) {
-      console.error('Unregister failed:', error);
-      alert('Ошибка при отмене регистрации');
-    } finally {
-      setIsRegistering(null);
-    }
-  };
-
   const handleSteamLogin = async () => {
     const returnUrl = `${window.location.origin}${window.location.pathname}`;
     const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
@@ -169,30 +136,14 @@ const Tournaments = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <section className="bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
-        <div className="container mx-auto px-6 py-16">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Турниры
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Участвуйте в турнирах, побеждайте и получайте призы
-            </p>
-          </div>
-        </div>
-      </section>
-
       <main className="container mx-auto px-6 py-16">
         <TournamentsTab
           tournaments={tournaments}
           user={user}
           isRegistering={isRegistering}
           onRegister={handleTournamentRegister}
-          onUnregister={handleTournamentUnregister}
         />
       </main>
-    </div>
   );
 };
 
