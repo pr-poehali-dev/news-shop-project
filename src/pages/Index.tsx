@@ -87,7 +87,9 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    console.log('🎮 useEffect triggered - activeTab:', activeTab, 'user:', user?.steamId || 'not logged in');
     if (activeTab === 'tournaments') {
+      console.log('🎮 Calling loadTournaments()');
       loadTournaments();
     }
   }, [user, activeTab]);
