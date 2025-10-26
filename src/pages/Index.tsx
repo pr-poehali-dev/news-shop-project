@@ -88,6 +88,12 @@ const Index = () => {
     loadTournaments();
   }, [user]);
 
+  useEffect(() => {
+    if (activeTab === 'tournaments') {
+      loadTournaments();
+    }
+  }, [activeTab]);
+
   const loadNews = async () => {
     const cachedNews = localStorage.getItem('newsItems');
     if (cachedNews) {
