@@ -67,14 +67,14 @@ const Navigation = ({
   };
 
   return (
-    <nav className="border-b border-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
+    <nav className="border-b neon-border backdrop-blur-xl bg-background/80 sticky top-0 z-50">
       <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center neon-border">
               <Icon name="Gamepad2" size={24} className="text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Okyes</h1>
+            <h1 className="text-2xl font-bold tracking-tight neon-glow">Okyes</h1>
           </div>
 
           <div className="flex items-center gap-6">
@@ -85,7 +85,7 @@ const Navigation = ({
                   onClick={() => navigate(item.route)}
                   className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                     activeTab === item.name
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                      ? 'bg-primary text-primary-foreground neon-button'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                 >
