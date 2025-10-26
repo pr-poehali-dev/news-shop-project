@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import Navigation from '../components/Navigation';
+import NeonLines from '../components/NeonLines';
 
 interface SteamUser {
   steamId: string;
@@ -73,6 +74,7 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col neon-bg">
+      <NeonLines />
       <Navigation
         activeTab={getActiveTab()}
         setActiveTab={() => {}}
