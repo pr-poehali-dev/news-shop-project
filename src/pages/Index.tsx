@@ -54,8 +54,10 @@ const Index = () => {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
+    let initialUser: SteamUser | null = null;
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      initialUser = JSON.parse(savedUser);
+      setUser(initialUser);
     }
 
     loadNews();
@@ -85,14 +87,10 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    loadTournaments();
-  }, [user]);
-
-  useEffect(() => {
     if (activeTab === 'tournaments') {
       loadTournaments();
     }
-  }, [activeTab]);
+  }, [user, activeTab]);
 
   const loadNews = async () => {
     const cachedNews = localStorage.getItem('newsItems');
