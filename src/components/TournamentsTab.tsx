@@ -76,34 +76,34 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
   const mockPlayersData = {
     hearthstone: [
-      { rank: 1, name: 'CardMaster', mmr: 8200, wins: 412, losses: 88 },
-      { rank: 2, name: 'DeckBuilder', mmr: 7950, wins: 389, losses: 111 },
-      { rank: 3, name: 'ManaKing', mmr: 7780, wins: 356, losses: 144 },
-      { rank: 4, name: 'SpellWeaver', mmr: 7610, wins: 334, losses: 166 },
-      { rank: 5, name: 'RNGLord', mmr: 7440, wins: 312, losses: 188 },
-      { rank: 6, name: 'LegendPlayer', mmr: 7280, wins: 290, losses: 210 },
-      { rank: 7, name: 'ArenaChamp', mmr: 7120, wins: 268, losses: 232 },
-      { rank: 8, name: 'TavernBrawler', mmr: 6960, wins: 246, losses: 254 },
+      { rank: 1, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 2, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 3, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 4, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 5, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 6, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 7, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 8, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
     ],
     dota2: [
-      { rank: 1, name: 'Miracle-', mmr: 9850, wins: 542, losses: 158 },
-      { rank: 2, name: 'Puppey', mmr: 9640, wins: 498, losses: 202 },
-      { rank: 3, name: 'SumaiL', mmr: 9420, wins: 476, losses: 224 },
-      { rank: 4, name: 'Arteezy', mmr: 9200, wins: 454, losses: 246 },
-      { rank: 5, name: 'N0tail', mmr: 8980, wins: 432, losses: 268 },
-      { rank: 6, name: 'Dendi', mmr: 8760, wins: 410, losses: 290 },
-      { rank: 7, name: 'KuroKy', mmr: 8540, wins: 388, losses: 312 },
-      { rank: 8, name: 'Topson', mmr: 8320, wins: 366, losses: 334 },
+      { rank: 1, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 2, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 3, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 4, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 5, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 6, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 7, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 8, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
     ],
     cs2: [
-      { rank: 1, name: 's1mple', mmr: 28400, wins: 1242, losses: 458 },
-      { rank: 2, name: 'ZywOo', mmr: 27800, wins: 1198, losses: 502 },
-      { rank: 3, name: 'NiKo', mmr: 27200, wins: 1156, losses: 544 },
-      { rank: 4, name: 'device', mmr: 26600, wins: 1114, losses: 586 },
-      { rank: 5, name: 'electronic', mmr: 26000, wins: 1072, losses: 628 },
-      { rank: 6, name: 'Twistzz', mmr: 25400, wins: 1030, losses: 670 },
-      { rank: 7, name: 'ropz', mmr: 24800, wins: 988, losses: 712 },
-      { rank: 8, name: 'b1t', mmr: 24200, wins: 946, losses: 754 },
+      { rank: 1, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 2, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 3, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 4, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 5, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 6, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 7, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
+      { rank: 8, name: 'nickname', mmr: 0, wins: 0, losses: 0 },
     ],
   };
 
@@ -252,7 +252,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     {player.name}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-mono">{player.mmr} MMR</span>
+                    <span className="font-mono">{player.mmr} points</span>
                     <span>•</span>
                     <span>{player.wins}W / {player.losses}L</span>
                   </div>
