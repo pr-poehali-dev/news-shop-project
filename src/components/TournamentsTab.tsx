@@ -233,12 +233,13 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
           </div>
 
           <div className="space-y-2">
-            {mockPlayers.map((player) => (
+            {mockPlayers.map((player, index) => (
               <div
-                key={player.rank}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background transition-colors cursor-pointer group"
+                key={`${selectedGame}-${player.rank}`}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-right-4"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 transition-all ${
                   player.rank === 1 ? 'bg-yellow-500/20 text-yellow-500' :
                   player.rank === 2 ? 'bg-gray-400/20 text-gray-400' :
                   player.rank === 3 ? 'bg-orange-500/20 text-orange-500' :
