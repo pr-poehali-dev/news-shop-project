@@ -32,9 +32,42 @@ interface TournamentsTabProps {
   onRegister: (tournamentId: number) => void;
 }
 
+interface TopPlayer {
+  id: number;
+  position: number;
+  player_name: string;
+  avatar: string;
+  rating: number;
+  rank: string;
+}
+
 const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
+  
+  const topPlayers: TopPlayer[] = [
+    { id: 1, position: 1, player_name: 'DarkKnight', avatar: '🎮', rating: 2450, rank: 'Diamond' },
+    { id: 2, position: 2, player_name: 'ShadowHunter', avatar: '⚔️', rating: 2380, rank: 'Diamond' },
+    { id: 3, position: 3, player_name: 'MysticMage', avatar: '🔮', rating: 2290, rank: 'Diamond' },
+    { id: 4, position: 4, player_name: 'ProGamer', avatar: '🏆', rating: 2150, rank: 'Diamond' },
+    { id: 5, position: 5, player_name: 'TeamLeader', avatar: '👥', rating: 2080, rank: 'Platinum' }
+  ];
+  
+  const getRankColor = (rank: string) => {
+    switch (rank) {
+      case 'Diamond': return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/30';
+      case 'Platinum': return 'text-slate-300 bg-slate-300/10 border-slate-300/30';
+      case 'Gold': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
+      default: return 'text-muted-foreground bg-muted/10 border-muted/30';
+    }
+  };
+  
+  const getPositionBadge = (position: number) => {
+    if (position === 1) return '🥇';
+    if (position === 2) return '🥈';
+    if (position === 3) return '🥉';
+    return `#${position}`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -103,9 +136,10 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
         ))}
       </div>
 
-      <div className="space-y-6">
-        {filteredTournaments.length > 0 ? (
-          filteredTournaments.map((tournament, index) => (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {filteredTournaments.length > 0 ? (
+            filteredTournaments.map((tournament, index) => (
             <Card 
               key={tournament.id}
               className="group p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/50 backdrop-blur cursor-pointer"
@@ -185,13 +219,69 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
               </div>
             </Card>
           ))
-        ) : (
-          <Card className="p-12 text-center bg-card/50 backdrop-blur">
-            <Icon name="Search" size={48} className="text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">Турниров не найдено</h3>
-            <p className="text-muted-foreground">Попробуйте выбрать другую игру</p>
+          ) : (
+            <Card className="p-12 text-center bg-card/50 backdrop-blur">
+              <Icon name="Search" size={48} className="text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Турниров не найдено</h3>
+              <p className="text-muted-foreground">Попробуйте выбрать другую игру</p>
+            </Card>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <Card className="p-6 bg-card/50 backdrop-blur sticky top-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <Icon name="Trophy" size={20} className="text-primary" />
+                  Топ игроков
+                </h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/leaderboard')}
+                  className="text-xs"
+                >
+                  Все
+                  <Icon name="ArrowRight" size={14} className="ml-1" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {topPlayers.map((player) => (
+                  <div 
+                    key={player.id}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
+                    onClick={() => navigate('/leaderboard')}
+                  >
+                    <div className="text-2xl w-8 text-center">
+                      {getPositionBadge(player.position)}
+                    </div>
+                    <div className="text-2xl">{player.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{player.player_name}</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={`px-1.5 py-0.5 rounded border ${getRankColor(player.rank)}`}>
+                          {player.rank}
+                        </span>
+                        <span className="text-muted-foreground">{player.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={() => navigate('/leaderboard')}
+              >
+                <Icon name="Trophy" size={16} />
+                Посмотреть рейтинг
+              </Button>
+            </div>
           </Card>
-        )}
+        </div>
       </div>
     </div>
   );
