@@ -330,8 +330,13 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
             <div className="flex gap-3 pt-2 relative z-50">
               <button
                 onClick={() => {
-                  alert('TEST CLICK!');
-                  handleCreate();
+                  console.log('🚀 Starting handleCreate...');
+                  try {
+                    handleCreate();
+                  } catch (err) {
+                    console.error('💥 Error in handleCreate:', err);
+                    alert('Ошибка: ' + err);
+                  }
                 }}
                 className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2 transition-all relative z-50"
                 type="button"
