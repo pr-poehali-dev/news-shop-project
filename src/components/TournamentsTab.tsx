@@ -45,6 +45,16 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   const [leaderboardGame, setLeaderboardGame] = useState<string>('Hearthstone');
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  };
   
   const topPlayers: TopPlayer[] = [
     { id: 1, position: 1, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
@@ -178,7 +188,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Icon name="Calendar" size={14} />
-                    <span>{tournament.start_date}</span>
+                    <span>{formatDateTime(tournament.start_date)}</span>
                   </div>
                 </div>
 
