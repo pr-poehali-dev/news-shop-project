@@ -259,7 +259,11 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     }`}
                     title="Dota 2"
                   >
-                    <span className="text-3xl">⚔️</span>
+                    <img 
+                      src="https://cdn.poehali.dev/files/38849445-fb85-466c-a369-139bb23a2645.png" 
+                      alt="Dota 2" 
+                      className="w-10 h-10 mx-auto object-contain drop-shadow-lg"
+                    />
                   </button>
                   <button
                     onClick={() => setLeaderboardGame('CS2')}
@@ -270,7 +274,11 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     }`}
                     title="Counter-Strike 2"
                   >
-                    <span className="text-3xl">🎯</span>
+                    <img 
+                      src="https://cdn.poehali.dev/files/0ec16141-74ad-4adf-8da0-81c446eced42.png" 
+                      alt="CS2" 
+                      className="w-10 h-10 mx-auto object-contain drop-shadow-lg"
+                    />
                   </button>
                 </div>
               </div>
