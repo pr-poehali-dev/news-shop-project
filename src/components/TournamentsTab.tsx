@@ -34,7 +34,7 @@ interface TournamentsTabProps {
 
 const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
   const navigate = useNavigate();
-  const [selectedGame, setSelectedGame] = useState<'hearthstone' | 'dota2' | 'cs2'>('hearthstone');
+  const [selectedGame, setSelectedGame] = useState<string>('Все');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -110,11 +110,10 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
   const mockPlayers = mockPlayersData[selectedGame];
 
-  const games = [
-    { id: 'hearthstone' as const, name: 'Hearthstone', icon: 'Sparkles' },
-    { id: 'dota2' as const, name: 'Dota 2', icon: 'Swords' },
-    { id: 'cs2' as const, name: 'Counter-Strike 2', icon: 'Target' },
-  ];
+  const allGames = ['Все', ...Array.from(new Set(tournaments.map(t => t.game || 'CS2')))];
+  const filteredTournaments = selectedGame === 'Все' 
+    ? tournaments 
+    : tournaments.filter(t => (t.game || 'CS2') === selectedGame);
 
   return (
     <div className="space-y-10">
@@ -125,9 +124,23 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
         <p className="text-muted-foreground text-xl">Участвуйте в турнирах и выигрывайте призы</p>
       </div>
 
+      <div className="flex gap-3 mb-6 flex-wrap">
+        {allGames.map((game) => (
+          <Button
+            key={game}
+            variant={selectedGame === game ? "default" : "outline"}
+            onClick={() => setSelectedGame(game)}
+            className="gap-2"
+          >
+            <Icon name={game === 'Все' ? 'Grid3x3' : 'Gamepad2'} size={16} />
+            {game}
+          </Button>
+        ))}
+      </div>
+
       <div className="flex gap-6">
       <div className="flex-1 space-y-6">
-        {tournaments.map((tournament, index) => (
+        {filteredTournaments.map((tournament, index) => (
           <Card 
             key={tournament.id}
             className="group p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/50 backdrop-blur cursor-pointer"

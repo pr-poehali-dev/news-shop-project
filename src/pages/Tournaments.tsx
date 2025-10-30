@@ -16,6 +16,7 @@ interface Tournament {
   max_participants: number;
   status: string;
   tournament_type: string;
+  game: string;
   start_date: string;
   participants_count: number;
   is_registered?: boolean;
