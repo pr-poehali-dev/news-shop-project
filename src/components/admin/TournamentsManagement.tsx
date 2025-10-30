@@ -16,6 +16,7 @@ interface Tournament {
   max_participants: number;
   status: string;
   tournament_type: string;
+  game: string;
   start_date: string;
   participants_count: number;
 }
@@ -42,7 +43,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
     max_participants: '',
     tournament_type: 'solo',
     start_date: '',
-    status: 'upcoming'
+    status: 'upcoming',
+    game: 'CS2'
   });
 
   const handleCreate = async () => {
@@ -65,7 +67,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
           max_participants: parseInt(formData.max_participants),
           tournament_type: formData.tournament_type,
           start_date: formData.start_date,
-          status: formData.status
+          status: formData.status,
+          game: formData.game
         })
       });
 
@@ -78,7 +81,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
           max_participants: '',
           tournament_type: 'solo',
           start_date: '',
-          status: 'upcoming'
+          status: 'upcoming',
+          game: 'CS2'
         });
         await onReload();
       } else {
@@ -107,7 +111,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
           max_participants: parseInt(formData.max_participants),
           tournament_type: formData.tournament_type,
           start_date: formData.start_date,
-          status: formData.status
+          status: formData.status,
+          game: formData.game
         })
       });
 
@@ -160,7 +165,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
       max_participants: tournament.max_participants.toString(),
       tournament_type: tournament.tournament_type,
       start_date: tournament.start_date.slice(0, 16),
-      status: tournament.status
+      status: tournament.status,
+      game: tournament.game || 'CS2'
     });
   };
 
@@ -173,7 +179,8 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
       max_participants: '',
       tournament_type: 'solo',
       start_date: '',
-      status: 'upcoming'
+      status: 'upcoming',
+      game: 'CS2'
     });
   };
 
@@ -242,7 +249,23 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="game">Игра</Label>
+                <select
+                  id="game"
+                  value={formData.game}
+                  onChange={(e) => setFormData({ ...formData, game: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                >
+                  <option value="CS2">CS2</option>
+                  <option value="Dota 2">Dota 2</option>
+                  <option value="Valorant">Valorant</option>
+                  <option value="League of Legends">League of Legends</option>
+                  <option value="Overwatch 2">Overwatch 2</option>
+                </select>
+              </div>
+
               <div>
                 <Label htmlFor="tournament_type">Тип турнира</Label>
                 <select
@@ -346,7 +369,23 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor={`edit-game-${tournament.id}`}>Игра</Label>
+                    <select
+                      id={`edit-game-${tournament.id}`}
+                      value={formData.game}
+                      onChange={(e) => setFormData({ ...formData, game: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                    >
+                      <option value="CS2">CS2</option>
+                      <option value="Dota 2">Dota 2</option>
+                      <option value="Valorant">Valorant</option>
+                      <option value="League of Legends">League of Legends</option>
+                      <option value="Overwatch 2">Overwatch 2</option>
+                    </select>
+                  </div>
+
                   <div>
                     <Label htmlFor={`edit-type-${tournament.id}`}>Тип турнира</Label>
                     <select
