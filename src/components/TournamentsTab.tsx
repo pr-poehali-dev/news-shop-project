@@ -44,6 +44,7 @@ interface TopPlayer {
 const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
+  const [leaderboardGame, setLeaderboardGame] = useState<string>('Hearthstone');
   
   const topPlayers: TopPlayer[] = [
     { id: 1, position: 1, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
@@ -227,12 +228,47 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
         <div className="space-y-4">
           <Card className="p-6 bg-card/50 backdrop-blur sticky top-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="space-y-3">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <Icon name="Trophy" size={20} className="text-primary" />
                   Топ игроков
                 </h3>
 
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setLeaderboardGame('Hearthstone')}
+                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                      leaderboardGame === 'Hearthstone' 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background border-border hover:border-primary/50'
+                    }`}
+                    title="Hearthstone"
+                  >
+                    <span className="text-2xl">🃏</span>
+                  </button>
+                  <button
+                    onClick={() => setLeaderboardGame('Dota 2')}
+                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                      leaderboardGame === 'Dota 2' 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background border-border hover:border-primary/50'
+                    }`}
+                    title="Dota 2"
+                  >
+                    <span className="text-2xl">⚔️</span>
+                  </button>
+                  <button
+                    onClick={() => setLeaderboardGame('CS2')}
+                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                      leaderboardGame === 'CS2' 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background border-border hover:border-primary/50'
+                    }`}
+                    title="Counter-Strike 2"
+                  >
+                    <span className="text-2xl">🔫</span>
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1">
