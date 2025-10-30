@@ -4,12 +4,10 @@ import Navigation from '../components/Navigation';
 import NeonLines from '../components/NeonLines';
 
 interface SteamUser {
-  steamId?: string;
+  steamId: string;
   personaName: string;
-  avatarUrl?: string;
-  profileUrl?: string;
-  battlenetId?: string;
-  battletag?: string;
+  avatarUrl: string;
+  profileUrl: string;
 }
 
 const MainLayout = () => {
@@ -27,7 +25,6 @@ const MainLayout = () => {
 
     const params = new URLSearchParams(window.location.search);
     const claimedId = params.get('openid.claimed_id');
-    const linkSteamToBattlenet = localStorage.getItem('linkSteamToBattlenet');
     
     if (claimedId) {
       const verifyParams = new URLSearchParams();
@@ -38,37 +35,10 @@ const MainLayout = () => {
       
       fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?${verifyParams.toString()}`)
         .then(res => res.json())
-        .then(async (data) => {
+        .then(data => {
           if (data.steamId) {
-            if (linkSteamToBattlenet) {
-              const linkResponse = await fetch('https://functions.poehali.dev/a427ecff-b316-4c0a-a83d-989bf3c8ea21', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  action: 'link_steam',
-                  battlenet_id: linkSteamToBattlenet,
-                  steam_data: data
-                })
-              });
-              
-              const linkResult = await linkResponse.json();
-              if (linkResult.success) {
-                const savedUser = localStorage.getItem('steamUser');
-                if (savedUser) {
-                  const user = JSON.parse(savedUser);
-                  user.steamId = data.steamId;
-                  user.personaName = data.personaName;
-                  user.avatarUrl = data.avatarUrl;
-                  user.profileUrl = data.profileUrl;
-                  localStorage.setItem('steamUser', JSON.stringify(user));
-                  setUser(user);
-                }
-              }
-              localStorage.removeItem('linkSteamToBattlenet');
-            } else {
-              setUser(data);
-              localStorage.setItem('steamUser', JSON.stringify(data));
-            }
+            setUser(data);
+            localStorage.setItem('steamUser', JSON.stringify(data));
             window.history.replaceState({}, '', window.location.pathname);
           }
         })
@@ -83,16 +53,6 @@ const MainLayout = () => {
     
     if (data.redirectUrl) {
       window.location.href = data.redirectUrl;
-    }
-  };
-
-  const handleBattlenetLogin = async () => {
-    const redirectUri = `${window.location.origin}/battlenet-callback`;
-    const response = await fetch(`https://functions.poehali.dev/a427ecff-b316-4c0a-a83d-989bf3c8ea21?mode=login&redirect_uri=${encodeURIComponent(redirectUri)}`);
-    const data = await response.json();
-    
-    if (data.authUrl) {
-      window.location.href = data.authUrl;
     }
   };
 
@@ -124,7 +84,6 @@ const MainLayout = () => {
         isRegisterOpen={isRegisterOpen}
         setIsRegisterOpen={setIsRegisterOpen}
         handleSteamLogin={handleSteamLogin}
-        handleBattlenetLogin={handleBattlenetLogin}
         handleLogout={handleLogout}
       />
       <div className="flex-1 relative z-10">
