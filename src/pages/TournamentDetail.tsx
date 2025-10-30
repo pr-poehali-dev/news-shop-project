@@ -23,6 +23,7 @@ interface TournamentDetail {
   max_participants: number;
   status: string;
   tournament_type: string;
+  game: string;
   start_date: string;
   participants_count: number;
   participants: Participant[];
@@ -161,6 +162,9 @@ const TournamentDetail = () => {
             <div className="flex items-start justify-between mb-8">
               <div className="space-y-4 flex-1">
                 <div className="flex items-center gap-3 flex-wrap">
+                  <div className="px-4 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
+                    <span className="text-sm font-bold text-primary">{tournament.game || 'CS2'}</span>
+                  </div>
                   {tournament.status === 'active' && (
                     <div className="px-4 py-1.5 bg-primary rounded-full">
                       <span className="text-sm font-bold text-primary-foreground">АКТИВНЫЙ</span>

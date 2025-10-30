@@ -12,6 +12,7 @@ interface Tournament {
   max_participants: number;
   status: string;
   tournament_type: string;
+  game: string;
   start_date: string;
   participants_count: number;
   is_registered?: boolean;
@@ -140,6 +141,9 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     <h3 className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
                       {tournament.name}
                     </h3>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium border bg-primary/10 text-primary border-primary/20">
+                      {tournament.game || 'CS2'}
+                    </span>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(tournament.status)}`}>
                       {getStatusText(tournament.status)}
                     </span>

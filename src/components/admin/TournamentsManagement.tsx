@@ -452,7 +452,12 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-5 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Icon name="Gamepad2" size={16} className="text-primary" />
+                      <span className="text-muted-foreground">Игра:</span>
+                      <span className="font-bold">{tournament.game || 'CS2'}</span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <Icon name="DollarSign" size={16} className="text-primary" />
                       <span className="text-muted-foreground">Призовой:</span>
