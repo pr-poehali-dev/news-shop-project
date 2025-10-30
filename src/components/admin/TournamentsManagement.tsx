@@ -328,23 +328,28 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
             </div>
 
             <div className="flex gap-3 pt-2">
-              <div 
-                onClick={() => {
-                  console.log('🔘 DIV clicked!');
-                  alert('Клик работает!');
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('🔘 Button clicked!');
                   handleCreate();
                 }}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2"
+                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2 transition-all"
+                type="button"
               >
                 <Icon name="Check" size={18} />
-                Создать (тест)
-              </div>
-              <Button onClick={() => {
-                console.log('❌ Cancel clicked');
-                setIsCreating(false);
-              }} variant="outline" className="flex-1">
+                Создать
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsCreating(false);
+                }}
+                className="flex-1 border border-input bg-background hover:bg-accent px-4 py-2 rounded-md cursor-pointer flex items-center justify-center gap-2 transition-all"
+                type="button"
+              >
                 Отмена
-              </Button>
+              </button>
             </div>
           </div>
         </Card>
