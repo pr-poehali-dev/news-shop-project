@@ -236,23 +236,14 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                   <Icon name="Trophy" size={20} className="text-primary" />
                   Топ игроков
                 </h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate('/leaderboard')}
-                  className="text-xs"
-                >
-                  Все
-                  <Icon name="ArrowRight" size={14} className="ml-1" />
-                </Button>
+
               </div>
 
               <div className="space-y-2">
                 {topPlayers.map((player) => (
                   <div 
                     key={player.id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
-                    onClick={() => navigate('/leaderboard')}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30"
                   >
                     <div className="text-2xl w-8 text-center">
                       {getPositionBadge(player.position)}
@@ -271,14 +262,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                 ))}
               </div>
 
-              <Button 
-                variant="outline" 
-                className="w-full gap-2"
-                onClick={() => navigate('/leaderboard')}
-              >
-                <Icon name="Trophy" size={16} />
-                Посмотреть рейтинг
-              </Button>
+
             </div>
           </Card>
         </div>
