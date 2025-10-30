@@ -447,8 +447,46 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps(dict(tournament), default=str)
             }
         
-        # DELETE: Удалить турнир (только админ)
+        # DELETE: Отменить регистрацию или удалить турнир (админ)
         if method == 'DELETE':
+            body_data = json.loads(event.get('body', '{}'))
+            tournament_id = body_data.get('tournament_id') or body_data.get('id')
+            steam_id = body_data.get('steam_id')
+            
+            # Отмена регистрации пользователя
+            if tournament_id and steam_id:
+                escaped_steam_id = steam_id.replace("'", "''")
+                
+                cursor.execute(
+                    f"DELETE FROM tournament_registrations WHERE tournament_id = {int(tournament_id)} AND steam_id = '{escaped_steam_id}' RETURNING id"
+                )
+                
+                deleted = cursor.fetchone()
+                
+                if not deleted:
+                    return {
+                        'statusCode': 404,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'isBase64Encoded': False,
+                        'body': json.dumps({'error': 'Регистрация не найдена'})
+                    }
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'message': 'Регистрация отменена'})
+                }
+            
+            # Удаление турнира (только админ)
             admin_steam_id = event.get('headers', {}).get('X-Admin-Steam-Id')
             
             if not admin_steam_id:
@@ -477,9 +515,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Admin rights required'})
                 }
-            
-            body_data = json.loads(event.get('body', '{}'))
-            tournament_id = body_data.get('id')
             
             if not tournament_id:
                 return {

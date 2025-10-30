@@ -43,6 +43,7 @@ const TournamentDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isUnregistering, setIsUnregistering] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
@@ -126,6 +127,43 @@ const TournamentDetail = () => {
       alert('Ошибка при регистрации');
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    if (!user) return;
+
+    if (!confirm('Вы уверены, что хотите отменить регистрацию на турнир?')) {
+      return;
+    }
+
+    setIsUnregistering(true);
+
+    try {
+      const response = await fetch(func2url.tournaments, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournament_id: Number(id),
+          steam_id: user.steamId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Регистрация отменена');
+        await loadTournamentDetails();
+      } else {
+        alert(data.error || 'Ошибка отмены регистрации');
+      }
+    } catch (error) {
+      console.error('Unregistration failed:', error);
+      alert('Ошибка при отмене регистрации');
+    } finally {
+      setIsUnregistering(false);
     }
   };
 
@@ -275,8 +313,15 @@ const TournamentDetail = () => {
               </Button>
             )}
             {isRegistered && (
-              <Button size="lg" className="w-full py-6 text-lg font-bold" disabled>
-                Вы зарегистрированы
+              <Button 
+                size="lg" 
+                variant="destructive"
+                className="w-full py-6 text-lg font-bold"
+                onClick={handleUnregister}
+                disabled={isUnregistering}
+              >
+                <Icon name="X" size={20} className="mr-2" />
+                {isUnregistering ? 'Отмена...' : 'Отменить регистрацию'}
               </Button>
             )}
           </Card>
