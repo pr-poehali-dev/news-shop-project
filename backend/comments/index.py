@@ -262,7 +262,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             comment_owner_steam_id = result[0]
             
             escaped_steam_id = steam_id.replace("'", "''")
-            cur.execute(f"SELECT COUNT(*) FROM admins WHERE steam_id = '{escaped_steam_id}'")
+            cur.execute(f"SELECT COUNT(*) FROM t_p15345778_news_shop_project.users WHERE steam_id = '{escaped_steam_id}' AND is_admin = true")
             is_admin = cur.fetchone()[0] > 0
             
             if comment_owner_steam_id != steam_id and not is_admin:
