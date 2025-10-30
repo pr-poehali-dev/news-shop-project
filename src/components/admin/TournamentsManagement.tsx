@@ -6,6 +6,7 @@ import func2url from '../../../backend/func2url.json';
 import TournamentForm from './tournaments/TournamentForm';
 import TournamentCard from './tournaments/TournamentCard';
 import type { Tournament, SteamUser, TournamentFormData } from './tournaments/types';
+import { toLocalDateTimeInput, toUTCISOString } from '@/utils/dateFormat';
 
 interface TournamentsManagementProps {
   tournaments: Tournament[];
@@ -57,7 +58,7 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
         prize_pool: parseInt(formData.prize_pool),
         max_participants: parseInt(formData.max_participants),
         tournament_type: formData.tournament_type,
-        start_date: formData.start_date,
+        start_date: toUTCISOString(formData.start_date),
         status: formData.status,
         game: formData.game
       };
@@ -117,7 +118,7 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
           prize_pool: parseInt(formData.prize_pool),
           max_participants: parseInt(formData.max_participants),
           tournament_type: formData.tournament_type,
-          start_date: formData.start_date,
+          start_date: toUTCISOString(formData.start_date),
           status: formData.status,
           game: formData.game
         })
@@ -171,7 +172,7 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
       prize_pool: tournament.prize_pool.toString(),
       max_participants: tournament.max_participants.toString(),
       tournament_type: tournament.tournament_type,
-      start_date: tournament.start_date.slice(0, 16),
+      start_date: toLocalDateTimeInput(tournament.start_date),
       status: tournament.status,
       game: tournament.game || 'CS2'
     });

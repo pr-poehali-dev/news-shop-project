@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { formatShortDate } from '@/utils/dateFormat';
+import { formatShortDateTime } from '@/utils/dateFormat';
 
 interface Tournament {
   id: number;
@@ -61,7 +61,7 @@ export default function TournamentCard({ tournament, onEdit, onDelete }: Tournam
               <Icon name="Calendar" size={16} className="text-primary" />
               <span className="text-muted-foreground">Начало:</span>
               <span className="font-bold">
-                {formatShortDate(tournament.start_date)}
+                {formatShortDateTime(tournament.start_date)}
               </span>
             </div>
             <div className="flex items-center gap-2">
