@@ -230,6 +230,22 @@ const TournamentDetail = () => {
     return now >= oneHourBefore && now < start;
   };
 
+  const getTimeUntilConfirmation = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    const diff = oneHourBefore - now;
+
+    if (diff <= 0 || now >= start) return null;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { days, hours, minutes, seconds };
+  };
+
   const handleConfirmParticipation = async () => {
     if (!user || !tournament) return;
 
@@ -500,6 +516,27 @@ const TournamentDetail = () => {
                     <div className="flex items-center gap-2 text-green-500">
                       <Icon name="CheckCircle2" size={20} />
                       <span className="font-semibold">Участие подтверждено</span>
+                    </div>
+                  </div>
+                )}
+
+                {!isConfirmationActive(tournament.start_date) && !tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && getTimeUntilConfirmation(tournament.start_date) && (
+                  <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Clock" size={20} className="text-blue-500" />
+                        <span className="font-semibold text-blue-500">Подтвердить участие через</span>
+                      </div>
+                      <div className="text-blue-500 font-mono font-bold">
+                        {(() => {
+                          const time = getTimeUntilConfirmation(tournament.start_date);
+                          if (!time) return '';
+                          if (time.days > 0) {
+                            return `${time.days}д ${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+                          }
+                          return `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+                        })()}
+                      </div>
                     </div>
                   </div>
                 )}
