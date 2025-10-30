@@ -176,7 +176,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # POST: Создать турнир (админ) или зарегистрироваться на турнир (пользователь)
         if method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
+            print(f"POST body_data: {body_data}")
             admin_steam_id = event.get('headers', {}).get('X-Admin-Steam-Id')
+            print(f"Admin Steam ID: {admin_steam_id}")
             
             # Админ создает турнир
             if admin_steam_id and 'name' in body_data:
