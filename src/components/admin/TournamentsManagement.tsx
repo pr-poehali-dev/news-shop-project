@@ -213,6 +213,9 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
 
   return (
     <div className="space-y-6">
+      <div className="bg-yellow-500 text-black p-4 mb-4">
+        ТЕСТ: Компонент загружен! User: {user?.steamId || 'НЕТ'}
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Управление турнирами</h2>
