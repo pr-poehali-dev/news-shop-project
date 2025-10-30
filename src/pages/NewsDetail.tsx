@@ -347,12 +347,17 @@ const NewsDetail = () => {
                 lineHeight: '1.75rem'
               }}
             >
-              {news.content.split('\n').map((line, index) => {
+              {news.content.split('\n').map((line, index, array) => {
                 line = line.trim();
                 
                 if (!line) return <div key={index} className="h-4" />;
                 
                 if (line.startsWith('# ')) {
+                  // Пропускаем первый заголовок h1, так как он дублирует title
+                  const firstH1Index = array.findIndex(l => l.trim().startsWith('# '));
+                  if (index === firstH1Index) {
+                    return null;
+                  }
                   return (
                     <h1 key={index} className="text-4xl font-bold mb-6 mt-8">
                       {line.substring(2)}
