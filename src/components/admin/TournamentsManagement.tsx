@@ -327,24 +327,21 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
               />
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 relative z-50">
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('🔘 Button clicked!');
+                onClick={() => {
+                  alert('TEST CLICK!');
                   handleCreate();
                 }}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2 transition-all"
+                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2 transition-all relative z-50"
                 type="button"
+                style={{ pointerEvents: 'auto' }}
               >
                 <Icon name="Check" size={18} />
                 Создать
               </button>
               <button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsCreating(false);
-                }}
+                onClick={() => setIsCreating(false)}
                 className="flex-1 border border-input bg-background hover:bg-accent px-4 py-2 rounded-md cursor-pointer flex items-center justify-center gap-2 transition-all"
                 type="button"
               >
