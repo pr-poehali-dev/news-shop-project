@@ -53,6 +53,7 @@ const Profile = () => {
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState('');
   const [nicknameError, setNicknameError] = useState('');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -118,6 +119,58 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user?.steamId) return;
+    
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Размер файла не должен превышать 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Можно загружать только изображения');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+
+        const response = await fetch(func2url['upload-avatar'], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            steam_id: user.steamId,
+            image: base64String
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setUser({ ...user, avatarUrl: data.avatar_url });
+          localStorage.setItem('steamUser', JSON.stringify({ ...user, avatarUrl: data.avatar_url }));
+          await loadProfileData(user.steamId);
+        } else {
+          alert(data.error || 'Ошибка при загрузке аватара');
+        }
+
+        setIsUploadingAvatar(false);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      alert('Ошибка при загрузке аватара');
+      setIsUploadingAvatar(false);
+    }
+  };
+
 
 
   if (!user) {
@@ -129,11 +182,34 @@ const Profile = () => {
         <div className="space-y-10">
           <Card className="p-10 border border-border bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur border-primary/20">
             <div className="flex items-start gap-8">
-              <img 
-                src={user.avatarUrl} 
-                alt={user.personaName}
-                className="w-32 h-32 rounded-2xl border-4 border-primary shadow-2xl shadow-primary/20"
-              />
+              <div className="relative group">
+                <img 
+                  src={user.avatarUrl} 
+                  alt={user.personaName}
+                  className="w-32 h-32 rounded-2xl border-4 border-primary shadow-2xl shadow-primary/20"
+                />
+                <label 
+                  htmlFor="avatar-upload"
+                  className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  {isUploadingAvatar ? (
+                    <Icon name="Loader2" size={32} className="text-white animate-spin" />
+                  ) : (
+                    <div className="text-center">
+                      <Icon name="Camera" size={32} className="text-white mx-auto mb-1" />
+                      <p className="text-xs text-white font-medium">Сменить</p>
+                    </div>
+                  )}
+                </label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={isUploadingAvatar}
+                />
+              </div>
               <div className="flex-1 space-y-4">
                 <div>
                   {isEditingNickname ? (
