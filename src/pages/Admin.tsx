@@ -308,11 +308,11 @@ export default function Admin() {
           />
         )}
 
-        {activeTab === 'tournaments' && (
+        {activeTab === 'tournaments' && user && (
           <TournamentsManagement
             tournaments={tournaments}
-            isLoading={isLoadingTournaments}
-            onRefresh={loadTournaments}
+            user={user}
+            onReload={loadTournaments}
           />
         )}
 
