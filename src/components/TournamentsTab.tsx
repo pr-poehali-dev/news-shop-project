@@ -244,7 +244,12 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     }`}
                     title="Hearthstone"
                   >
-                    <span className="text-2xl">🌀</span>
+                    <img 
+                      src="https://cdn.poehali.dev/files/6e220a4e-900e-45f4-80d5-5fa8df3f1436.png" 
+                      alt="Hearthstone" 
+                      className="w-8 h-8 mx-auto object-contain"
+                      style={{ mixBlendMode: 'multiply' }}
+                    />
                   </button>
                   <button
                     onClick={() => setLeaderboardGame('Dota 2')}
