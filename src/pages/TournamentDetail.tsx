@@ -449,7 +449,7 @@ const TournamentDetail = () => {
             )}
             {isRegistered && (
               <div className="space-y-3">
-                {isConfirmationActive(tournament.start_date) && !tournament.confirmed_at && (
+                {isConfirmationActive(tournament.start_date) && !tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && (
                   <div className="p-6 rounded-xl border-2 border-orange-500 bg-orange-500/10">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -495,7 +495,7 @@ const TournamentDetail = () => {
                   </div>
                 )}
                 
-                {tournament.confirmed_at && (
+                {tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && (
                   <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
                     <div className="flex items-center gap-2 text-green-500">
                       <Icon name="CheckCircle2" size={20} />
