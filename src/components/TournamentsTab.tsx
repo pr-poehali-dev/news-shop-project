@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,14 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   const [leaderboardGame, setLeaderboardGame] = useState<string>('Hearthstone');
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(t => t + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -55,6 +63,24 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${day}.${month}.${year} ${hours}:${minutes}`;
+  };
+
+  const getTimeUntilStart = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const diff = start - now;
+
+    if (diff <= 0) return null;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (days > 0) return `${days}д ${hours}ч`;
+    if (hours > 0) return `${hours}ч ${minutes}м`;
+    if (minutes > 0) return `${minutes}м ${seconds}с`;
+    return `${seconds}с`;
   };
   
   const topPlayers: TopPlayer[] = [
@@ -191,6 +217,12 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
                     <Icon name="Calendar" size={14} />
                     <span>{formatDateTime(tournament.start_date)}</span>
                   </div>
+                  {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
+                    <div className="flex items-center gap-1.5 text-primary font-semibold">
+                      <Icon name="Clock" size={14} />
+                      <span>Начало через {getTimeUntilStart(tournament.start_date)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>

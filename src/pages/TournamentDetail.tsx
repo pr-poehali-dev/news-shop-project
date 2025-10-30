@@ -46,6 +46,14 @@ const TournamentDetail = () => {
   const [isUnregistering, setIsUnregistering] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(t => t + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -182,6 +190,21 @@ const TournamentDetail = () => {
     localStorage.removeItem('steamUser');
   };
 
+  const getTimeUntilStart = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const diff = start - now;
+
+    if (diff <= 0) return null;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { days, hours, minutes, seconds };
+  };
+
   if (isLoading) {
     return (
       <main className="container mx-auto px-6 py-16">
@@ -301,6 +324,45 @@ const TournamentDetail = () => {
                 </p>
               </div>
             </div>
+
+            {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
+              <div className="mb-8 p-6 rounded-xl border-2 border-primary bg-primary/5">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 text-primary">
+                    <Icon name="Clock" size={24} />
+                    <p className="text-lg font-semibold">До начала турнира</p>
+                  </div>
+                  <div className="flex justify-center gap-6 flex-wrap">
+                    {(() => {
+                      const time = getTimeUntilStart(tournament.start_date);
+                      if (!time) return null;
+                      return (
+                        <>
+                          {time.days > 0 && (
+                            <div className="text-center">
+                              <div className="text-5xl font-bold text-primary">{time.days}</div>
+                              <div className="text-sm text-muted-foreground mt-1">дней</div>
+                            </div>
+                          )}
+                          <div className="text-center">
+                            <div className="text-5xl font-bold text-primary">{String(time.hours).padStart(2, '0')}</div>
+                            <div className="text-sm text-muted-foreground mt-1">часов</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-5xl font-bold text-primary">{String(time.minutes).padStart(2, '0')}</div>
+                            <div className="text-sm text-muted-foreground mt-1">минут</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-5xl font-bold text-primary">{String(time.seconds).padStart(2, '0')}</div>
+                            <div className="text-sm text-muted-foreground mt-1">секунд</div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {tournament.status !== 'upcoming' && !isRegistered && (
               <Button 
