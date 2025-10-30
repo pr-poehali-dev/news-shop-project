@@ -364,14 +364,29 @@ const TournamentDetail = () => {
               </div>
             )}
 
-            {tournament.status !== 'upcoming' && !isRegistered && (
+            {!isRegistered && (
               <Button 
                 size="lg" 
                 className="w-full py-6 text-lg font-bold"
                 onClick={handleRegister}
                 disabled={isRegistering || isFull}
               >
-                {isRegistering ? 'Регистрация...' : isFull ? 'Турнир заполнен' : 'Зарегистрироваться на турнир'}
+                {isRegistering ? (
+                  <>
+                    <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                    Регистрация...
+                  </>
+                ) : isFull ? (
+                  <>
+                    <Icon name="Users" size={20} className="mr-2" />
+                    Турнир заполнен
+                  </>
+                ) : (
+                  <>
+                    <Icon name="UserPlus" size={20} className="mr-2" />
+                    Зарегистрироваться на турнир
+                  </>
+                )}
               </Button>
             )}
             {isRegistered && (
