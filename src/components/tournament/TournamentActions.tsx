@@ -32,7 +32,7 @@ const TournamentActions = ({
   const userParticipant = tournament.participants.find(p => p.steam_id === user?.steamId);
 
   return (
-    <Card className="p-6 sticky top-6">
+    <Card className="p-6">
       <div className="space-y-4">
         <h3 className="text-xl font-bold">Регистрация</h3>
 

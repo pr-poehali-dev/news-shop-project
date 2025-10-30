@@ -229,30 +229,24 @@ const TournamentDetail = () => {
       <div className="space-y-8">
         <TournamentInfo tournament={tournament} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
-              <CountdownTimer startDate={tournament.start_date} />
-            )}
+        {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
+          <CountdownTimer startDate={tournament.start_date} />
+        )}
 
-            <ParticipantsList participants={tournament.participants} />
-          </div>
+        <TournamentActions
+          tournament={tournament}
+          user={user}
+          isRegistered={isRegistered}
+          isFull={isFull}
+          isRegistering={isRegistering}
+          isUnregistering={isUnregistering}
+          isConfirming={isConfirming}
+          onRegister={handleRegister}
+          onUnregister={handleUnregister}
+          onConfirm={handleConfirmParticipation}
+        />
 
-          <div>
-            <TournamentActions
-              tournament={tournament}
-              user={user}
-              isRegistered={isRegistered}
-              isFull={isFull}
-              isRegistering={isRegistering}
-              isUnregistering={isUnregistering}
-              isConfirming={isConfirming}
-              onRegister={handleRegister}
-              onUnregister={handleUnregister}
-              onConfirm={handleConfirmParticipation}
-            />
-          </div>
-        </div>
+        <ParticipantsList participants={tournament.participants} />
       </div>
     </main>
   );
