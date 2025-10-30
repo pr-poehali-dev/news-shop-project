@@ -100,7 +100,18 @@
   }
 
   html {
-    scrollbar-gutter: stable;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    width: 100%;
+    overflow-y: scroll;
+  }
+
+  body[data-scroll-locked] {
+    overflow: hidden !important;
+    padding-right: var(--removed-body-scroll-bar-size, 0px) !important;
   }
 }
 
