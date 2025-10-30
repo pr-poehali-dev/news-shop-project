@@ -7,6 +7,7 @@ import TournamentInfo from '@/components/tournament/TournamentInfo';
 import CountdownTimer from '@/components/tournament/CountdownTimer';
 import TournamentActions from '@/components/tournament/TournamentActions';
 import ParticipantsList from '@/components/tournament/ParticipantsList';
+import TournamentBracket from '@/components/tournament/TournamentBracket';
 import { TournamentDetail as TournamentDetailType, SteamUser } from '@/components/tournament/types';
 import { getTimeUntilStart } from '@/components/tournament/utils';
 
@@ -245,6 +246,10 @@ const TournamentDetail = () => {
           onUnregister={handleUnregister}
           onConfirm={handleConfirmParticipation}
         />
+
+        {tournament.status === 'ongoing' && tournament.bracket && tournament.bracket.length > 0 && (
+          <TournamentBracket bracket={tournament.bracket} />
+        )}
 
         <ParticipantsList participants={tournament.participants} />
       </div>
