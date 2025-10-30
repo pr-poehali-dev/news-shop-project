@@ -48,6 +48,14 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
   });
 
   const handleCreate = async () => {
+    console.log('🔍 Validation check:', {
+      name: formData.name,
+      prize_pool: formData.prize_pool,
+      max_participants: formData.max_participants,
+      start_date: formData.start_date,
+      allFilled: !!(formData.name && formData.prize_pool && formData.max_participants && formData.start_date)
+    });
+    
     if (!formData.name || !formData.prize_pool || !formData.max_participants || !formData.start_date) {
       alert('Заполните все обязательные поля');
       return;
