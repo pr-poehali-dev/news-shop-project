@@ -105,6 +105,7 @@ export default function TournamentForm({
               <option value="Valorant">Valorant</option>
               <option value="League of Legends">League of Legends</option>
               <option value="Overwatch 2">Overwatch 2</option>
+              <option value="Hearthstone">Hearthstone</option>
             </select>
           </div>
 
