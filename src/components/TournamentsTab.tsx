@@ -237,41 +237,40 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                 <div className="flex gap-2">
                   <button
                     onClick={() => setLeaderboardGame('Hearthstone')}
-                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                    className={`flex-1 p-3 rounded-lg border transition-all ${
                       leaderboardGame === 'Hearthstone' 
-                        ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'bg-background border-border hover:border-primary/50'
+                        ? 'bg-primary/10 border-primary shadow-lg shadow-primary/20' 
+                        : 'bg-card border-border hover:border-primary/50 hover:bg-primary/5'
                     }`}
                     title="Hearthstone"
                   >
                     <img 
                       src="https://cdn.poehali.dev/files/6e220a4e-900e-45f4-80d5-5fa8df3f1436.png" 
                       alt="Hearthstone" 
-                      className="w-8 h-8 mx-auto object-contain"
-                      style={{ mixBlendMode: 'multiply' }}
+                      className="w-10 h-10 mx-auto object-contain drop-shadow-lg"
                     />
                   </button>
                   <button
                     onClick={() => setLeaderboardGame('Dota 2')}
-                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                    className={`flex-1 p-3 rounded-lg border transition-all ${
                       leaderboardGame === 'Dota 2' 
-                        ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'bg-background border-border hover:border-primary/50'
+                        ? 'bg-primary/10 border-primary shadow-lg shadow-primary/20' 
+                        : 'bg-card border-border hover:border-primary/50 hover:bg-primary/5'
                     }`}
                     title="Dota 2"
                   >
-                    <span className="text-2xl">⚔️</span>
+                    <span className="text-3xl">⚔️</span>
                   </button>
                   <button
                     onClick={() => setLeaderboardGame('CS2')}
-                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                    className={`flex-1 p-3 rounded-lg border transition-all ${
                       leaderboardGame === 'CS2' 
-                        ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'bg-background border-border hover:border-primary/50'
+                        ? 'bg-primary/10 border-primary shadow-lg shadow-primary/20' 
+                        : 'bg-card border-border hover:border-primary/50 hover:bg-primary/5'
                     }`}
                     title="Counter-Strike 2"
                   >
-                    <span className="text-2xl">🎯</span>
+                    <span className="text-3xl">🎯</span>
                   </button>
                 </div>
               </div>
