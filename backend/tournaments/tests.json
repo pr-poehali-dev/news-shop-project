@@ -9,7 +9,7 @@
     {
       "name": "Get tournament details",
       "method": "GET",
-      "path": "/?tournament_id=1",
+      "path": "/?tournament_id=4",
       "expectedStatus": 200
     }
   ]

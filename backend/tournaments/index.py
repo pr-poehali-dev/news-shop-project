@@ -90,7 +90,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cursor.execute('''
                     SELECT 
                         tr.steam_id,
-                        tr.persona_name,
+                        COALESCE(u.nickname, tr.persona_name) as persona_name,
                         tr.avatar_url,
                         to_char(tr.registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at,
                         COALESCE(u.is_admin, false) as is_admin,

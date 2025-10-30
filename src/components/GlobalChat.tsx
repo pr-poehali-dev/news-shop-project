@@ -29,6 +29,7 @@ interface SteamUser {
   personaName: string;
   avatarUrl: string;
   profileUrl: string;
+  nickname?: string;
 }
 
 interface GlobalChatProps {
@@ -44,6 +45,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [userNickname, setUserNickname] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
   useEffect(() => {
     if (user) {
       checkAdmin();
+      loadUserNickname();
     }
   }, [user]);
 
@@ -77,6 +80,19 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const loadUserNickname = async () => {
+    if (!user?.steamId) return;
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/88f7bd27-aac7-4eab-b045-2d423b092ebb?steam_id=${user.steamId}`
+      );
+      const data = await response.json();
+      setUserNickname(data.user.nickname || user.personaName);
+    } catch (error) {
+      setUserNickname(user.personaName);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -99,7 +115,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
         },
         body: JSON.stringify({
           steam_id: user.steamId,
-          persona_name: user.personaName,
+          persona_name: userNickname || user.personaName,
           avatar_url: user.avatarUrl,
           message: newMessage.trim(),
           reply_to_message_id: replyingTo?.id || null

@@ -89,6 +89,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'id': user_profile['id'],
                 'steamId': user_profile['steam_id'],
                 'personaName': user_profile['persona_name'],
+                'nickname': user_profile['nickname'],
                 'avatarUrl': user_profile['avatar_url'],
                 'profileUrl': user_profile['profile_url'],
                 'balance': user_profile['balance'],

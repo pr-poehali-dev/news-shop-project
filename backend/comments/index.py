@@ -45,7 +45,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             steam_id = params.get('steam_id')
             
             cur.execute('''
-                SELECT c.id, c.news_id, c.author, c.text, c.avatar, c.steam_id, c.avatar_url,
+                SELECT c.id, c.news_id, COALESCE(u.nickname, c.author) as author, c.text, c.avatar, c.steam_id, c.avatar_url,
                        to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at,
                        c.parent_comment_id,
                        COALESCE(u.is_admin, false) as is_admin,

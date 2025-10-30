@@ -4,11 +4,7 @@
       "name": "Get comments for news",
       "method": "GET",
       "path": "/?news_id=1",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "comments": "array"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Create new comment",

@@ -26,6 +26,7 @@ interface SteamUser {
   personaName: string;
   avatarUrl: string;
   profileUrl: string;
+  nickname?: string;
 }
 
 interface CommentsProps {
@@ -41,6 +42,24 @@ export default function Comments({ newsId }: CommentsProps) {
     const savedUser = localStorage.getItem('steamUser');
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [userNickname, setUserNickname] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserNickname = async () => {
+      if (user?.steamId) {
+        try {
+          const response = await fetch(
+            `https://functions.poehali.dev/88f7bd27-aac7-4eab-b045-2d423b092ebb?steam_id=${user.steamId}`
+          );
+          const data = await response.json();
+          setUserNickname(data.user.nickname || user.personaName);
+        } catch (error) {
+          setUserNickname(user.personaName);
+        }
+      }
+    };
+    loadUserNickname();
+  }, [user]);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
 
@@ -79,7 +98,7 @@ export default function Comments({ newsId }: CommentsProps) {
         },
         body: JSON.stringify({
           news_id: parseInt(newsId),
-          author: user.personaName,
+          author: userNickname || user.personaName,
           text: newComment.text,
           steam_id: user.steamId,
           avatar_url: user.avatarUrl
@@ -113,7 +132,7 @@ export default function Comments({ newsId }: CommentsProps) {
         },
         body: JSON.stringify({
           news_id: parseInt(newsId),
-          author: user.personaName,
+          author: userNickname || user.personaName,
           text: replyText,
           steam_id: user.steamId,
           avatar_url: user.avatarUrl,

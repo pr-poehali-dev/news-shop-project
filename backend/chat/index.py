@@ -60,7 +60,7 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
     is_frozen = is_frozen_row[0] if is_frozen_row else False
     
     cur.execute('''
-        SELECT cm.id, cm.steam_id, cm.persona_name, cm.avatar_url, cm.message, 
+        SELECT cm.id, cm.steam_id, COALESCE(u.nickname, cm.persona_name) as persona_name, cm.avatar_url, cm.message, 
                to_char(cm.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"+00:00"') as created_at,
                cm.reply_to_message_id,
                COALESCE(u.is_admin, false) as is_admin,
@@ -79,9 +79,10 @@ def get_messages(event: Dict[str, Any]) -> Dict[str, Any]:
         reply_to = None
         if row[6]:
             cur.execute('''
-                SELECT id, persona_name, message
-                FROM t_p15345778_news_shop_project.chat_messages
-                WHERE id = %s
+                SELECT cm.id, COALESCE(u.nickname, cm.persona_name) as persona_name, cm.message
+                FROM t_p15345778_news_shop_project.chat_messages cm
+                LEFT JOIN t_p15345778_news_shop_project.users u ON cm.steam_id = u.steam_id
+                WHERE cm.id = %s
             ''', (row[6],))
             reply_row = cur.fetchone()
             if reply_row:
