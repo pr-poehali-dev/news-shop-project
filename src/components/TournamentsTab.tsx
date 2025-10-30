@@ -260,7 +260,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     title="Dota 2"
                   >
                     <img 
-                      src="https://cdn.poehali.dev/files/055dd718-618a-4ced-b004-e13138d90c46.png" 
+                      src="https://cdn.poehali.dev/files/24ad0c92-cb66-4860-93d8-9e27370ffc90.png" 
                       alt="Dota 2" 
                       className="w-10 h-10 mx-auto object-contain drop-shadow-lg"
                     />
