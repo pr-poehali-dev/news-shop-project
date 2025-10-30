@@ -355,7 +355,7 @@ const NewsDetail = () => {
                     return null;
                   }
                   return (
-                    <h1 key={index} className="text-4xl font-bold mb-3 mt-4">
+                    <h1 key={index} className="text-4xl font-bold mb-2 mt-2">
                       {line.substring(2)}
                     </h1>
                   );
@@ -363,7 +363,7 @@ const NewsDetail = () => {
                 
                 if (line.startsWith('## ')) {
                   return (
-                    <h2 key={index} className="text-3xl font-bold mb-3 mt-4 flex items-center gap-3">
+                    <h2 key={index} className="text-3xl font-bold mb-2 mt-2 flex items-center gap-3">
                       {line.substring(3)}
                     </h2>
                   );
@@ -371,7 +371,7 @@ const NewsDetail = () => {
                 
                 if (line.startsWith('### ')) {
                   return (
-                    <h3 key={index} className="text-2xl font-bold mb-2 mt-3">
+                    <h3 key={index} className="text-2xl font-bold mb-1 mt-2">
                       {line.substring(4)}
                     </h3>
                   );
@@ -379,7 +379,7 @@ const NewsDetail = () => {
                 
                 if (line.startsWith('- ')) {
                   return (
-                    <li key={index} className="ml-6 mb-1 text-muted-foreground">
+                    <li key={index} className="ml-6 mb-0.5 text-muted-foreground">
                       {line.substring(2).replace(/\*\*(.*?)\*\*/g, '<strong class="text-foreground font-bold">$1</strong>').split('<strong').map((part, i) => {
                         if (i === 0) return part;
                         const [strong, ...rest] = part.split('</strong>');
@@ -395,7 +395,7 @@ const NewsDetail = () => {
                 }
                 
                 return (
-                  <p key={index} className="mb-2 text-muted-foreground leading-relaxed">
+                  <p key={index} className="mb-1 text-muted-foreground leading-relaxed">
                     {line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-foreground font-bold">$1</strong>').split('<strong').map((part, i) => {
                       if (i === 0) return part;
                       const [strong, ...rest] = part.split('</strong>');
