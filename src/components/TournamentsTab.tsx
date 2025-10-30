@@ -30,6 +30,7 @@ interface TournamentsTabProps {
   user: SteamUser | null;
   isRegistering: number | null;
   onRegister: (tournamentId: number) => void;
+  onUnregister?: (tournamentId: number) => void;
 }
 
 interface TopPlayer {
@@ -41,7 +42,7 @@ interface TopPlayer {
   losses: number;
 }
 
-const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
+const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregister }: TournamentsTabProps) => {
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   const [leaderboardGame, setLeaderboardGame] = useState<string>('Hearthstone');
@@ -194,10 +195,25 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
                 <div className="flex gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
                   {tournament.is_registered ? (
-                    <Button disabled className="gap-2 text-xs h-9" variant="secondary">
-                      <Icon name="CheckCircle2" size={16} />
-                      Вы зарегистрированы
-                    </Button>
+                    <>
+                      <Button disabled className="gap-2 text-xs h-9" variant="secondary">
+                        <Icon name="CheckCircle2" size={16} />
+                        Вы зарегистрированы
+                      </Button>
+                      {onUnregister && (
+                        <Button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUnregister(tournament.id);
+                          }}
+                          variant="destructive"
+                          className="gap-2 text-xs h-9"
+                        >
+                          <Icon name="UserMinus" size={16} />
+                          Отменить
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <Button 
                       onClick={(e) => {
