@@ -91,6 +91,22 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
     
     return now >= oneHourBefore && now < start;
   };
+
+  const getTimeUntilConfirmation = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    const diff = oneHourBefore - now;
+
+    if (diff <= 0 || now >= start) return null;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { days, hours, minutes, seconds };
+  };
   
   const topPlayers: TopPlayer[] = [
     { id: 1, position: 1, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
@@ -252,6 +268,20 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
                         <Button disabled className="gap-2 text-xs h-9 bg-green-500/20 text-green-500 border-green-500/30 flex-1" variant="secondary">
                           <Icon name="CheckCircle2" size={16} />
                           Участие подтверждено
+                        </Button>
+                      ) : getTimeUntilConfirmation(tournament.start_date) ? (
+                        <Button disabled className="gap-2 text-xs h-9 bg-blue-500/20 text-blue-500 border-blue-500/30 flex-1" variant="secondary">
+                          <Icon name="Clock" size={16} />
+                          <span>
+                            Подтвердить через {(() => {
+                              const time = getTimeUntilConfirmation(tournament.start_date);
+                              if (!time) return '';
+                              if (time.days > 0) {
+                                return `${time.days}д ${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+                              }
+                              return `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+                            })()}
+                          </span>
                         </Button>
                       ) : (
                         <Button disabled className="gap-2 text-xs h-9" variant="secondary">
