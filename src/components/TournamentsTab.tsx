@@ -244,7 +244,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     }`}
                     title="Hearthstone"
                   >
-                    <span className="text-2xl">🃏</span>
+                    <span className="text-2xl">🌀</span>
                   </button>
                   <button
                     onClick={() => setLeaderboardGame('Dota 2')}
@@ -266,7 +266,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     }`}
                     title="Counter-Strike 2"
                   >
-                    <span className="text-2xl">🔫</span>
+                    <span className="text-2xl">🎯</span>
                   </button>
                 </div>
               </div>
