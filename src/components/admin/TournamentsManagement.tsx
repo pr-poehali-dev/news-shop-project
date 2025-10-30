@@ -53,26 +53,39 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
       return;
     }
 
+    console.log('📝 Creating tournament with data:', formData);
+    console.log('🔑 User Steam ID:', user.steamId);
+    console.log('🌐 URL:', func2url.tournaments);
+
     try {
+      const requestBody = {
+        name: formData.name,
+        description: formData.description,
+        prize_pool: parseInt(formData.prize_pool),
+        max_participants: parseInt(formData.max_participants),
+        tournament_type: formData.tournament_type,
+        start_date: formData.start_date,
+        status: formData.status,
+        game: formData.game
+      };
+      
+      console.log('📤 Request body:', requestBody);
+      
       const response = await fetch(func2url.tournaments, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Admin-Steam-Id': user.steamId
         },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          prize_pool: parseInt(formData.prize_pool),
-          max_participants: parseInt(formData.max_participants),
-          tournament_type: formData.tournament_type,
-          start_date: formData.start_date,
-          status: formData.status,
-          game: formData.game
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response ok:', response.ok);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Success result:', result);
         setIsCreating(false);
         setFormData({
           name: '',
@@ -87,10 +100,11 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
         await onReload();
       } else {
         const error = await response.json();
+        console.error('❌ Error response:', error);
         alert(`Ошибка: ${error.error || 'Не удалось создать турнир'}`);
       }
     } catch (error) {
-      console.error('Failed to create tournament:', error);
+      console.error('❌ Failed to create tournament:', error);
       alert('Ошибка при создании турнира');
     }
   };
