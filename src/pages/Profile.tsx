@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
+import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
   steamId: string;
   personaName: string;
   avatarUrl: string;
   profileUrl: string;
+  nickname?: string;
 }
 
 interface Tournament {
@@ -30,6 +33,7 @@ interface ProfileData {
     balance: number;
     isBlocked: boolean;
     blockReason?: string;
+    nickname?: string;
   };
   tournaments: Tournament[];
   statistics: {
@@ -46,6 +50,9 @@ const Profile = () => {
   const [user, setUser] = useState<SteamUser | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [newNickname, setNewNickname] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -72,9 +79,42 @@ const Profile = () => {
       );
       const data = await response.json();
       setProfileData(data);
+      setNewNickname(data.user.nickname || data.user.persona_name || '');
       localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error('Failed to load profile data:', error);
+    }
+  };
+
+  const handleUpdateNickname = async () => {
+    if (!user?.steamId) return;
+    
+    if (newNickname.trim().length < 3 || newNickname.trim().length > 30) {
+      setNicknameError('Никнейм должен быть от 3 до 30 символов');
+      return;
+    }
+
+    try {
+      const response = await fetch(func2url['update-nickname'], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          steam_id: user.steamId,
+          nickname: newNickname.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsEditingNickname(false);
+        setNicknameError('');
+        await loadProfileData(user.steamId);
+      } else {
+        setNicknameError(data.error || 'Ошибка при обновлении никнейма');
+      }
+    } catch (error) {
+      setNicknameError('Ошибка при обновлении никнейма');
     }
   };
 
@@ -96,12 +136,54 @@ const Profile = () => {
               />
               <div className="flex-1 space-y-4">
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight mb-2">{user.personaName}</h1>
+                  {isEditingNickname ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Input
+                          value={newNickname}
+                          onChange={(e) => setNewNickname(e.target.value)}
+                          placeholder="Введите никнейм"
+                          className="text-2xl font-bold h-12"
+                          maxLength={30}
+                        />
+                        <Button onClick={handleUpdateNickname} size="sm" className="gap-2">
+                          <Icon name="Check" size={16} />
+                          Сохранить
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            setIsEditingNickname(false);
+                            setNicknameError('');
+                            setNewNickname(profileData?.user.nickname || user.personaName);
+                          }} 
+                          variant="outline" 
+                          size="sm"
+                        >
+                          <Icon name="X" size={16} />
+                        </Button>
+                      </div>
+                      {nicknameError && (
+                        <p className="text-sm text-destructive">{nicknameError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-4xl font-bold tracking-tight">{profileData?.user.nickname || user.personaName}</h1>
+                      <Button 
+                        onClick={() => setIsEditingNickname(true)} 
+                        variant="ghost" 
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Icon name="Pencil" size={16} />
+                      </Button>
+                    </div>
+                  )}
                   <a 
                     href={user.profileUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline flex items-center gap-2"
+                    className="text-primary hover:underline flex items-center gap-2 mt-2"
                   >
                     <Icon name="ExternalLink" size={16} />
                     Открыть профиль Steam

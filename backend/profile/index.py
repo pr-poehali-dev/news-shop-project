@@ -69,7 +69,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         escaped_steam_id = steam_id.replace("'", "''")
         
         cursor.execute(f"""
-            SELECT id, steam_id, persona_name, avatar_url, profile_url, 
+            SELECT id, steam_id, persona_name, nickname, avatar_url, profile_url, 
                    balance, is_blocked, block_reason,
                    to_char(last_login, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as last_login,
                    to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as created_at

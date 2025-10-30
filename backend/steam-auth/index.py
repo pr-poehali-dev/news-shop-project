@@ -32,8 +32,8 @@ def register_or_update_user(user_data: Dict[str, str]) -> None:
         
         cursor.execute(f"""
             INSERT INTO t_p15345778_news_shop_project.users 
-            (steam_id, persona_name, avatar_url, profile_url, last_login)
-            VALUES ('{escaped_steam_id}', '{escaped_persona_name}', '{escaped_avatar_url}', '{escaped_profile_url}', NOW())
+            (steam_id, persona_name, nickname, avatar_url, profile_url, last_login)
+            VALUES ('{escaped_steam_id}', '{escaped_persona_name}', '{escaped_persona_name}', '{escaped_avatar_url}', '{escaped_profile_url}', NOW())
             ON CONFLICT (steam_id) 
             DO UPDATE SET 
                 persona_name = EXCLUDED.persona_name,
