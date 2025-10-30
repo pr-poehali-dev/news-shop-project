@@ -7,6 +7,7 @@ import PartnersTab from '@/components/PartnersTab';
 import GlobalChat from '@/components/GlobalChat';
 import func2url from '../../backend/func2url.json';
 import { formatShortDate } from '@/utils/dateFormat';
+import { toast } from '@/hooks/use-toast';
 
 interface NewsItem {
   id: number;
@@ -153,7 +154,11 @@ const Index = () => {
 
   const handleTournamentRegister = async (tournamentId: number) => {
     if (!user) {
-      alert('Войдите через Steam для регистрации на турнир');
+      toast({
+        title: "Требуется авторизация",
+        description: "Войдите через Steam для регистрации на турнир",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -176,14 +181,25 @@ const Index = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация успешна! Увидимся на турнире!');
+        toast({
+          title: "Успешно!",
+          description: "Регистрация успешна! Увидимся на турнире!"
+        });
         await loadTournaments();
       } else {
-        alert(data.error || 'Ошибка регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Registration failed:', error);
-      alert('Ошибка при регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при регистрации",
+        variant: "destructive"
+      });
     } finally {
       setIsRegistering(null);
     }
@@ -209,14 +225,25 @@ const Index = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация отменена');
+        toast({
+          title: "Успешно",
+          description: "Регистрация отменена"
+        });
         await loadTournaments();
       } else {
-        alert(data.error || 'Ошибка отмены регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка отмены регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Unregister failed:', error);
-      alert('Ошибка при отмене регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при отмене регистрации",
+        variant: "destructive"
+      });
     } finally {
       setIsRegistering(null);
     }

@@ -9,6 +9,7 @@ import TournamentActions from '@/components/tournament/TournamentActions';
 import ParticipantsList from '@/components/tournament/ParticipantsList';
 import { TournamentDetail as TournamentDetailType, SteamUser } from '@/components/tournament/types';
 import { getTimeUntilStart } from '@/components/tournament/utils';
+import { toast } from '@/hooks/use-toast';
 
 const TournamentDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +76,11 @@ const TournamentDetail = () => {
 
   const handleRegister = async () => {
     if (!user) {
-      alert('Войдите через Steam для регистрации на турнир');
+      toast({
+        title: "Требуется авторизация",
+        description: "Войдите через Steam для регистрации на турнир",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -98,14 +103,25 @@ const TournamentDetail = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация успешна! Увидимся на турнире!');
+        toast({
+          title: "Успешно!",
+          description: "Регистрация успешна! Увидимся на турнире!"
+        });
         await loadTournamentDetails();
       } else {
-        alert(data.error || 'Ошибка регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Registration failed:', error);
-      alert('Ошибка при регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при регистрации",
+        variant: "destructive"
+      });
     } finally {
       setIsRegistering(false);
     }
@@ -135,14 +151,25 @@ const TournamentDetail = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация отменена');
+        toast({
+          title: "Успешно",
+          description: "Регистрация отменена"
+        });
         await loadTournamentDetails();
       } else {
-        alert(data.error || 'Ошибка отмены регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка отмены регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Unregistration failed:', error);
-      alert('Ошибка при отмене регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при отмене регистрации",
+        variant: "destructive"
+      });
     } finally {
       setIsUnregistering(false);
     }
@@ -168,14 +195,25 @@ const TournamentDetail = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Участие подтверждено!');
+        toast({
+          title: "Успешно!",
+          description: "Участие подтверждено!"
+        });
         await loadTournamentDetails();
       } else {
-        alert(data.error || 'Ошибка подтверждения');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка подтверждения',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Confirmation failed:', error);
-      alert('Ошибка при подтверждении участия');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при подтверждении участия",
+        variant: "destructive"
+      });
     } finally {
       setIsConfirming(false);
     }

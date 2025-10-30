@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import TournamentsTab from '@/components/TournamentsTab';
+import { toast } from '@/hooks/use-toast';
 
 interface SteamUser {
   steamId: string;
@@ -86,7 +87,11 @@ const Tournaments = () => {
 
   const handleTournamentRegister = async (tournamentId: number) => {
     if (!user) {
-      alert('Войдите через Steam для регистрации на турнир');
+      toast({
+        title: "Требуется авторизация",
+        description: "Войдите через Steam для регистрации на турнир",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -109,14 +114,25 @@ const Tournaments = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация успешна! Увидимся на турнире!');
+        toast({
+          title: "Успешно!",
+          description: "Регистрация успешна! Увидимся на турнире!"
+        });
         await loadTournaments();
       } else {
-        alert(data.error || 'Ошибка регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Registration failed:', error);
-      alert('Ошибка при регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при регистрации",
+        variant: "destructive"
+      });
     } finally {
       setIsRegistering(null);
     }
@@ -144,14 +160,25 @@ const Tournaments = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Регистрация отменена');
+        toast({
+          title: "Успешно",
+          description: "Регистрация отменена"
+        });
         await loadTournaments();
       } else {
-        alert(data.error || 'Ошибка при отмене регистрации');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка при отмене регистрации',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Unregister failed:', error);
-      alert('Ошибка при отмене регистрации');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при отмене регистрации",
+        variant: "destructive"
+      });
     }
   };
 

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
+import { toast } from '@/hooks/use-toast';
 
 interface SteamUser {
   steamId: string;
@@ -126,12 +127,20 @@ const Profile = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Размер файла не должен превышать 5MB');
+      toast({
+        title: "Ошибка",
+        description: "Размер файла не должен превышать 5MB",
+        variant: "destructive"
+      });
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('Можно загружать только изображения');
+      toast({
+        title: "Ошибка",
+        description: "Можно загружать только изображения",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -157,8 +166,16 @@ const Profile = () => {
           setUser({ ...user, avatarUrl: data.avatar_url });
           localStorage.setItem('steamUser', JSON.stringify({ ...user, avatarUrl: data.avatar_url }));
           await loadProfileData(user.steamId);
+          toast({
+            title: "Успешно!",
+            description: "Аватар обновлён"
+          });
         } else {
-          alert(data.error || 'Ошибка при загрузке аватара');
+          toast({
+            title: "Ошибка",
+            description: data.error || 'Ошибка при загрузке аватара',
+            variant: "destructive"
+          });
         }
 
         setIsUploadingAvatar(false);
@@ -166,7 +183,11 @@ const Profile = () => {
 
       reader.readAsDataURL(file);
     } catch (error) {
-      alert('Ошибка при загрузке аватара');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при загрузке аватара",
+        variant: "destructive"
+      });
       setIsUploadingAvatar(false);
     }
   };
