@@ -1,31 +1,11 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
-import { formatShortDate } from '@/utils/dateFormat';
 import func2url from '../../../backend/func2url.json';
-
-interface Tournament {
-  id: number;
-  name: string;
-  description: string;
-  prize_pool: number;
-  max_participants: number;
-  status: string;
-  tournament_type: string;
-  game: string;
-  start_date: string;
-  participants_count: number;
-}
-
-interface SteamUser {
-  steamId: string;
-  personaName: string;
-  avatarUrl: string;
-}
+import TournamentForm from './tournaments/TournamentForm';
+import TournamentCard from './tournaments/TournamentCard';
+import type { Tournament, SteamUser, TournamentFormData } from './tournaments/types';
 
 interface TournamentsManagementProps {
   tournaments: Tournament[];
@@ -38,7 +18,7 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
   
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TournamentFormData>({
     name: '',
     description: '',
     prize_pool: '',
@@ -228,334 +208,34 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
       </div>
 
       {isCreating && (
-        <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Icon name="Plus" size={20} className="text-primary" />
-            Новый турнир
-          </h3>
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="name">Название *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Введите название турнира"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="description">Описание</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Введите описание турнира"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="prize_pool">Призовой фонд (₽) *</Label>
-                <Input
-                  id="prize_pool"
-                  type="number"
-                  value={formData.prize_pool}
-                  onChange={(e) => setFormData({ ...formData, prize_pool: e.target.value })}
-                  placeholder="10000"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="max_participants">Макс. участников *</Label>
-                <Input
-                  id="max_participants"
-                  type="number"
-                  value={formData.max_participants}
-                  onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                  placeholder="32"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="game">Игра</Label>
-                <select
-                  id="game"
-                  value={formData.game}
-                  onChange={(e) => setFormData({ ...formData, game: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                >
-                  <option value="CS2">CS2</option>
-                  <option value="Dota 2">Dota 2</option>
-                  <option value="Valorant">Valorant</option>
-                  <option value="League of Legends">League of Legends</option>
-                  <option value="Overwatch 2">Overwatch 2</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="tournament_type">Тип турнира</Label>
-                <select
-                  id="tournament_type"
-                  value={formData.tournament_type}
-                  onChange={(e) => setFormData({ ...formData, tournament_type: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                >
-                  <option value="solo">Соло</option>
-                  <option value="team">Командный</option>
-                  <option value="weekly">Еженедельный</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="status">Статус</Label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                >
-                  <option value="upcoming">Предстоящий</option>
-                  <option value="active">Активный</option>
-                  <option value="completed">Завершен</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="start_date">Дата начала *</Label>
-              <Input
-                id="start_date"
-                type="datetime-local"
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-2 relative z-50">
-              <button
-                onClick={() => {
-                  console.log('🚀 Starting handleCreate...');
-                  try {
-                    handleCreate();
-                  } catch (err) {
-                    console.error('💥 Error in handleCreate:', err);
-                    alert('Ошибка: ' + err);
-                  }
-                }}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer hover:bg-primary/90 flex items-center justify-center gap-2 transition-all relative z-50"
-                type="button"
-                style={{ pointerEvents: 'auto' }}
-              >
-                <Icon name="Check" size={18} />
-                Создать
-              </button>
-              <button 
-                onClick={() => setIsCreating(false)}
-                className="flex-1 border border-input bg-background hover:bg-accent px-4 py-2 rounded-md cursor-pointer flex items-center justify-center gap-2 transition-all"
-                type="button"
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </Card>
+        <TournamentForm
+          formData={formData}
+          onFormChange={setFormData}
+          onSubmit={handleCreate}
+          onCancel={() => setIsCreating(false)}
+        />
       )}
 
       <div className="grid gap-4">
         {tournaments.map((tournament) => (
-          <Card key={tournament.id} className="p-6 bg-card/50 backdrop-blur border-border hover:border-primary/30 transition-colors">
+          <div key={tournament.id}>
             {editingId === tournament.id ? (
-              <div className="grid gap-4">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <Icon name="Edit" size={20} className="text-primary" />
-                  Редактирование турнира
-                </h3>
-
-                <div>
-                  <Label htmlFor={`edit-name-${tournament.id}`}>Название *</Label>
-                  <Input
-                    id={`edit-name-${tournament.id}`}
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor={`edit-description-${tournament.id}`}>Описание</Label>
-                  <Textarea
-                    id={`edit-description-${tournament.id}`}
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={`edit-prize-${tournament.id}`}>Призовой фонд (₽) *</Label>
-                    <Input
-                      id={`edit-prize-${tournament.id}`}
-                      type="number"
-                      value={formData.prize_pool}
-                      onChange={(e) => setFormData({ ...formData, prize_pool: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`edit-max-${tournament.id}`}>Макс. участников *</Label>
-                    <Input
-                      id={`edit-max-${tournament.id}`}
-                      type="number"
-                      value={formData.max_participants}
-                      onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor={`edit-game-${tournament.id}`}>Игра</Label>
-                    <select
-                      id={`edit-game-${tournament.id}`}
-                      value={formData.game}
-                      onChange={(e) => setFormData({ ...formData, game: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                    >
-                      <option value="CS2">CS2</option>
-                      <option value="Dota 2">Dota 2</option>
-                      <option value="Valorant">Valorant</option>
-                      <option value="League of Legends">League of Legends</option>
-                      <option value="Overwatch 2">Overwatch 2</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`edit-type-${tournament.id}`}>Тип турнира</Label>
-                    <select
-                      id={`edit-type-${tournament.id}`}
-                      value={formData.tournament_type}
-                      onChange={(e) => setFormData({ ...formData, tournament_type: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                    >
-                      <option value="solo">Соло</option>
-                      <option value="team">Командный</option>
-                      <option value="weekly">Еженедельный</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`edit-status-${tournament.id}`}>Статус</Label>
-                    <select
-                      id={`edit-status-${tournament.id}`}
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                    >
-                      <option value="upcoming">Предстоящий</option>
-                      <option value="active">Активный</option>
-                      <option value="completed">Завершен</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor={`edit-date-${tournament.id}`}>Дата начала *</Label>
-                  <Input
-                    id={`edit-date-${tournament.id}`}
-                    type="datetime-local"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button onClick={() => handleUpdate(tournament)} className="flex-1 gap-2">
-                    <Icon name="Check" size={18} />
-                    Сохранить
-                  </Button>
-                  <Button onClick={cancelEdit} variant="outline" className="flex-1">
-                    Отмена
-                  </Button>
-                </div>
-              </div>
+              <TournamentForm
+                formData={formData}
+                onFormChange={setFormData}
+                onSubmit={() => handleUpdate(tournament)}
+                onCancel={cancelEdit}
+                isEditing={true}
+                tournamentId={tournament.id}
+              />
             ) : (
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Icon 
-                        name={tournament.tournament_type === 'team' ? 'Users' : tournament.tournament_type === 'weekly' ? 'Zap' : 'Trophy'} 
-                        size={24} 
-                        className="text-primary" 
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-1">{tournament.name}</h3>
-                      <p className="text-muted-foreground text-sm">{tournament.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-5 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Icon name="Gamepad2" size={16} className="text-primary" />
-                      <span className="text-muted-foreground">Игра:</span>
-                      <span className="font-bold">{tournament.game || 'CS2'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Icon name="DollarSign" size={16} className="text-primary" />
-                      <span className="text-muted-foreground">Призовой:</span>
-                      <span className="font-bold">{tournament.prize_pool.toLocaleString('ru-RU')}₽</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Icon name="Users" size={16} className="text-primary" />
-                      <span className="text-muted-foreground">Участников:</span>
-                      <span className="font-bold">{tournament.participants_count}/{tournament.max_participants}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Icon name="Calendar" size={16} className="text-primary" />
-                      <span className="text-muted-foreground">Начало:</span>
-                      <span className="font-bold">
-                        {formatShortDate(tournament.start_date)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Icon name="Info" size={16} className="text-primary" />
-                      <span className="text-muted-foreground">Статус:</span>
-                      <span className="font-bold">
-                        {tournament.status === 'upcoming' ? 'Предстоящий' : 
-                         tournament.status === 'active' ? 'Активный' : 'Завершен'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 flex-shrink-0">
-                  <Button
-                    onClick={() => startEdit(tournament)}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Icon name="Edit" size={16} />
-                    Изменить
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(tournament.id)}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 text-red-500 hover:text-red-600 hover:border-red-500"
-                  >
-                    <Icon name="Trash2" size={16} />
-                    Удалить
-                  </Button>
-                </div>
-              </div>
+              <TournamentCard
+                tournament={tournament}
+                onEdit={() => startEdit(tournament)}
+                onDelete={() => handleDelete(tournament.id)}
+              />
             )}
-          </Card>
+          </div>
         ))}
 
         {tournaments.length === 0 && (
