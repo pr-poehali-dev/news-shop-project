@@ -245,7 +245,7 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
                     title="Hearthstone"
                   >
                     <img 
-                      src="https://cdn.poehali.dev/files/6e220a4e-900e-45f4-80d5-5fa8df3f1436.png" 
+                      src="https://cdn.poehali.dev/files/2aa092b3-feee-432a-b02f-1f6541d0baff.png" 
                       alt="Hearthstone" 
                       className="w-10 h-10 mx-auto object-contain drop-shadow-lg"
                     />
