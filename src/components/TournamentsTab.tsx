@@ -16,6 +16,7 @@ interface Tournament {
   start_date: string;
   participants_count: number;
   is_registered?: boolean;
+  confirmed_at?: string | null;
 }
 
 interface SteamUser {
@@ -81,6 +82,14 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
     if (hours > 0) return `${hours}ч ${minutes}м`;
     if (minutes > 0) return `${minutes}м ${seconds}с`;
     return `${seconds}с`;
+  };
+
+  const isConfirmationActive = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    
+    return now >= oneHourBefore && now < start;
   };
   
   const topPlayers: TopPlayer[] = [
@@ -228,10 +237,28 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
                 <div className="flex gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
                   {tournament.is_registered ? (
                     <>
-                      <Button disabled className="gap-2 text-xs h-9" variant="secondary">
-                        <Icon name="CheckCircle2" size={16} />
-                        Вы зарегистрированы
-                      </Button>
+                      {isConfirmationActive(tournament.start_date) && !tournament.confirmed_at ? (
+                        <Button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/tournament/${tournament.id}`);
+                          }}
+                          className="gap-2 text-xs h-9 bg-orange-500 hover:bg-orange-600 flex-1"
+                        >
+                          <Icon name="AlertCircle" size={16} />
+                          Требуется подтверждение!
+                        </Button>
+                      ) : tournament.confirmed_at ? (
+                        <Button disabled className="gap-2 text-xs h-9 bg-green-500/20 text-green-500 border-green-500/30 flex-1" variant="secondary">
+                          <Icon name="CheckCircle2" size={16} />
+                          Участие подтверждено
+                        </Button>
+                      ) : (
+                        <Button disabled className="gap-2 text-xs h-9" variant="secondary">
+                          <Icon name="CheckCircle2" size={16} />
+                          Вы зарегистрированы
+                        </Button>
+                      )}
                       {onUnregister && (
                         <Button 
                           onClick={(e) => {

@@ -11,6 +11,7 @@ interface Participant {
   persona_name: string;
   avatar_url: string;
   registered_at: string;
+  confirmed_at?: string | null;
   is_admin?: boolean;
   is_moderator?: boolean;
 }
@@ -27,6 +28,7 @@ interface TournamentDetail {
   start_date: string;
   participants_count: number;
   participants: Participant[];
+  confirmed_at?: string | null;
 }
 
 interface SteamUser {
@@ -46,6 +48,7 @@ const TournamentDetail = () => {
   const [isUnregistering, setIsUnregistering] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -203,6 +206,61 @@ const TournamentDetail = () => {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
     return { days, hours, minutes, seconds };
+  };
+
+  const getConfirmationTimeLeft = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    const diff = start - now;
+
+    if (diff <= 0 || now < oneHourBefore) return null;
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { minutes, seconds };
+  };
+
+  const isConfirmationActive = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    
+    return now >= oneHourBefore && now < start;
+  };
+
+  const handleConfirmParticipation = async () => {
+    if (!user || !tournament) return;
+
+    setIsConfirming(true);
+
+    try {
+      const response = await fetch(func2url.tournaments, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournament_id: tournament.id,
+          steam_id: user.steamId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Участие подтверждено!');
+        await loadTournamentDetails();
+      } else {
+        alert(data.error || 'Ошибка подтверждения');
+      }
+    } catch (error) {
+      console.error('Confirmation failed:', error);
+      alert('Ошибка при подтверждении участия');
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   if (isLoading) {
@@ -390,16 +448,73 @@ const TournamentDetail = () => {
               </Button>
             )}
             {isRegistered && (
-              <Button 
-                size="lg" 
-                variant="destructive"
-                className="w-full py-6 text-lg font-bold"
-                onClick={handleUnregister}
-                disabled={isUnregistering}
-              >
-                <Icon name="X" size={20} className="mr-2" />
-                {isUnregistering ? 'Отмена...' : 'Отменить регистрацию'}
-              </Button>
+              <div className="space-y-3">
+                {isConfirmationActive(tournament.start_date) && !tournament.confirmed_at && (
+                  <div className="p-6 rounded-xl border-2 border-orange-500 bg-orange-500/10">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Icon name="AlertCircle" size={24} className="text-orange-500" />
+                          <div>
+                            <p className="font-bold text-lg">Требуется подтверждение!</p>
+                            <p className="text-sm text-muted-foreground">Подтвердите участие до начала турнира</p>
+                          </div>
+                        </div>
+                        {getConfirmationTimeLeft(tournament.start_date) && (
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-orange-500">
+                              {(() => {
+                                const time = getConfirmationTimeLeft(tournament.start_date);
+                                if (!time) return '';
+                                return `${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+                              })()}
+                            </div>
+                            <div className="text-xs text-muted-foreground">осталось</div>
+                          </div>
+                        )}
+                      </div>
+                      <Button 
+                        size="lg" 
+                        className="w-full py-6 text-lg font-bold bg-orange-500 hover:bg-orange-600"
+                        onClick={handleConfirmParticipation}
+                        disabled={isConfirming}
+                      >
+                        {isConfirming ? (
+                          <>
+                            <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                            Подтверждение...
+                          </>
+                        ) : (
+                          <>
+                            <Icon name="CheckCircle2" size={20} className="mr-2" />
+                            Подтвердить участие
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {tournament.confirmed_at && (
+                  <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
+                    <div className="flex items-center gap-2 text-green-500">
+                      <Icon name="CheckCircle2" size={20} />
+                      <span className="font-semibold">Участие подтверждено</span>
+                    </div>
+                  </div>
+                )}
+
+                <Button 
+                  size="lg" 
+                  variant="destructive"
+                  className="w-full py-6 text-lg font-bold"
+                  onClick={handleUnregister}
+                  disabled={isUnregistering}
+                >
+                  <Icon name="X" size={20} className="mr-2" />
+                  {isUnregistering ? 'Отмена...' : 'Отменить регистрацию'}
+                </Button>
+              </div>
             )}
           </Card>
 

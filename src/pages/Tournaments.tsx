@@ -20,6 +20,7 @@ interface Tournament {
   start_date: string;
   participants_count: number;
   is_registered?: boolean;
+  confirmed_at?: string | null;
 }
 
 const Tournaments = () => {

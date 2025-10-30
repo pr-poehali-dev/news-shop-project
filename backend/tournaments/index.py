@@ -94,6 +94,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         COALESCE(u.nickname, tr.persona_name) as persona_name,
                         tr.avatar_url,
                         to_char(tr.registered_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as registered_at,
+                        to_char(tr.confirmed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"') as confirmed_at,
                         COALESCE(u.is_admin, false) as is_admin,
                         COALESCE(u.is_moderator, false) as is_moderator
                     FROM tournament_registrations tr
@@ -135,12 +136,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         EXISTS(
                             SELECT 1 FROM tournament_registrations 
                             WHERE tournament_id = t.id AND steam_id = %s
-                        ) as is_registered
+                        ) as is_registered,
+                        (
+                            SELECT to_char(confirmed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"')
+                            FROM tournament_registrations 
+                            WHERE tournament_id = t.id AND steam_id = %s
+                        ) as confirmed_at
                     FROM tournaments t
                     LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
                     GROUP BY t.id
                     ORDER BY t.start_date
-                ''', (steam_id,))
+                ''', (steam_id, steam_id))
             else:
                 # Получить все турниры с количеством участников
                 cursor.execute('''
@@ -539,6 +545,58 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 },
                 'isBase64Encoded': False,
                 'body': json.dumps({'message': 'Tournament deleted successfully'})
+            }
+        
+        # PATCH: Подтвердить участие в турнире
+        if method == 'PATCH':
+            body_data = json.loads(event.get('body', '{}'))
+            tournament_id = body_data.get('tournament_id')
+            steam_id = body_data.get('steam_id')
+            
+            if not tournament_id or not steam_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'tournament_id and steam_id required'})
+                }
+            
+            escaped_steam_id = steam_id.replace("'", "''")
+            
+            # Проверяем, что регистрация существует
+            cursor.execute(
+                f"SELECT * FROM tournament_registrations WHERE tournament_id = {int(tournament_id)} AND steam_id = '{escaped_steam_id}'"
+            )
+            registration = cursor.fetchone()
+            
+            if not registration:
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Регистрация не найдена'})
+                }
+            
+            # Обновляем время подтверждения
+            cursor.execute(
+                f"UPDATE tournament_registrations SET confirmed_at = NOW() WHERE tournament_id = {int(tournament_id)} AND steam_id = '{escaped_steam_id}'"
+            )
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'message': 'Участие подтверждено'})
             }
         
         return {
