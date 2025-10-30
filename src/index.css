@@ -100,14 +100,7 @@
   }
 
   html {
-    overflow-y: scroll;
-  }
-
-  body[style*="pointer-events"],
-  body[style*="overflow: hidden"] {
-    padding-right: 0 !important;
-    margin-right: 0 !important;
-    overflow: visible !important;
+    scrollbar-gutter: stable;
   }
 }
 
