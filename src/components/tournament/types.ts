@@ -8,22 +8,6 @@ export interface Participant {
   is_moderator?: boolean;
 }
 
-export interface BracketMatch {
-  id: number;
-  round_number: number;
-  match_number: number;
-  player1_steam_id: string | null;
-  player2_steam_id: string | null;
-  player1_name: string | null;
-  player2_name: string | null;
-  player1_avatar: string | null;
-  player2_avatar: string | null;
-  winner_steam_id: string | null;
-  player1_score: number;
-  player2_score: number;
-  status: string;
-}
-
 export interface TournamentDetail {
   id: number;
   name: string;
@@ -36,7 +20,6 @@ export interface TournamentDetail {
   start_date: string;
   participants_count: number;
   participants: Participant[];
-  bracket?: BracketMatch[];
   confirmed_at?: string | null;
 }
 

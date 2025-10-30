@@ -27,69 +27,6 @@ def get_db_connection():
     return psycopg2.connect(database_url)
 
 
-def generate_bracket(tournament_id: int, conn) -> bool:
-    '''Генерирует турнирную сетку из подтвержденных участников'''
-    import random
-    
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
-    # Получить подтвержденных участников
-    cursor.execute('''
-        SELECT steam_id FROM tournament_registrations
-        WHERE tournament_id = %s AND confirmed_at IS NOT NULL
-        ORDER BY confirmed_at ASC
-    ''', (tournament_id,))
-    
-    participants = [row['steam_id'] for row in cursor.fetchall()]
-    
-    if len(participants) < 2:
-        return False
-    
-    # Проверить, не создана ли уже сетка
-    cursor.execute('''
-        SELECT COUNT(*) as count FROM tournament_brackets
-        WHERE tournament_id = %s
-    ''', (tournament_id,))
-    
-    if cursor.fetchone()['count'] > 0:
-        return True
-    
-    # Перемешать участников случайным образом
-    random.shuffle(participants)
-    
-    # Рассчитать количество раундов (для single elimination)
-    import math
-    num_rounds = math.ceil(math.log2(len(participants)))
-    total_matches = 2 ** num_rounds - 1
-    first_round_matches = len(participants) // 2
-    
-    # Создать первый раунд
-    match_number = 0
-    for i in range(0, len(participants) - 1, 2):
-        player1 = participants[i]
-        player2 = participants[i + 1] if i + 1 < len(participants) else None
-        
-        cursor.execute('''
-            INSERT INTO tournament_brackets 
-            (tournament_id, round_number, match_number, player1_steam_id, player2_steam_id, status)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (tournament_id, 1, match_number, player1, player2, 'pending'))
-        
-        match_number += 1
-    
-    # Если нечетное количество участников, последний проходит автоматически
-    if len(participants) % 2 == 1:
-        last_player = participants[-1]
-        cursor.execute('''
-            INSERT INTO tournament_brackets 
-            (tournament_id, round_number, match_number, player1_steam_id, winner_steam_id, status)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (tournament_id, 1, match_number, last_player, last_player, 'completed'))
-    
-    conn.commit()
-    return True
-
-
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
@@ -150,34 +87,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Турнир не найден'})
                     }
                 
-                # Проверить, не пора ли начать турнир и сгенерировать сетку
-                from datetime import datetime, timezone
-                now = datetime.now(timezone.utc)
-                start_date_str = tournament['start_date']
-                
-                # Парсим строку в datetime если это строка
-                if isinstance(start_date_str, str):
-                    start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
-                else:
-                    start_date = start_date_str
-                    if start_date.tzinfo is None:
-                        start_date = start_date.replace(tzinfo=timezone.utc)
-                
-                if tournament['status'] == 'upcoming' and now >= start_date:
-                    # Обновить статус на 'ongoing'
-                    cursor.execute('''
-                        UPDATE tournaments SET status = 'ongoing'
-                        WHERE id = %s
-                    ''', (tournament_id,))
-                    conn.commit()
-                    
-                    # Сгенерировать сетку
-                    generate_bracket(tournament_id, conn)
-                    
-                    # Обновить данные турнира
-                    tournament = dict(tournament)
-                    tournament['status'] = 'ongoing'
-                
                 # Получить участников турнира
                 cursor.execute('''
                     SELECT 
@@ -198,35 +107,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 result = dict(tournament)
                 result['participants'] = [dict(p) for p in participants]
-                
-                # Получить турнирную сетку если турнир начался
-                if tournament['status'] == 'ongoing':
-                    cursor.execute('''
-                        SELECT 
-                            tb.id,
-                            tb.round_number,
-                            tb.match_number,
-                            tb.player1_steam_id,
-                            tb.player2_steam_id,
-                            tb.winner_steam_id,
-                            tb.player1_score,
-                            tb.player2_score,
-                            tb.status,
-                            p1.persona_name as player1_name,
-                            p1.avatar_url as player1_avatar,
-                            p2.persona_name as player2_name,
-                            p2.avatar_url as player2_avatar
-                        FROM tournament_brackets tb
-                        LEFT JOIN tournament_registrations p1 ON tb.player1_steam_id = p1.steam_id AND tb.tournament_id = p1.tournament_id
-                        LEFT JOIN tournament_registrations p2 ON tb.player2_steam_id = p2.steam_id AND tb.tournament_id = p2.tournament_id
-                        WHERE tb.tournament_id = %s
-                        ORDER BY tb.round_number, tb.match_number
-                    ''', (tournament_id,))
-                    
-                    bracket = cursor.fetchall()
-                    result['bracket'] = [dict(b) for b in bracket]
-                else:
-                    result['bracket'] = []
                 
                 return {
                     'statusCode': 200,
@@ -585,10 +465,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             conn.commit()
-            
-            # Если статус изменился на 'ongoing', генерируем сетку
-            if 'status' in body_data and body_data['status'] == 'ongoing':
-                generate_bracket(tournament_id, conn)
             
             return {
                 'statusCode': 200,
