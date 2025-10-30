@@ -34,6 +34,8 @@ interface TournamentsManagementProps {
 }
 
 export default function TournamentsManagement({ tournaments, user, onReload }: TournamentsManagementProps) {
+  console.log('🎮 TournamentsManagement rendered', { user, tournamentsCount: tournaments.length });
+  
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -46,6 +48,9 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
     status: 'upcoming',
     game: 'CS2'
   });
+  
+  console.log('📝 Current formData:', formData);
+  console.log('✨ isCreating:', isCreating);
 
   const handleCreate = async () => {
     console.log('🔍 Validation check:', {
