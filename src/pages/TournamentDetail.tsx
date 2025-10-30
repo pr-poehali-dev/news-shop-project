@@ -10,6 +10,16 @@ import ParticipantsList from '@/components/tournament/ParticipantsList';
 import { TournamentDetail as TournamentDetailType, SteamUser } from '@/components/tournament/types';
 import { getTimeUntilStart } from '@/components/tournament/utils';
 import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const TournamentDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +31,7 @@ const TournamentDetail = () => {
   const [isUnregistering, setIsUnregistering] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [, setTick] = useState(0);
+  const [showUnregisterDialog, setShowUnregisterDialog] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -127,13 +138,8 @@ const TournamentDetail = () => {
     }
   };
 
-  const handleUnregister = async () => {
-    if (!user) return;
-
-    if (!confirm('Вы уверены, что хотите отменить регистрацию на турнир?')) {
-      return;
-    }
-
+  const confirmUnregister = async () => {
+    setShowUnregisterDialog(false);
     setIsUnregistering(true);
 
     try {
@@ -280,12 +286,29 @@ const TournamentDetail = () => {
           isUnregistering={isUnregistering}
           isConfirming={isConfirming}
           onRegister={handleRegister}
-          onUnregister={handleUnregister}
+          onUnregister={() => setShowUnregisterDialog(true)}
           onConfirm={handleConfirmParticipation}
         />
 
         <ParticipantsList participants={tournament.participants} />
       </div>
+
+      <AlertDialog open={showUnregisterDialog} onOpenChange={setShowUnregisterDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Отменить регистрацию?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите отменить регистрацию на турнир? Это действие можно отменить, зарегистрировавшись снова.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUnregister} className="bg-destructive hover:bg-destructive/90">
+              Отменить регистрацию
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };

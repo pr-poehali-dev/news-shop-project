@@ -5,6 +5,17 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { formatRelativeTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
+import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Comment {
   id: number;
@@ -62,6 +73,8 @@ export default function Comments({ newsId }: CommentsProps) {
   }, [user]);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     loadComments();
@@ -86,7 +99,11 @@ export default function Comments({ newsId }: CommentsProps) {
     if (!newComment.text.trim()) return;
 
     if (!user) {
-      alert('Войдите через Steam, чтобы оставить комментарий');
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите через Steam, чтобы оставить комментарий',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -120,7 +137,11 @@ export default function Comments({ newsId }: CommentsProps) {
     if (!replyText.trim()) return;
 
     if (!user) {
-      alert('Войдите через Steam, чтобы ответить');
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите через Steam, чтобы ответить',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -153,7 +174,11 @@ export default function Comments({ newsId }: CommentsProps) {
 
   const handleLike = async (commentId: number) => {
     if (!user) {
-      alert('Войдите через Steam, чтобы лайкать комментарии');
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите через Steam, чтобы лайкать комментарии',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -184,14 +209,21 @@ export default function Comments({ newsId }: CommentsProps) {
   };
 
   const handleDelete = async (commentId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+    if (!user) {
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите через Steam',
+        variant: 'destructive',
+      });
       return;
     }
 
-    if (!user) {
-      alert('Войдите через Steam');
-      return;
-    }
+    setCommentToDelete(commentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!commentToDelete) return;
 
     try {
       const response = await fetch(func2url.comments, {
@@ -200,20 +232,35 @@ export default function Comments({ newsId }: CommentsProps) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          comment_id: commentId,
-          steam_id: user.steamId
+          comment_id: commentToDelete,
+          steam_id: user?.steamId
         })
       });
 
       const data = await response.json();
       if (data.success) {
-        setComments(comments.filter(c => c.id !== commentId && c.parent_comment_id !== commentId));
+        setComments(comments.filter(c => c.id !== commentToDelete && c.parent_comment_id !== commentToDelete));
+        toast({
+          title: 'Комментарий удален',
+          description: 'Комментарий успешно удален',
+        });
       } else {
-        alert(data.error || 'Не удалось удалить комментарий');
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось удалить комментарий',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Failed to delete comment:', error);
-      alert('Ошибка при удалении комментария');
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка при удалении комментария',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setCommentToDelete(null);
     }
   };
 
@@ -415,6 +462,25 @@ export default function Comments({ newsId }: CommentsProps) {
           topLevelComments.map((comment) => renderComment(comment))
         )}
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить комментарий?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить этот комментарий? Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCommentToDelete(null)}>
+              Отмена
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

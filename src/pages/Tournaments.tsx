@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import TournamentsTab from '@/components/TournamentsTab';
 import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface SteamUser {
   steamId: string;
@@ -30,6 +40,7 @@ const Tournaments = () => {
   const [user, setUser] = useState<SteamUser | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [isRegistering, setIsRegistering] = useState<number | null>(null);
+  const [unregisterTournamentId, setUnregisterTournamentId] = useState<number | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('steamUser');
@@ -138,14 +149,13 @@ const Tournaments = () => {
     }
   };
 
-  const handleTournamentUnregister = async (tournamentId: number) => {
-    if (!user) return;
+  const confirmUnregister = async () => {
+    if (!user || !unregisterTournamentId) return;
 
-    if (!confirm('Вы уверены, что хотите отменить регистрацию?')) {
-      return;
-    }
+    setUnregisterTournamentId(null);
 
     try {
+      const tournamentId = unregisterTournamentId;
       const response = await fetch('https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675', {
         method: 'DELETE',
         headers: {
@@ -215,28 +225,58 @@ const Tournaments = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Участие подтверждено!');
+        toast({
+          title: "Успешно!",
+          description: "Участие подтверждено!"
+        });
         await loadTournaments();
       } else {
-        alert(data.error || 'Ошибка подтверждения');
+        toast({
+          title: "Ошибка",
+          description: data.error || 'Ошибка подтверждения',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Confirmation failed:', error);
-      alert('Ошибка при подтверждении участия');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при подтверждении участия",
+        variant: "destructive"
+      });
     }
   };
 
   return (
-      <main className="container mx-auto px-6 py-16">
-        <TournamentsTab
-          tournaments={tournaments}
-          user={user}
-          isRegistering={isRegistering}
-          onRegister={handleTournamentRegister}
-          onUnregister={handleTournamentUnregister}
-          onConfirm={handleConfirmParticipation}
-        />
-      </main>
+      <>
+        <main className="container mx-auto px-6 py-16">
+          <TournamentsTab
+            tournaments={tournaments}
+            user={user}
+            isRegistering={isRegistering}
+            onRegister={handleTournamentRegister}
+            onUnregister={(id) => setUnregisterTournamentId(id)}
+            onConfirm={handleConfirmParticipation}
+          />
+        </main>
+
+        <AlertDialog open={!!unregisterTournamentId} onOpenChange={(open) => !open && setUnregisterTournamentId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Отменить регистрацию?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Вы уверены, что хотите отменить регистрацию на турнир? Это действие можно отменить, зарегистрировавшись снова.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmUnregister} className="bg-destructive hover:bg-destructive/90">
+                Отменить регистрацию
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
   );
 };
 
