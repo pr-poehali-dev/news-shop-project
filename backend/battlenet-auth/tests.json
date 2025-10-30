@@ -1,0 +1,35 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS - CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET login - Generate Battle.net OAuth URL",
+      "method": "GET",
+      "path": "/?mode=login&redirect_uri=https://example.com/callback",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "authUrl": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST callback - Invalid code",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "callback",
+        "code": "invalid_code",
+        "redirect_uri": "https://example.com/callback"
+      },
+      "expectedStatus": 500,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

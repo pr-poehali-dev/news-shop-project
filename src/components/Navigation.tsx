@@ -9,10 +9,12 @@ import Icon from '@/components/ui/icon';
 import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
-  steamId: string;
+  steamId?: string;
   personaName: string;
-  avatarUrl: string;
-  profileUrl: string;
+  avatarUrl?: string;
+  profileUrl?: string;
+  battlenetId?: string;
+  battletag?: string;
 }
 
 interface MenuItem {
@@ -34,6 +36,7 @@ interface NavigationProps {
   isRegisterOpen: boolean;
   setIsRegisterOpen: (open: boolean) => void;
   handleSteamLogin: () => void;
+  handleBattlenetLogin: () => void;
   handleLogout: () => void;
 }
 
@@ -46,6 +49,7 @@ const Navigation = ({
   isRegisterOpen,
   setIsRegisterOpen,
   handleSteamLogin,
+  handleBattlenetLogin,
   handleLogout
 }: NavigationProps) => {
   const navigate = useNavigate();
@@ -101,7 +105,7 @@ const Navigation = ({
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
-                    <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />
+                    {user.avatarUrl && <img src={user.avatarUrl} alt={user.personaName} className="w-8 h-8 rounded-full" />}
                     <span className="font-medium">{user.personaName}</span>
                     <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
                   </button>
@@ -134,13 +138,20 @@ const Navigation = ({
                         Войдите используя свой Steam аккаунт
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <Button 
                         onClick={handleSteamLogin}
                         className="w-full gap-2 bg-[#171a21] hover:bg-[#1b2838]"
                       >
                         <Icon name="Gamepad2" size={18} />
                         Войти через Steam
+                      </Button>
+                      <Button 
+                        onClick={handleBattlenetLogin}
+                        className="w-full gap-2 bg-[#00aeff] hover:bg-[#0095dd]"
+                      >
+                        <Icon name="Swords" size={18} />
+                        Войти через Battle.net
                       </Button>
                     </div>
                   </DialogContent>
@@ -160,13 +171,20 @@ const Navigation = ({
                         Создайте аккаунт используя Steam
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <Button 
                         onClick={handleSteamLogin}
                         className="w-full gap-2 bg-[#171a21] hover:bg-[#1b2838]"
                       >
                         <Icon name="Gamepad2" size={18} />
                         Регистрация через Steam
+                      </Button>
+                      <Button 
+                        onClick={handleBattlenetLogin}
+                        className="w-full gap-2 bg-[#00aeff] hover:bg-[#0095dd]"
+                      >
+                        <Icon name="Swords" size={18} />
+                        Регистрация через Battle.net
                       </Button>
                     </div>
                   </DialogContent>

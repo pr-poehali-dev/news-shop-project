@@ -4,12 +4,15 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { formatDateTime, formatShortDate } from '@/utils/dateFormat';
+import func2url from '../../backend/func2url.json';
 
 interface SteamUser {
-  steamId: string;
+  steamId?: string;
   personaName: string;
-  avatarUrl: string;
-  profileUrl: string;
+  avatarUrl?: string;
+  profileUrl?: string;
+  battlenetId?: string;
+  battletag?: string;
 }
 
 interface Tournament {
@@ -59,7 +62,9 @@ const Profile = () => {
     loadProfileData(userData.steamId);
   }, [navigate]);
 
-  const loadProfileData = async (steamId: string) => {
+  const loadProfileData = async (steamId?: string) => {
+    if (!steamId) return;
+    
     const cacheKey = `profile_${steamId}`;
     const cachedProfile = localStorage.getItem(cacheKey);
     if (cachedProfile) {
@@ -78,6 +83,32 @@ const Profile = () => {
     }
   };
 
+  const handleLinkBattlenet = async () => {
+    if (!user?.steamId) return;
+    
+    localStorage.setItem('linkBattlenetToSteam', user.steamId);
+    const redirectUri = `${window.location.origin}/battlenet-callback`;
+    const response = await fetch(`${func2url['battlenet-auth']}?mode=login&redirect_uri=${encodeURIComponent(redirectUri)}`);
+    const data = await response.json();
+    
+    if (data.authUrl) {
+      window.location.href = data.authUrl;
+    }
+  };
+
+  const handleLinkSteam = async () => {
+    if (!user?.battlenetId) return;
+    
+    const returnUrl = `${window.location.origin}/profile`;
+    const response = await fetch(`https://functions.poehali.dev/1fc223ef-7704-4b55-a8b5-fea6b000272f?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
+    const data = await response.json();
+    
+    if (data.redirectUrl) {
+      localStorage.setItem('linkSteamToBattlenet', user.battlenetId);
+      window.location.href = data.redirectUrl;
+    }
+  };
+
 
 
   if (!user) {
@@ -89,26 +120,65 @@ const Profile = () => {
         <div className="space-y-10">
           <Card className="p-10 border border-border bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur border-primary/20">
             <div className="flex items-start gap-8">
-              <img 
-                src={user.avatarUrl} 
-                alt={user.personaName}
-                className="w-32 h-32 rounded-2xl border-4 border-primary shadow-2xl shadow-primary/20"
-              />
+              {user.avatarUrl ? (
+                <img 
+                  src={user.avatarUrl} 
+                  alt={user.personaName}
+                  className="w-32 h-32 rounded-2xl border-4 border-primary shadow-2xl shadow-primary/20"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-2xl border-4 border-primary shadow-2xl shadow-primary/20 bg-primary/20 flex items-center justify-center">
+                  <Icon name="User" size={48} className="text-primary" />
+                </div>
+              )}
               <div className="flex-1 space-y-4">
-                <div>
-                  <h1 className="text-4xl font-bold tracking-tight mb-2">{user.personaName}</h1>
-                  <a 
-                    href={user.profileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline flex items-center gap-2"
-                  >
-                    <Icon name="ExternalLink" size={16} />
-                    Открыть профиль Steam
-                  </a>
+                <div className="space-y-2">
+                  <h1 className="text-4xl font-bold tracking-tight">{user.personaName}</h1>
+                  <div className="flex flex-col gap-2">
+                    {user.steamId && user.profileUrl && (
+                      <a 
+                        href={user.profileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-2 w-fit"
+                      >
+                        <Icon name="Gamepad2" size={16} />
+                        Steam: {user.personaName}
+                      </a>
+                    )}
+                    {user.battlenetId && (
+                      <div className="text-[#00aeff] flex items-center gap-2">
+                        <Icon name="Swords" size={16} />
+                        Battle.net: {user.battletag}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {user.steamId && !user.battlenetId && (
+                    <Button
+                      onClick={handleLinkBattlenet}
+                      variant="outline"
+                      className="gap-2 border-[#00aeff] text-[#00aeff] hover:bg-[#00aeff] hover:text-white"
+                    >
+                      <Icon name="Link" size={18} />
+                      Привязать Battle.net
+                    </Button>
+                  )}
+                  {user.battlenetId && !user.steamId && (
+                    <Button
+                      onClick={handleLinkSteam}
+                      variant="outline"
+                      className="gap-2 border-[#171a21] hover:bg-[#171a21] hover:text-white"
+                    >
+                      <Icon name="Link" size={18} />
+                      Привязать Steam
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
                   <div className="p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Icon name="Wallet" size={20} className="text-primary" />
