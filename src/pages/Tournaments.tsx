@@ -170,6 +170,35 @@ const Tournaments = () => {
     localStorage.removeItem('steamUser');
   };
 
+  const handleConfirmParticipation = async (tournamentId: number) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/bbe58a49-e2ff-44b8-a59a-1e66ad5ed675', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournament_id: tournamentId,
+          steam_id: user.steamId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Участие подтверждено!');
+        await loadTournaments();
+      } else {
+        alert(data.error || 'Ошибка подтверждения');
+      }
+    } catch (error) {
+      console.error('Confirmation failed:', error);
+      alert('Ошибка при подтверждении участия');
+    }
+  };
+
   return (
       <main className="container mx-auto px-6 py-16">
         <TournamentsTab
@@ -178,6 +207,7 @@ const Tournaments = () => {
           isRegistering={isRegistering}
           onRegister={handleTournamentRegister}
           onUnregister={handleTournamentUnregister}
+          onConfirm={handleConfirmParticipation}
         />
       </main>
   );

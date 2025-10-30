@@ -32,6 +32,7 @@ interface TournamentsTabProps {
   isRegistering: number | null;
   onRegister: (tournamentId: number) => void;
   onUnregister?: (tournamentId: number) => void;
+  onConfirm?: (tournamentId: number) => void;
 }
 
 interface TopPlayer {
@@ -43,7 +44,7 @@ interface TopPlayer {
   losses: number;
 }
 
-const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregister }: TournamentsTabProps) => {
+const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregister, onConfirm }: TournamentsTabProps) => {
   const navigate = useNavigate();
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   const [leaderboardGame, setLeaderboardGame] = useState<string>('Hearthstone');
@@ -257,12 +258,14 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
                         <Button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/tournament/${tournament.id}`);
+                            if (onConfirm) {
+                              onConfirm(tournament.id);
+                            }
                           }}
                           className="gap-2 text-xs h-9 bg-orange-500 hover:bg-orange-600 flex-1"
                         >
-                          <Icon name="AlertCircle" size={16} />
-                          Требуется подтверждение!
+                          <Icon name="CheckCircle2" size={16} />
+                          Подтвердить участие
                         </Button>
                       ) : tournament.confirmed_at ? (
                         <Button disabled className="gap-2 text-xs h-9 bg-green-500/20 text-green-500 border-green-500/30 flex-1" variant="secondary">
