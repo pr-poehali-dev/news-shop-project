@@ -81,18 +81,18 @@ export default function UsersManagement({
         blockedCount={blockedCount}
       />
 
-      <Card className="p-6 bg-card/80 backdrop-blur border-primary/20">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Icon name="Users" size={24} />
+      <Card className="p-4 bg-card/80 backdrop-blur border-primary/20">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Icon name="Users" size={20} />
             Управление пользователями
           </h2>
-          <div className="w-64">
+          <div className="w-56">
             <Input
-              placeholder="Поиск по имени или Steam ID..."
+              placeholder="Поиск..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
+              className="w-full h-9 text-sm"
             />
           </div>
         </div>
