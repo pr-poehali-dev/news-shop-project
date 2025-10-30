@@ -295,6 +295,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             # Проверить, не осталось ли меньше часа до начала турнира
             from datetime import datetime, timezone, timedelta
             start_date = tournament_info['start_date']
+            
+            # Убедимся, что start_date имеет timezone
+            if start_date.tzinfo is None:
+                start_date = start_date.replace(tzinfo=timezone.utc)
+            
             now = datetime.now(timezone.utc)
             one_hour_before = start_date - timedelta(hours=1)
             
