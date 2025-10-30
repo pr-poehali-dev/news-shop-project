@@ -54,3 +54,35 @@ export const formatRelativeTime = (timestamp: string): string => {
   
   return formatShortDate(timestamp);
 };
+
+export const formatChatDateTime = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const time = date.toLocaleTimeString('ru-RU', { 
+    hour: '2-digit', 
+    minute: '2-digit'
+  });
+
+  if (messageDate.getTime() === today.getTime()) {
+    return time;
+  }
+  
+  if (messageDate.getTime() === yesterday.getTime()) {
+    return `вчера ${time}`;
+  }
+
+  const diffDays = Math.floor((today.getTime() - messageDate.getTime()) / 86400000);
+  if (diffDays < 7) {
+    return `${diffDays} дн. назад`;
+  }
+
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit'
+  }) + ` ${time}`;
+};

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
-import { formatTime } from '@/utils/dateFormat';
+import { formatChatDateTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
 interface ReplyTo {
@@ -219,7 +219,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground">
-                    {formatTime(msg.createdAt)}
+                    {formatChatDateTime(msg.createdAt)}
                   </span>
                 </div>
                 {msg.replyTo && (
