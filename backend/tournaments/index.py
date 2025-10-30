@@ -183,9 +183,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             # Админ создает турнир
             if admin_steam_id and 'name' in body_data:
                 escaped_steam_id = admin_steam_id.replace("'", "''")
-                cursor.execute(f"SELECT COUNT(*) as count FROM admins WHERE steam_id = '{escaped_steam_id}'")
+                cursor.execute(f"SELECT is_admin FROM users WHERE steam_id = '{escaped_steam_id}'")
                 result = cursor.fetchone()
-                is_admin = result['count'] > 0 if result else False
+                is_admin = result['is_admin'] if result else False
                 
                 if not is_admin:
                     return {
