@@ -46,16 +46,16 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   
   const topPlayers: TopPlayer[] = [
-    { id: 1, position: 1, nickname: 'DarkKnight', rating: 2450, wins: 245, losses: 89 },
-    { id: 2, position: 2, nickname: 'ShadowHunter', rating: 2380, wins: 223, losses: 95 },
-    { id: 3, position: 3, nickname: 'MysticMage', rating: 2290, wins: 210, losses: 102 },
-    { id: 4, position: 4, nickname: 'ProGamer', rating: 2150, wins: 198, losses: 110 },
-    { id: 5, position: 5, nickname: 'TeamLeader', rating: 2080, wins: 185, losses: 115 },
-    { id: 6, position: 6, nickname: 'HeroLover', rating: 1950, wins: 172, losses: 128 },
-    { id: 7, position: 7, nickname: 'TankMain', rating: 1880, wins: 165, losses: 135 },
-    { id: 8, position: 8, nickname: 'BugHunter', rating: 1820, wins: 158, losses: 142 },
-    { id: 9, position: 9, nickname: 'SpeedRunner', rating: 1750, wins: 145, losses: 155 },
-    { id: 10, position: 10, nickname: 'SniperElite', rating: 1690, wins: 138, losses: 162 }
+    { id: 1, position: 1, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 2, position: 2, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 3, position: 3, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 4, position: 4, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 5, position: 5, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 6, position: 6, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 7, position: 7, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 8, position: 8, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 9, position: 9, nickname: 'nickname', rating: 0, wins: 0, losses: 0 },
+    { id: 10, position: 10, nickname: 'nickname', rating: 0, wins: 0, losses: 0 }
   ];
   
   const getPositionBadge = (position: number) => {
