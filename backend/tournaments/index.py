@@ -268,15 +268,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Вы уже зарегистрированы на этот турнир'})
                 }
             
-            # Проверить, есть ли свободные места
+            # Проверить, есть ли свободные места и время до начала
             cursor.execute('''
                 SELECT 
                     t.max_participants,
+                    t.start_date,
                     COUNT(tr.id) as participants_count
                 FROM tournaments t
                 LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
                 WHERE t.id = %s
-                GROUP BY t.id, t.max_participants
+                GROUP BY t.id, t.max_participants, t.start_date
             ''', (registration.tournament_id,))
             
             tournament_info = cursor.fetchone()
@@ -289,6 +290,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     },
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Турнир не найден'})
+                }
+            
+            # Проверить, не осталось ли меньше часа до начала турнира
+            from datetime import datetime, timezone, timedelta
+            start_date = tournament_info['start_date']
+            now = datetime.now(timezone.utc)
+            one_hour_before = start_date - timedelta(hours=1)
+            
+            if now >= one_hour_before:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Регистрация закрыта. До начала турнира осталось менее часа.'})
                 }
             
             if tournament_info['participants_count'] >= tournament_info['max_participants']:

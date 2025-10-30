@@ -93,6 +93,14 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
     return now >= oneHourBefore && now < start;
   };
 
+  const isRegistrationClosed = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    
+    return now >= oneHourBefore;
+  };
+
   const getTimeUntilConfirmation = (dateString: string) => {
     const start = new Date(dateString).getTime();
     const now = Date.now();
@@ -312,11 +320,11 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister, onUnregi
                         e.stopPropagation();
                         onRegister(tournament.id);
                       }}
-                      disabled={isRegistering === tournament.id || tournament.status !== 'upcoming'}
+                      disabled={isRegistering === tournament.id || tournament.status !== 'upcoming' || isRegistrationClosed(tournament.start_date)}
                       className="gap-2 text-xs h-9"
                     >
                       <Icon name="UserPlus" size={16} />
-                      {isRegistering === tournament.id ? 'Регистрация...' : 'Зарегистрироваться'}
+                      {isRegistering === tournament.id ? 'Регистрация...' : isRegistrationClosed(tournament.start_date) ? 'Регистрация закрыта' : 'Зарегистрироваться'}
                     </Button>
                   )}
                   <Button 

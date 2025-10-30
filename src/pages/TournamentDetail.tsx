@@ -230,6 +230,14 @@ const TournamentDetail = () => {
     return now >= oneHourBefore && now < start;
   };
 
+  const isRegistrationClosed = (dateString: string) => {
+    const start = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneHourBefore = start - (60 * 60 * 1000);
+    
+    return now >= oneHourBefore;
+  };
+
   const getTimeUntilConfirmation = (dateString: string) => {
     const start = new Date(dateString).getTime();
     const now = Date.now();
@@ -443,7 +451,7 @@ const TournamentDetail = () => {
                 size="lg" 
                 className="w-full py-6 text-lg font-bold"
                 onClick={handleRegister}
-                disabled={isRegistering || isFull}
+                disabled={isRegistering || isFull || isRegistrationClosed(tournament.start_date)}
               >
                 {isRegistering ? (
                   <>
@@ -454,6 +462,11 @@ const TournamentDetail = () => {
                   <>
                     <Icon name="Users" size={20} className="mr-2" />
                     Турнир заполнен
+                  </>
+                ) : isRegistrationClosed(tournament.start_date) ? (
+                  <>
+                    <Icon name="Lock" size={20} className="mr-2" />
+                    Регистрация закрыта
                   </>
                 ) : (
                   <>
