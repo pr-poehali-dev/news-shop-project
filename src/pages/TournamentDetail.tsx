@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { formatShortDate, formatDateTime } from '@/utils/dateFormat';
+import { formatShortDate, formatDateTime, formatShortDateTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
 
 interface Participant {
@@ -259,7 +259,7 @@ const TournamentDetail = () => {
                   <p className="text-muted-foreground font-medium">Начало турнира</p>
                 </div>
                 <p className="text-4xl font-bold text-orange-500">
-                  {formatShortDate(tournament.start_date)}
+                  {formatShortDateTime(tournament.start_date)}
                 </p>
               </div>
             </div>
