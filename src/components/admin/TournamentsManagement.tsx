@@ -328,7 +328,14 @@ export default function TournamentsManagement({ tournaments, user, onReload }: T
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button onClick={handleCreate} className="flex-1 gap-2">
+              <Button 
+                onClick={() => {
+                  console.log('🔘 Button clicked!');
+                  handleCreate();
+                }} 
+                className="flex-1 gap-2"
+                type="button"
+              >
                 <Icon name="Check" size={18} />
                 Создать
               </Button>
