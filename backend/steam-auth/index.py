@@ -1,5 +1,5 @@
 '''
-Business: Steam OAuth authentication handler
+Business: Steam OAuth authentication handler for user login
 Args: event - dict with httpMethod, queryStringParameters
       context - object with request_id
 Returns: HTTP response with redirect URL or user data
