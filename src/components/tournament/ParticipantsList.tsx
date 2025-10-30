@@ -45,12 +45,12 @@ const ParticipantsList = ({ participants }: ParticipantsListProps) => {
                       <p className="font-semibold">{participant.persona_name}</p>
                       {participant.is_admin && (
                         <span className="px-2 py-0.5 rounded text-xs bg-red-500/10 text-red-500 border border-red-500/20">
-                          Admin
+                          Администратор
                         </span>
                       )}
                       {participant.is_moderator && (
                         <span className="px-2 py-0.5 rounded text-xs bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                          Moderator
+                          Модератор
                         </span>
                       )}
                     </div>
