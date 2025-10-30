@@ -35,10 +35,10 @@ interface TournamentsTabProps {
 interface TopPlayer {
   id: number;
   position: number;
-  player_name: string;
-  avatar: string;
+  nickname: string;
   rating: number;
-  rank: string;
+  wins: number;
+  losses: number;
 }
 
 const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: TournamentsTabProps) => {
@@ -46,27 +46,23 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
   const [selectedGame, setSelectedGame] = useState<string>('Все');
   
   const topPlayers: TopPlayer[] = [
-    { id: 1, position: 1, player_name: 'DarkKnight', avatar: '🎮', rating: 2450, rank: 'Diamond' },
-    { id: 2, position: 2, player_name: 'ShadowHunter', avatar: '⚔️', rating: 2380, rank: 'Diamond' },
-    { id: 3, position: 3, player_name: 'MysticMage', avatar: '🔮', rating: 2290, rank: 'Diamond' },
-    { id: 4, position: 4, player_name: 'ProGamer', avatar: '🏆', rating: 2150, rank: 'Diamond' },
-    { id: 5, position: 5, player_name: 'TeamLeader', avatar: '👥', rating: 2080, rank: 'Platinum' }
+    { id: 1, position: 1, nickname: 'DarkKnight', rating: 2450, wins: 245, losses: 89 },
+    { id: 2, position: 2, nickname: 'ShadowHunter', rating: 2380, wins: 223, losses: 95 },
+    { id: 3, position: 3, nickname: 'MysticMage', rating: 2290, wins: 210, losses: 102 },
+    { id: 4, position: 4, nickname: 'ProGamer', rating: 2150, wins: 198, losses: 110 },
+    { id: 5, position: 5, nickname: 'TeamLeader', rating: 2080, wins: 185, losses: 115 },
+    { id: 6, position: 6, nickname: 'HeroLover', rating: 1950, wins: 172, losses: 128 },
+    { id: 7, position: 7, nickname: 'TankMain', rating: 1880, wins: 165, losses: 135 },
+    { id: 8, position: 8, nickname: 'BugHunter', rating: 1820, wins: 158, losses: 142 },
+    { id: 9, position: 9, nickname: 'SpeedRunner', rating: 1750, wins: 145, losses: 155 },
+    { id: 10, position: 10, nickname: 'SniperElite', rating: 1690, wins: 138, losses: 162 }
   ];
-  
-  const getRankColor = (rank: string) => {
-    switch (rank) {
-      case 'Diamond': return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/30';
-      case 'Platinum': return 'text-slate-300 bg-slate-300/10 border-slate-300/30';
-      case 'Gold': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
-      default: return 'text-muted-foreground bg-muted/10 border-muted/30';
-    }
-  };
   
   const getPositionBadge = (position: number) => {
     if (position === 1) return '🥇';
     if (position === 2) return '🥈';
     if (position === 3) return '🥉';
-    return `#${position}`;
+    return position;
   };
 
   const getStatusColor = (status: string) => {
@@ -239,24 +235,24 @@ const TournamentsTab = ({ tournaments, user, isRegistering, onRegister }: Tourna
 
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {topPlayers.map((player) => (
                   <div 
                     key={player.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30"
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors text-sm"
                   >
-                    <div className="text-2xl w-8 text-center">
+                    <div className="w-6 text-center font-bold text-muted-foreground">
                       {getPositionBadge(player.position)}
                     </div>
-                    <div className="text-2xl">{player.avatar}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{player.player_name}</p>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={`px-1.5 py-0.5 rounded border ${getRankColor(player.rank)}`}>
-                          {player.rank}
-                        </span>
-                        <span className="text-muted-foreground">{player.rating}</span>
-                      </div>
+                      <p className="font-medium truncate">{player.nickname}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-bold text-foreground">{player.rating}</span>
+                      <span>|</span>
+                      <span className="text-green-500">{player.wins}W</span>
+                      <span>/</span>
+                      <span className="text-red-500">{player.losses}L</span>
                     </div>
                   </div>
                 ))}
