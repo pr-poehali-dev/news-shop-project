@@ -144,8 +144,35 @@ const TournamentDetail = () => {
     localStorage.removeItem('steamUser');
   };
 
-  if (isLoading || !tournament) {
-    return null;
+  if (isLoading) {
+    return (
+      <main className="container mx-auto px-6 py-16">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <Icon name="Loader2" size={48} className="animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Загрузка турнира...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <main className="container mx-auto px-6 py-16">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <Icon name="AlertCircle" size={48} className="text-destructive mx-auto" />
+            <h2 className="text-2xl font-bold">Турнир не найден</h2>
+            <p className="text-muted-foreground">Такого турнира не существует или он был удален</p>
+            <Button onClick={() => navigate('/tournaments')} className="gap-2 mt-4">
+              <Icon name="ArrowLeft" size={16} />
+              К списку турниров
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   const isRegistered = tournament.participants.some(p => p.steam_id === user?.steamId);
