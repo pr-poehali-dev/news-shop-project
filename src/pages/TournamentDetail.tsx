@@ -1,53 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { formatShortDate, formatDateTime, formatShortDateTime } from '@/utils/dateFormat';
 import func2url from '../../backend/func2url.json';
-
-interface Participant {
-  steam_id: string;
-  persona_name: string;
-  avatar_url: string;
-  registered_at: string;
-  confirmed_at?: string | null;
-  is_admin?: boolean;
-  is_moderator?: boolean;
-}
-
-interface TournamentDetail {
-  id: number;
-  name: string;
-  description: string;
-  prize_pool: number;
-  max_participants: number;
-  status: string;
-  tournament_type: string;
-  game: string;
-  start_date: string;
-  participants_count: number;
-  participants: Participant[];
-  confirmed_at?: string | null;
-}
-
-interface SteamUser {
-  steamId: string;
-  personaName: string;
-  avatarUrl: string;
-  profileUrl: string;
-}
+import TournamentInfo from '@/components/tournament/TournamentInfo';
+import CountdownTimer from '@/components/tournament/CountdownTimer';
+import TournamentActions from '@/components/tournament/TournamentActions';
+import ParticipantsList from '@/components/tournament/ParticipantsList';
+import { TournamentDetail as TournamentDetailType, SteamUser } from '@/components/tournament/types';
+import { getTimeUntilStart } from '@/components/tournament/utils';
 
 const TournamentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [tournament, setTournament] = useState<TournamentDetail | null>(null);
+  const [tournament, setTournament] = useState<TournamentDetailType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<SteamUser | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isUnregistering, setIsUnregistering] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [, setTick] = useState(0);
 
@@ -178,82 +148,6 @@ const TournamentDetail = () => {
     }
   };
 
-  const handleSteamLogin = async () => {
-    const returnUrl = `${window.location.origin}${window.location.pathname}`;
-    const response = await fetch(`${func2url['steam-auth']}?mode=login&return_url=${encodeURIComponent(returnUrl)}`);
-    const data = await response.json();
-    
-    if (data.redirectUrl) {
-      window.location.href = data.redirectUrl;
-    }
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('steamUser');
-  };
-
-  const getTimeUntilStart = (dateString: string) => {
-    const start = new Date(dateString).getTime();
-    const now = Date.now();
-    const diff = start - now;
-
-    if (diff <= 0) return null;
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds };
-  };
-
-  const getConfirmationTimeLeft = (dateString: string) => {
-    const start = new Date(dateString).getTime();
-    const now = Date.now();
-    const oneHourBefore = start - (60 * 60 * 1000);
-    const diff = start - now;
-
-    if (diff <= 0 || now < oneHourBefore) return null;
-
-    const minutes = Math.floor(diff / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { minutes, seconds };
-  };
-
-  const isConfirmationActive = (dateString: string) => {
-    const start = new Date(dateString).getTime();
-    const now = Date.now();
-    const oneHourBefore = start - (60 * 60 * 1000);
-    
-    return now >= oneHourBefore && now < start;
-  };
-
-  const isRegistrationClosed = (dateString: string) => {
-    const start = new Date(dateString).getTime();
-    const now = Date.now();
-    const oneHourBefore = start - (60 * 60 * 1000);
-    
-    return now >= oneHourBefore;
-  };
-
-  const getTimeUntilConfirmation = (dateString: string) => {
-    const start = new Date(dateString).getTime();
-    const now = Date.now();
-    const oneHourBefore = start - (60 * 60 * 1000);
-    const diff = oneHourBefore - now;
-
-    if (diff <= 0 || now >= start) return null;
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds };
-  };
-
   const handleConfirmParticipation = async () => {
     if (!user || !tournament) return;
 
@@ -322,312 +216,43 @@ const TournamentDetail = () => {
   const isFull = tournament.participants_count >= tournament.max_participants;
 
   return (
-      <main className="container mx-auto px-6 py-16">
-        <div className="space-y-10">
-          <Card className={`p-10 border border-border backdrop-blur ${
-            tournament.status === 'active' 
-              ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20' 
-              : 'bg-card/50'
-          }`}>
-            <div className="flex items-start justify-between mb-8">
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="px-4 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
-                    <span className="text-sm font-bold text-primary">{tournament.game || 'CS2'}</span>
-                  </div>
-                  {tournament.status === 'active' && (
-                    <div className="px-4 py-1.5 bg-primary rounded-full">
-                      <span className="text-sm font-bold text-primary-foreground">АКТИВНЫЙ</span>
-                    </div>
-                  )}
-                  {tournament.status === 'open' && (
-                    <div className="px-4 py-1.5 bg-green-500/20 border border-green-500/30 rounded-full">
-                      <span className="text-sm font-bold text-green-500">ОТКРЫТА РЕГИСТРАЦИЯ</span>
-                    </div>
-                  )}
-                  {tournament.status === 'upcoming' && (
-                    <div className="px-4 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-full">
-                      <span className="text-sm font-bold text-blue-500">СКОРО</span>
-                    </div>
-                  )}
-                  {tournament.tournament_type === 'vip' && (
-                    <div className="px-4 py-1.5 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
-                      <span className="text-sm font-bold text-yellow-500">VIP</span>
-                    </div>
-                  )}
-                  {isRegistered && (
-                    <div className="px-4 py-1.5 bg-green-500 rounded-full">
-                      <span className="text-sm font-bold text-white">ВЫ ЗАРЕГИСТРИРОВАНЫ</span>
-                    </div>
-                  )}
-                </div>
-                <h1 className="text-5xl font-bold tracking-tight">{tournament.name}</h1>
-                <p className="text-xl text-muted-foreground">{tournament.description}</p>
-              </div>
-              <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Icon 
-                  name={tournament.tournament_type === 'team' ? 'Users' : tournament.tournament_type === 'weekly' ? 'Zap' : 'Trophy'} 
-                  size={40} 
-                  className="text-primary" 
-                />
-              </div>
-            </div>
+    <main className="container mx-auto px-6 py-16">
+      <Button 
+        variant="ghost" 
+        onClick={() => navigate('/tournaments')}
+        className="mb-6 gap-2"
+      >
+        <Icon name="ArrowLeft" size={16} />
+        Назад к турнирам
+      </Button>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              <div className="p-6 rounded-xl border border-border bg-background/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <Icon name="DollarSign" size={24} className="text-primary" />
-                  <p className="text-muted-foreground font-medium">Призовой фонд</p>
-                </div>
-                <p className="text-4xl font-bold text-primary">
-                  {tournament.prize_pool.toLocaleString('ru-RU')}₽
-                </p>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <TournamentInfo tournament={tournament} />
 
-              <div className="p-6 rounded-xl border border-border bg-background/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <Icon name="Users" size={24} className="text-primary" />
-                  <p className="text-muted-foreground font-medium">
-                    {tournament.tournament_type === 'team' ? 'Команд' : 'Участников'}
-                  </p>
-                </div>
-                <p className="text-4xl font-bold">
-                  {tournament.participants_count} / {tournament.max_participants}
-                </p>
-              </div>
+          {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
+            <CountdownTimer startDate={tournament.start_date} />
+          )}
 
-              <div className="p-6 rounded-xl border border-border bg-background/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <Icon name="Calendar" size={24} className="text-primary" />
-                  <p className="text-muted-foreground font-medium">Начало турнира</p>
-                </div>
-                <p className="text-4xl font-bold text-orange-500">
-                  {formatShortDateTime(tournament.start_date)}
-                </p>
-              </div>
-            </div>
-
-            {tournament.status === 'upcoming' && getTimeUntilStart(tournament.start_date) && (
-              <div className="mb-8 p-6 rounded-xl border-2 border-primary bg-primary/5">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-primary">
-                    <Icon name="Clock" size={24} />
-                    <p className="text-lg font-semibold">До начала турнира</p>
-                  </div>
-                  <div className="flex justify-center gap-6 flex-wrap">
-                    {(() => {
-                      const time = getTimeUntilStart(tournament.start_date);
-                      if (!time) return null;
-                      return (
-                        <>
-                          {time.days > 0 && (
-                            <div className="text-center">
-                              <div className="text-5xl font-bold text-primary">{time.days}</div>
-                              <div className="text-sm text-muted-foreground mt-1">дней</div>
-                            </div>
-                          )}
-                          <div className="text-center">
-                            <div className="text-5xl font-bold text-primary">{String(time.hours).padStart(2, '0')}</div>
-                            <div className="text-sm text-muted-foreground mt-1">часов</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-5xl font-bold text-primary">{String(time.minutes).padStart(2, '0')}</div>
-                            <div className="text-sm text-muted-foreground mt-1">минут</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-5xl font-bold text-primary">{String(time.seconds).padStart(2, '0')}</div>
-                            <div className="text-sm text-muted-foreground mt-1">секунд</div>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!isRegistered && (
-              <Button 
-                size="lg" 
-                className="w-full py-6 text-lg font-bold"
-                onClick={handleRegister}
-                disabled={isRegistering || isFull || isRegistrationClosed(tournament.start_date)}
-              >
-                {isRegistering ? (
-                  <>
-                    <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                    Регистрация...
-                  </>
-                ) : isFull ? (
-                  <>
-                    <Icon name="Users" size={20} className="mr-2" />
-                    Турнир заполнен
-                  </>
-                ) : isRegistrationClosed(tournament.start_date) ? (
-                  <>
-                    <Icon name="Lock" size={20} className="mr-2" />
-                    Регистрация закрыта
-                  </>
-                ) : (
-                  <>
-                    <Icon name="UserPlus" size={20} className="mr-2" />
-                    Зарегистрироваться на турнир
-                  </>
-                )}
-              </Button>
-            )}
-            {isRegistered && (
-              <div className="space-y-3">
-                {isConfirmationActive(tournament.start_date) && !tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && (
-                  <div className="p-6 rounded-xl border-2 border-orange-500 bg-orange-500/10">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Icon name="AlertCircle" size={24} className="text-orange-500" />
-                          <div>
-                            <p className="font-bold text-lg">Требуется подтверждение!</p>
-                            <p className="text-sm text-muted-foreground">Подтвердите участие до начала турнира</p>
-                          </div>
-                        </div>
-                        {getConfirmationTimeLeft(tournament.start_date) && (
-                          <div className="text-right">
-                            <div className="text-3xl font-bold text-orange-500">
-                              {(() => {
-                                const time = getConfirmationTimeLeft(tournament.start_date);
-                                if (!time) return '';
-                                return `${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
-                              })()}
-                            </div>
-                            <div className="text-xs text-muted-foreground">осталось</div>
-                          </div>
-                        )}
-                      </div>
-                      <Button 
-                        size="lg" 
-                        className="w-full py-6 text-lg font-bold bg-orange-500 hover:bg-orange-600"
-                        onClick={handleConfirmParticipation}
-                        disabled={isConfirming}
-                      >
-                        {isConfirming ? (
-                          <>
-                            <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                            Подтверждение...
-                          </>
-                        ) : (
-                          <>
-                            <Icon name="CheckCircle2" size={20} className="mr-2" />
-                            Подтвердить участие
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
-                {tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && (
-                  <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
-                    <div className="flex items-center gap-2 text-green-500">
-                      <Icon name="CheckCircle2" size={20} />
-                      <span className="font-semibold">Участие подтверждено</span>
-                    </div>
-                  </div>
-                )}
-
-                {!isConfirmationActive(tournament.start_date) && !tournament.participants.find(p => p.steam_id === user?.steamId)?.confirmed_at && getTimeUntilConfirmation(tournament.start_date) && (
-                  <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon name="Clock" size={20} className="text-blue-500" />
-                        <span className="font-semibold text-blue-500">Подтвердить участие через</span>
-                      </div>
-                      <div className="text-blue-500 font-mono font-bold">
-                        {(() => {
-                          const time = getTimeUntilConfirmation(tournament.start_date);
-                          if (!time) return '';
-                          if (time.days > 0) {
-                            return `${time.days}д ${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
-                          }
-                          return `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Button 
-                  size="lg" 
-                  variant="destructive"
-                  className="w-full py-6 text-lg font-bold"
-                  onClick={handleUnregister}
-                  disabled={isUnregistering}
-                >
-                  <Icon name="X" size={20} className="mr-2" />
-                  {isUnregistering ? 'Отмена...' : 'Отменить регистрацию'}
-                </Button>
-              </div>
-            )}
-          </Card>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-3xl font-bold">Участники</h2>
-                <p className="text-muted-foreground mt-2">
-                  {tournament.participants_count} из {tournament.max_participants} мест занято
-                </p>
-              </div>
-            </div>
-
-            {tournament.participants.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tournament.participants.map((participant, index) => (
-                  <Card 
-                    key={participant.steam_id}
-                    className="p-6 border border-border bg-card/50 backdrop-blur hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <img 
-                          src={participant.avatar_url} 
-                          alt={participant.persona_name}
-                          className="w-16 h-16 rounded-full border-2 border-primary"
-                        />
-                        <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                          #{index + 1}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h3 className="font-bold text-lg truncate">{participant.persona_name}</h3>
-                          {participant.is_admin && (
-                            <span className="px-1.5 py-0.5 bg-destructive/20 text-destructive text-[10px] font-semibold rounded">
-                              Администратор
-                            </span>
-                          )}
-                          {participant.is_moderator && (
-                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[10px] font-semibold rounded">
-                              Модератор
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDateTime(participant.registered_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center border border-dashed border-border bg-card/30">
-                <Icon name="Users" size={48} className="text-muted-foreground mx-auto mb-4" />
-                <p className="text-xl text-muted-foreground">Пока нет участников</p>
-                <p className="text-muted-foreground mt-2">Станьте первым, кто зарегистрируется!</p>
-              </Card>
-            )}
-          </div>
+          <ParticipantsList participants={tournament.participants} />
         </div>
-      </main>
+
+        <div>
+          <TournamentActions
+            tournament={tournament}
+            user={user}
+            isRegistered={isRegistered}
+            isFull={isFull}
+            isRegistering={isRegistering}
+            isUnregistering={isUnregistering}
+            isConfirming={isConfirming}
+            onRegister={handleRegister}
+            onUnregister={handleUnregister}
+            onConfirm={handleConfirmParticipation}
+          />
+        </div>
+      </div>
+    </main>
   );
 };
 
