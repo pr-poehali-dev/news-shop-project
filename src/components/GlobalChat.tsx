@@ -167,7 +167,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
 
 
   return (
-    <Card className="w-full h-[calc(50vh-60px)] flex flex-col bg-card/95 backdrop-blur sticky top-6">
+    <Card className="w-full flex flex-col bg-card/95 backdrop-blur">
       {/* Header */}
       <div className="flex items-center gap-2 p-4 border-b border-border">
         <Icon name="MessageCircle" size={20} className="text-primary" />
@@ -184,7 +184,7 @@ export default function GlobalChat({ user, onLoginClick }: GlobalChatProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/50">
+      <div className="h-[400px] overflow-y-auto p-4 space-y-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/50">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <Icon name="Loader2" size={24} className="animate-spin text-muted-foreground" />
