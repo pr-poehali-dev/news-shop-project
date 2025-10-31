@@ -19,7 +19,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
+                'Access-Control-Allow-Headers': 'Content-Type, x-admin-steam-id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -72,6 +72,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
         
         elif method == 'POST':
+            headers = event.get('headers', {})
+            admin_steam_id = headers.get('x-admin-steam-id') or headers.get('X-Admin-Steam-Id')
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Admin authentication required'})
+                }
+            
+            with conn.cursor() as cur:
+                escaped_steam_id = admin_steam_id.replace("'", "''")
+                cur.execute(f"SELECT COUNT(*) FROM users WHERE steam_id = '{escaped_steam_id}' AND is_admin = true")
+                is_admin = cur.fetchone()[0] > 0
+                
+                if not is_admin:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Admin access required'})
+                    }
+            
             body_data = json.loads(event.get('body', '{}'))
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -104,6 +126,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'PUT':
+            headers = event.get('headers', {})
+            admin_steam_id = headers.get('x-admin-steam-id') or headers.get('X-Admin-Steam-Id')
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Admin authentication required'})
+                }
+            
+            with conn.cursor() as cur:
+                escaped_steam_id = admin_steam_id.replace("'", "''")
+                cur.execute(f"SELECT COUNT(*) FROM users WHERE steam_id = '{escaped_steam_id}' AND is_admin = true")
+                is_admin = cur.fetchone()[0] > 0
+                
+                if not is_admin:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Admin access required'})
+                    }
+            
             body_data = json.loads(event.get('body', '{}'))
             news_id = body_data.get('id')
             
@@ -140,6 +184,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'DELETE':
+            headers = event.get('headers', {})
+            admin_steam_id = headers.get('x-admin-steam-id') or headers.get('X-Admin-Steam-Id')
+            
+            if not admin_steam_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Admin authentication required'})
+                }
+            
+            with conn.cursor() as cur:
+                escaped_steam_id = admin_steam_id.replace("'", "''")
+                cur.execute(f"SELECT COUNT(*) FROM users WHERE steam_id = '{escaped_steam_id}' AND is_admin = true")
+                is_admin = cur.fetchone()[0] > 0
+                
+                if not is_admin:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Admin access required'})
+                    }
+            
             params = event.get('queryStringParameters') or {}
             news_id = params.get('id')
             
