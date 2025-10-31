@@ -17,7 +17,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Steam-Id',
+                'Access-Control-Allow-Headers': 'Content-Type, x-admin-steam-id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
