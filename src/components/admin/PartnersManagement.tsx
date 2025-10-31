@@ -58,30 +58,42 @@ export default function PartnersManagement({
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    console.log('🔵 handleSave called', { user, editingId, formData });
+    
+    if (!user) {
+      console.log('❌ No user');
+      return;
+    }
     
     setError('');
     setSuccess('');
     
     if (!formData.name.trim() || !formData.description.trim() || !formData.website.trim()) {
+      console.log('❌ Validation failed');
       setError('Заполните все обязательные поля');
       return;
     }
 
     try {
       const url = func2url.partners;
+      const method = editingId ? 'PUT' : 'POST';
+      const body = {
+        ...(editingId && editingId !== 0 && { id: editingId }),
+        ...formData
+      };
+      
+      console.log('📤 Sending request:', { url, method, body });
       
       const response = await fetch(url, {
-        method: editingId ? 'PUT' : 'POST',
+        method,
         headers: {
           'Content-Type': 'application/json',
           'X-Admin-Steam-Id': user.steamId
         },
-        body: JSON.stringify({
-          ...(editingId && editingId !== 0 && { id: editingId }),
-          ...formData
-        })
+        body: JSON.stringify(body)
       });
+
+      console.log('📥 Response:', response.status, response.ok);
 
       if (response.ok) {
         setSuccess(editingId ? 'Партнёр обновлён' : 'Партнёр добавлен');
@@ -91,10 +103,11 @@ export default function PartnersManagement({
         }, 1000);
       } else {
         const data = await response.json();
+        console.log('❌ Error response:', data);
         setError(data.error || 'Ошибка при сохранении');
       }
     } catch (error) {
-      console.error('Failed to save partner:', error);
+      console.error('❌ Failed to save partner:', error);
       setError('Ошибка соединения с сервером');
     }
   };
