@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,17 +26,23 @@ interface SteamUser {
 
 interface PartnersManagementProps {
   partners: Partner[];
-  isLoadingPartners: boolean;
-  user: SteamUser | null;
-  onReload: () => Promise<void>;
+  isLoading: boolean;
+  onRefresh: () => Promise<void>;
 }
 
 export default function PartnersManagement({ 
   partners, 
-  isLoadingPartners, 
-  user, 
-  onReload 
+  isLoading, 
+  onRefresh 
 }: PartnersManagementProps) {
+  const [user, setUser] = useState<SteamUser | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -97,7 +103,7 @@ export default function PartnersManagement({
 
       if (response.ok) {
         setSuccess(editingId ? 'Партнёр обновлён' : 'Партнёр добавлен');
-        await onReload();
+        await onRefresh();
         setTimeout(() => {
           handleCancel();
         }, 1000);
@@ -127,7 +133,7 @@ export default function PartnersManagement({
       });
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to delete partner:', error);
@@ -151,7 +157,7 @@ export default function PartnersManagement({
       });
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to toggle partner status:', error);
@@ -257,7 +263,7 @@ export default function PartnersManagement({
           </Card>
         )}
 
-        {isLoadingPartners ? (
+        {isLoading ? (
           <div className="text-center py-12 text-muted-foreground">
             <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin" />
             <p className="text-lg">Загрузка партнёров...</p>
