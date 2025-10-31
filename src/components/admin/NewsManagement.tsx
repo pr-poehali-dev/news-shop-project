@@ -126,17 +126,31 @@ export default function NewsManagement({ news, isLoading, onRefresh }: NewsManag
 
   const handleDelete = async (id: number) => {
     if (!confirm('Удалить эту новость?')) return;
+    
+    if (!user) {
+      setError('Пользователь не авторизован');
+      return;
+    }
 
     try {
       const response = await fetch(`${func2url.news}?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'x-admin-steam-id': user.steamId
+        }
       });
 
       if (response.ok) {
+        setSuccess('Новость удалена');
         await onRefresh();
+        setTimeout(() => setSuccess(''), 2000);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Ошибка при удалении');
       }
     } catch (error) {
       console.error('Failed to delete news:', error);
+      setError('Ошибка соединения с сервером');
     }
   };
 
