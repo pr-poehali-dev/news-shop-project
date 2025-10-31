@@ -44,6 +44,8 @@ export default function PartnersManagement({
     logo: '',
     website: ''
   });
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
 
   const handleEdit = (partner: Partner) => {
     setEditingId(partner.id);
@@ -57,11 +59,17 @@ export default function PartnersManagement({
 
   const handleSave = async () => {
     if (!user) return;
+    
+    setError('');
+    setSuccess('');
+    
+    if (!formData.name.trim() || !formData.description.trim() || !formData.website.trim()) {
+      setError('Заполните все обязательные поля');
+      return;
+    }
 
     try {
-      const url = editingId 
-        ? func2url.partners 
-        : func2url.partners;
+      const url = func2url.partners;
       
       const response = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
@@ -70,17 +78,24 @@ export default function PartnersManagement({
           'X-Admin-Steam-Id': user.steamId
         },
         body: JSON.stringify({
-          ...(editingId && { id: editingId }),
+          ...(editingId && editingId !== 0 && { id: editingId }),
           ...formData
         })
       });
 
       if (response.ok) {
+        setSuccess(editingId ? 'Партнёр обновлён' : 'Партнёр добавлен');
         await onReload();
-        handleCancel();
+        setTimeout(() => {
+          handleCancel();
+        }, 1000);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Ошибка при сохранении');
       }
     } catch (error) {
       console.error('Failed to save partner:', error);
+      setError('Ошибка соединения с сервером');
     }
   };
 
@@ -138,6 +153,8 @@ export default function PartnersManagement({
       logo: '',
       website: ''
     });
+    setError('');
+    setSuccess('');
   };
 
   const handleNew = () => {
@@ -169,6 +186,16 @@ export default function PartnersManagement({
             <h3 className="text-lg font-semibold mb-4">
               {editingId === 0 ? 'Новый партнёр' : 'Редактирование партнёра'}
             </h3>
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500 text-sm">
+                {success}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 col-span-2">
                 <label className="text-sm font-medium">Название</label>
