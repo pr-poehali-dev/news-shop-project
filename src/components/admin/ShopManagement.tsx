@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,13 +23,22 @@ interface SteamUser {
 
 interface ShopManagementProps {
   shopItems: ShopItem[];
-  isLoadingShop: boolean;
-  user: SteamUser | null;
-  onReload: () => Promise<void>;
+  isLoading: boolean;
+  onRefresh: () => Promise<void>;
 }
 
-export default function ShopManagement({ shopItems, isLoadingShop, user, onReload }: ShopManagementProps) {
+export default function ShopManagement({ shopItems, isLoading, onRefresh }: ShopManagementProps) {
+  const [user, setUser] = useState<SteamUser | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
   const [editingShopId, setEditingShopId] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const [shopFormData, setShopFormData] = useState({
     name: '',
     amount: '',
@@ -39,7 +48,16 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
 
   const handleShopSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    console.log('🔵 handleShopSubmit called', { user, editingShopId, shopFormData });
+    
+    if (!user) {
+      console.log('❌ No user');
+      setError('Пользователь не авторизован');
+      return;
+    }
+    
+    setError('');
+    setSuccess('');
 
     try {
       const url = func2url['shop-items'];
@@ -47,6 +65,8 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
       const body = editingShopId 
         ? { ...shopFormData, id: editingShopId }
         : shopFormData;
+
+      console.log('📤 Sending request:', { url, method, body });
 
       const response = await fetch(url, {
         method,
@@ -57,12 +77,22 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
         body: JSON.stringify(body)
       });
 
+      console.log('📥 Response:', response.status, response.ok);
+
       if (response.ok) {
-        await onReload();
-        resetShopForm();
+        setSuccess(editingShopId ? 'Товар обновлён' : 'Товар добавлен');
+        await onRefresh();
+        setTimeout(() => {
+          resetShopForm();
+        }, 1000);
+      } else {
+        const data = await response.json();
+        console.log('❌ Error response:', data);
+        setError(data.error || 'Ошибка при сохранении');
       }
     } catch (error) {
-      console.error('Failed to save shop item:', error);
+      console.error('❌ Failed to save shop item:', error);
+      setError('Ошибка соединения с сервером');
     }
   };
 
@@ -92,7 +122,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
       );
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to delete shop item:', error);
@@ -116,7 +146,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
       });
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to toggle shop item:', error);
@@ -131,6 +161,8 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
       price: 0,
       is_active: true
     });
+    setError('');
+    setSuccess('');
   };
 
   const handleMoveShopItem = async (item: ShopItem, direction: 'up' | 'down') => {
@@ -194,7 +226,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
 
       console.log('✅ Response 2:', response2.status);
 
-      await onReload();
+      await onRefresh();
       console.log('🔄 Reloaded items');
     } catch (error) {
       console.error('❌ Failed to reorder shop items:', error);
@@ -209,6 +241,17 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
             <Icon name={editingShopId ? "Edit" : "Plus"} size={24} />
             {editingShopId ? 'Редактировать товар' : 'Добавить товар'}
           </h2>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500 text-sm">
+              {success}
+            </div>
+          )}
           
           <form onSubmit={handleShopSubmit} className="space-y-4">
             <div>
@@ -278,7 +321,7 @@ export default function ShopManagement({ shopItems, isLoadingShop, user, onReloa
             Список товаров ({shopItems.length})
           </h2>
           
-          {isLoadingShop ? (
+          {isLoading ? (
             <div className="text-center py-12 text-muted-foreground">
               Загрузка товаров...
             </div>

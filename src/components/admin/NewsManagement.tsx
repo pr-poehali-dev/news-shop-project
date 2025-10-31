@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,15 +37,24 @@ interface SteamUser {
 interface NewsManagementProps {
   news: NewsItem[];
   isLoading: boolean;
-  user: SteamUser | null;
-  onReload: () => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
-export default function NewsManagement({ news, isLoading, user, onReload }: NewsManagementProps) {
+export default function NewsManagement({ news, isLoading, onRefresh }: NewsManagementProps) {
+  const [user, setUser] = useState<SteamUser | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -56,28 +65,51 @@ export default function NewsManagement({ news, isLoading, user, onReload }: News
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔵 handleSubmit called', { user, editingId, formData });
+    
+    if (!user) {
+      console.log('❌ No user');
+      setError('Пользователь не авторизован');
+      return;
+    }
+    
+    setError('');
+    setSuccess('');
     
     try {
-      const url = editingId ? func2url.news : func2url.news;
+      const url = func2url.news;
       const method = editingId ? 'PUT' : 'POST';
       const body = editingId 
         ? { ...formData, id: editingId }
         : formData;
 
+      console.log('📤 Sending request:', { url, method, body });
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Admin-Steam-Id': user.steamId
         },
         body: JSON.stringify(body)
       });
 
+      console.log('📥 Response:', response.status, response.ok);
+
       if (response.ok) {
-        await onReload();
-        resetForm();
+        setSuccess(editingId ? 'Новость обновлена' : 'Новость добавлена');
+        await onRefresh();
+        setTimeout(() => {
+          resetForm();
+        }, 1000);
+      } else {
+        const data = await response.json();
+        console.log('❌ Error response:', data);
+        setError(data.error || 'Ошибка при сохранении');
       }
     } catch (error) {
-      console.error('Failed to save news:', error);
+      console.error('❌ Failed to save news:', error);
+      setError('Ошибка соединения с сервером');
     }
   };
 
@@ -101,7 +133,7 @@ export default function NewsManagement({ news, isLoading, user, onReload }: News
       });
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to delete news:', error);
@@ -117,6 +149,8 @@ export default function NewsManagement({ news, isLoading, user, onReload }: News
       content: '',
       badge: ''
     });
+    setError('');
+    setSuccess('');
   };
 
   const loadComments = async (newsId: number) => {
@@ -161,6 +195,17 @@ export default function NewsManagement({ news, isLoading, user, onReload }: News
             <Icon name={editingId ? "Edit" : "Plus"} size={24} />
             {editingId ? 'Редактировать новость' : 'Добавить новость'}
           </h2>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500 text-sm">
+              {success}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
