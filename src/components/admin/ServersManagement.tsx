@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,20 +30,28 @@ interface SteamUser {
 
 interface ServersManagementProps {
   servers: Server[];
-  isLoadingServers: boolean;
-  user: SteamUser | null;
-  onReload: () => Promise<void>;
+  isLoading: boolean;
+  onRefresh: () => Promise<void>;
   onUpdateStatus: () => Promise<void>;
 }
 
 export default function ServersManagement({ 
   servers, 
-  isLoadingServers, 
-  user, 
-  onReload,
+  isLoading, 
+  onRefresh,
   onUpdateStatus 
 }: ServersManagementProps) {
+  const [user, setUser] = useState<SteamUser | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('steamUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
   const [editingServerId, setEditingServerId] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const [serverFormData, setServerFormData] = useState({
     name: '',
     ipAddress: '',
@@ -58,7 +66,16 @@ export default function ServersManagement({
 
   const handleServerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    console.log('🔵 handleServerSubmit called', { user, editingServerId, serverFormData });
+    
+    if (!user) {
+      console.log('❌ No user');
+      setError('Пользователь не авторизован');
+      return;
+    }
+    
+    setError('');
+    setSuccess('');
 
     try {
       const url = func2url.servers;
@@ -66,6 +83,8 @@ export default function ServersManagement({
       const body = editingServerId 
         ? { ...serverFormData, id: editingServerId }
         : serverFormData;
+
+      console.log('📤 Sending request:', { url, method, body });
 
       const response = await fetch(url, {
         method,
@@ -76,12 +95,22 @@ export default function ServersManagement({
         body: JSON.stringify(body)
       });
 
+      console.log('📥 Response:', response.status, response.ok);
+
       if (response.ok) {
-        await onReload();
-        resetServerForm();
+        setSuccess(editingServerId ? 'Сервер обновлён' : 'Сервер добавлен');
+        await onRefresh();
+        setTimeout(() => {
+          resetServerForm();
+        }, 1000);
+      } else {
+        const data = await response.json();
+        console.log('❌ Error response:', data);
+        setError(data.error || 'Ошибка при сохранении');
       }
     } catch (error) {
-      console.error('Failed to save server:', error);
+      console.error('❌ Failed to save server:', error);
+      setError('Ошибка соединения с сервером');
     }
   };
 
@@ -116,7 +145,7 @@ export default function ServersManagement({
       );
 
       if (response.ok) {
-        await onReload();
+        await onRefresh();
       }
     } catch (error) {
       console.error('Failed to delete server:', error);
@@ -136,6 +165,8 @@ export default function ServersManagement({
       status: 'online',
       description: ''
     });
+    setError('');
+    setSuccess('');
   };
 
   const handleMoveServer = async (server: Server, direction: 'up' | 'down') => {
@@ -193,6 +224,17 @@ export default function ServersManagement({
             <Icon name={editingServerId ? "Edit" : "Plus"} size={24} />
             {editingServerId ? 'Редактировать сервер' : 'Добавить сервер'}
           </h2>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500 text-sm">
+              {success}
+            </div>
+          )}
           
           <form onSubmit={handleServerSubmit} className="space-y-4">
             <div>
@@ -318,7 +360,7 @@ export default function ServersManagement({
             </Button>
           </div>
           
-          {isLoadingServers ? (
+          {isLoading ? (
             <div className="text-center py-12 text-muted-foreground">
               Загрузка серверов...
             </div>

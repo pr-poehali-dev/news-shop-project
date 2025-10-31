@@ -296,6 +296,7 @@ export default function Admin() {
             servers={servers}
             isLoading={isLoadingServers}
             onRefresh={loadServers}
+            onUpdateStatus={updateServersStatus}
           />
         )}
 
